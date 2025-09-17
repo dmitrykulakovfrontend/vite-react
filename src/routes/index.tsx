@@ -183,19 +183,16 @@ function Index() {
         hasMore={true}
         loader={<h4>Loading...</h4>}
       >
-        <div className="flex flex-wrap items-start gap-4 justify-center-safe">
+        <div className="flex flex-wrap items-start justify-center bg-white">
           {trees.map((tree) => {
             return (
               <Link
                 key={tree.id}
                 to="/forest"
-                className="[&.active]:font-bold block p-1"
+                className="[&.active]:font-bold block"
               >
                 <div className="flex flex-col items-center justify-center cursor-pointer">
-                  <span className=" font-futura-heavy">
-                    Дерево другого пользователя
-                  </span>
-                  <div className="flex border shadow-md rounded-md bg-white w-[200px] h-[200px] max-w-[200px]">
+                  <div className="flex  bg-white w-[200px] h-[200px] max-w-[200px]">
                     <Tree
                       {...{
                         seed: Math.random() * 100000,
@@ -210,6 +207,7 @@ function Index() {
                         leafColor: "#228B22",
                         leafSize: 15 + Math.round(Math.random() * 11),
                         container: null as unknown as HTMLDivElement,
+                        shouldAnimate: false,
                       }}
                     />
                   </div>
@@ -219,20 +217,6 @@ function Index() {
           })}
         </div>
       </InfiniteScroll>
-      {/* <div>
-        {state.items.map((i, index) => (
-          <div style={style} key={index}>
-            div - #{index}
-          </div>
-        ))}
-      </div> */}
-      {/* <TreeDebugger
-        growTree={growTree}
-        growTreeBack={growTreeBack}
-        options={options}
-        redrawTree={redrawTree}
-        setOptions={setOptions}
-      /> */}
     </div>
   );
 }

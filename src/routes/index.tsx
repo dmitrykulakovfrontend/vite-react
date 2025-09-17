@@ -149,7 +149,7 @@ function Index() {
           </div>
           <button
             onClick={growTree}
-            className="w-full p-2 mt-4 bg-blue-300 rounded cursor-pointer font-futura-heavy"
+            className="w-full p-2 mt-4 bg-[linear-gradient(to_bottom,#3faaeb,#347df4)] rounded cursor-pointer font-futura-heavy"
           >
             Полить ( -10💧)
           </button>
@@ -161,17 +161,37 @@ function Index() {
               {tasks.map((task) => (
                 <div
                   key={task.id}
-                  className={`flex flex-col justify-between  rounded-md shadow-md p-4 ${task.isCompleted ? "bg-green-400" : "bg-white"} ${task.isCompleted ? "hover:bg-green-600 border-green-600" : "hover:bg-blue-50"}  transition-colors cursor-pointer w-[200px] max-[52rem]:w-[90%]`}
+                  className={`max-w-xs overflow-hidden text-black rounded shadow-lg ${task.isCompleted ? "bg-green-400" : "bg-white"} ${task.isCompleted ? "" : "hover:bg-gray-200"} ${task.isCompleted ? "cursor-default" : "cursor-pointer"}`}
                   onClick={() => completeTask(task.id)}
                 >
-                  <h3 className="text-lg text-center text-black font-futura-heavy">
-                    {task.title}
-                  </h3>
-                  <p className="text-center text-black ">{task.description}</p>
-                  <p className="mt-2 text-center text-blue-600 font-futura-heavy">
-                    +{task.reward}💧
-                  </p>
+                  <div className="px-6 py-4">
+                    <div className="mb-2 text-xl font-futura-heavy">
+                      {task.title}
+                    </div>
+                    <p className="text-base text-gray-700">
+                      {task.description}
+                    </p>
+                  </div>
+                  <div className="px-6 pt-4 pb-2">
+                    <span className="inline-block p-1 pl-2 pr-2 ml-auto mb-2 text-sm text-right text-white bg-[linear-gradient(to_bottom,#3faaeb,#347df4)] rounded-full font-futura-heavy">
+                      +{task.reward}💧
+                    </span>
+                  </div>
                 </div>
+                // <div
+                //   key={task.id}
+                //   className="flex flex-col text-black justify-between rounded-md shadow-md p-4 w-[240px] h-[260px] bg-white"
+                // >
+                //   <div className="flex flex-col items-center justify-around h-full gap-2">
+                //     <h3 className="text-lg text-center font-futura-heavy">
+                //       {task.title}
+                //     </h3>
+                //     <p className="mt-2 text-center">{task.description}</p>
+                //   </div>
+                //   <p className="mt-2 text-center text-blue-600 font-futura-heavy">
+                //     +{task.reward}💧
+                //   </p>
+                // </div>
               ))}
             </div>
           </div>

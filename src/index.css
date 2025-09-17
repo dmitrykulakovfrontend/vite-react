@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: "FuturaPTBook";
+  src: url("/fonts/Futura_PT_Book.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "FuturaPTHeavy";
+  src: url("/fonts/Futura_PT_Heavy.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@theme inline {
+  --font-futura-book: "FuturaPTBook";
+  --font-futura-heavy: "FuturaPTHeavy";
+}
+canvas {
+  aspect-ratio: unset !important;
+}
+:root {
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}

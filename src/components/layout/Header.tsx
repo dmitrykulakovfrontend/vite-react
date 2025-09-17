@@ -1,0 +1,79 @@
+import { Link } from "@tanstack/react-router";
+
+const Header = ({
+  isMenuOpen,
+  setMenuOpen,
+}: {
+  isMenuOpen: boolean;
+  setMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
+}) => {
+  return (
+    <header className="fixed top-0 left-0 flex items-center justify-between w-full p-2 bg-white shadow-md">
+      <Link to="/" className="[&.active]:font-bold shrink-0">
+        <img
+          src={"/team_logo.webp"}
+          width="40"
+          height="40"
+          alt="Логотип компании"
+        />
+      </Link>
+
+      <button
+        className="p-2 rounded cursor-pointer sm:hidden hover:bg-gray-100"
+        onClick={() => setMenuOpen((prev) => !prev)}
+      >
+        ☰
+      </button>
+
+      <ul
+        className={`flex flex-col sm:flex-row gap-2 sm:gap-4 absolute sm:static top-full left-0 w-full sm:w-auto bg-white sm:bg-transparent p-2 sm:p-0 transition-all ${
+          isMenuOpen ? "block" : "hidden sm:flex"
+        }`}
+      >
+        <li>
+          <Link
+            to="/"
+            className="[&.active]:font-bold block p-1 hover:bg-gray-100 rounded"
+          >
+            Главная
+          </Link>
+        </li>
+        <li>
+          <Link
+            to="/"
+            className="[&.active]:font-bold block p-1 hover:bg-gray-100 rounded"
+          >
+            О нас
+          </Link>
+        </li>
+        <li>
+          <Link
+            to="/forest"
+            className="[&.active]:font-bold block p-1 hover:bg-gray-100 rounded"
+          >
+            Лес
+          </Link>
+        </li>
+        <li className="flex flex-col gap-2 mt-2 sm:hidden">
+          <button className="bg-[linear-gradient(to_bottom,#3faaeb,#347df4)] rounded-md p-2 text-white">
+            Войти
+          </button>
+          <button className="bg-[linear-gradient(to_bottom,#3faaeb,#347df4)] rounded-md p-2 text-white">
+            Зарегистрироваться
+          </button>
+        </li>
+      </ul>
+
+      <div className="hidden gap-2 sm:flex">
+        <button className="bg-[linear-gradient(to_bottom,#3faaeb,#347df4)]  rounded px-3 py-2 text-white text-sm">
+          Войти
+        </button>
+        <button className="bg-[linear-gradient(to_bottom,#3faaeb,#347df4)]  rounded px-3 py-2 text-white text-sm">
+          Зарегистрироваться
+        </button>
+      </div>
+    </header>
+  );
+};
+
+export default Header;

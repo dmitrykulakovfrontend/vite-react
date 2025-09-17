@@ -252,6 +252,7 @@ class TreeAnimation {
       ey: number;
       depth: number;
     }[] = [];
+    const fruitType = this.random(0, 1) > 0.5 ? "red" : "orange";
 
     // draw fully-grown depths (0 .. currentDepth-1)
     for (let d = 0; d < this.currentDepth; d++) {
@@ -344,10 +345,9 @@ class TreeAnimation {
     for (const leaf of leafQueue) {
       this.drawLeaf(leaf.ex, leaf.ey);
     }
-
-    // --- Draw apples on top of leaves ---
+    // --- Draw fruits on top of leaves ---
     for (const leaf of leafQueue) {
-      // only add apples when tree is fully grown
+      // only add fruits when tree is fully grown
       if (this.depth === this.fullDepth && this.random(0, 1) < 0.05) {
         const dx = leaf.ex - leaf.sx;
         const dy = leaf.ey - leaf.sy;
@@ -358,19 +358,19 @@ class TreeAnimation {
         const ax = leaf.ex + nx * offset;
         const ay = leaf.ey + ny * offset;
 
-        const appleRadius = Math.max(3, Math.floor(this.leafSize * 0.2));
+        const fruitRadius = Math.max(3, Math.floor(this.leafSize * 0.2));
         this.ctx.beginPath();
-        this.ctx.arc(ax, ay, appleRadius, 0, Math.PI * 2);
-        this.ctx.fillStyle = "red";
+        this.ctx.arc(ax, ay, fruitRadius, 0, Math.PI * 2);
+        this.ctx.fillStyle = fruitType;
         this.ctx.fill();
         this.ctx.closePath();
 
         // highlight
         this.ctx.beginPath();
         this.ctx.arc(
-          ax - appleRadius * 0.35,
-          ay - appleRadius * 0.35,
-          appleRadius * 0.35,
+          ax - fruitRadius * 0.35,
+          ay - fruitRadius * 0.35,
+          fruitRadius * 0.35,
           0,
           Math.PI * 2,
         );

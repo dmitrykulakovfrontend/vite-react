@@ -7,6 +7,7 @@ export const Route = createFileRoute("/")({
 import { useRef, useState } from "react";
 import type { TreeOptions } from "../types/Tree";
 import { Tree, type TreeHandle } from "../components/Tree";
+import InfiniteScroll from "react-infinite-scroll-component";
 
 function Index() {
   const treeRef = useRef<TreeHandle>(null);
@@ -28,7 +29,6 @@ function Index() {
     container: null as unknown as HTMLDivElement,
     treeRef,
   });
-
   const growTree = () => {
     if (treeRef.current && water >= 10) {
       treeRef.current.growOneLevel();
@@ -47,9 +47,24 @@ function Index() {
       setTasks(updatedTasks);
     }
   };
+  const [trees, setTrees] = useState(
+    new Array(15).fill(1).map((_, i) => ({ id: i + 1 })),
+  );
 
-  const randomUsers = new Array(15).fill(1).map((_, i) => ({ id: i + 1 }));
-  console.log(randomUsers);
+  const fetchMoreData = () => {
+    // a fake async api call like which sends
+    // 20 more records in .5 secs
+    setTimeout(() => {
+      setTrees(
+        trees.concat(
+          new Array(15)
+            .fill(1)
+            .map((_, i) => ({ id: (trees.at(-1)?.id || 0) + i + 1 })),
+        ),
+      );
+    }, 500);
+  };
+
   const [tasks, setTasks] = useState([
     {
       id: 1,
@@ -78,42 +93,7 @@ function Index() {
   ]);
 
   return (
-    <div className="flex justify-evenly w-full h-screen gap-4 p-4 max-[52rem]:flex-col-reverse max-[52rem]:items-center ">
-      <div className="flex flex-wrap items-start gap-4 justify-center-safe xl:max-w-4xl">
-        {randomUsers.map((user) => {
-          return (
-            <Link
-              key={user.id}
-              to="/forest"
-              className="[&.active]:font-bold block p-1"
-            >
-              <div className="flex flex-col items-center justify-center cursor-pointer">
-                <span className=" font-futura-heavy">
-                  Дерево другого пользователя
-                </span>
-                <div className="flex border shadow-md rounded-md bg-white w-[200px] h-[200px] max-w-[200px]">
-                  <Tree
-                    {...{
-                      seed: Math.random() * 100000,
-                      depth: Math.round(Math.random() * 11),
-                      growthSpeed: 50,
-                      treeScale: 1,
-                      branchWidth: 1,
-                      colorMode: "gradient" as "gradient" | "solid",
-                      color: "#000000",
-                      gradientColorStart: "#8B4513",
-                      gradientColorEnd: "#228B22",
-                      leafColor: "#228B22",
-                      leafSize: 15 + Math.round(Math.random() * 11),
-                      container: null as unknown as HTMLDivElement,
-                    }}
-                  />
-                </div>
-              </div>
-            </Link>
-          );
-        })}
-      </div>
+    <div className="flex flex-col items-center w-full h-screen gap-4 p-4 justify-evenly ">
       <div className="flex flex-col items-center gap-2">
         <div className="flex flex-col text-lg">
           <p>
@@ -197,6 +177,55 @@ function Index() {
           </div>
         </div>
       </div>
+      <InfiniteScroll
+        dataLength={trees.length}
+        next={fetchMoreData}
+        hasMore={true}
+        loader={<h4>Loading...</h4>}
+      >
+        <div className="flex flex-wrap items-start gap-4 justify-center-safe">
+          {trees.map((tree) => {
+            return (
+              <Link
+                key={tree.id}
+                to="/forest"
+                className="[&.active]:font-bold block p-1"
+              >
+                <div className="flex flex-col items-center justify-center cursor-pointer">
+                  <span className=" font-futura-heavy">
+                    Дерево другого пользователя
+                  </span>
+                  <div className="flex border shadow-md rounded-md bg-white w-[200px] h-[200px] max-w-[200px]">
+                    <Tree
+                      {...{
+                        seed: Math.random() * 100000,
+                        depth: Math.round(Math.random() * 11),
+                        growthSpeed: 50,
+                        treeScale: 1,
+                        branchWidth: 1,
+                        colorMode: "gradient" as "gradient" | "solid",
+                        color: "#000000",
+                        gradientColorStart: "#8B4513",
+                        gradientColorEnd: "#228B22",
+                        leafColor: "#228B22",
+                        leafSize: 15 + Math.round(Math.random() * 11),
+                        container: null as unknown as HTMLDivElement,
+                      }}
+                    />
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </InfiniteScroll>
+      {/* <div>
+        {state.items.map((i, index) => (
+          <div style={style} key={index}>
+            div - #{index}
+          </div>
+        ))}
+      </div> */}
       {/* <TreeDebugger
         growTree={growTree}
         growTreeBack={growTreeBack}

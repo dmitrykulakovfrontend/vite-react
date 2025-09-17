@@ -4,16 +4,15 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-import { useEffect, useRef, useState } from "react";
-import TreeAnimation from "../utils/TreeAnimation";
+import { useRef, useState } from "react";
 import type { TreeOptions } from "../types/Tree";
+import { Tree, type TreeHandle } from "../components/Tree";
 
 function Index() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const treeRef = useRef<TreeAnimation | null>(null);
-  const [water, setWater] = useState(50);
-  const [options, setOptions] = useState<
-    TreeOptions & { treeRef?: HTMLDivElement | null }
+  const treeRef = useRef<TreeHandle>(null);
+  const [water, setWater] = useState(100);
+  const [options] = useState<
+    TreeOptions & { treeRef?: React.RefObject<TreeHandle | null> }
   >({
     seed: "Dmitry" as string | number,
     depth: 1,
@@ -27,44 +26,15 @@ function Index() {
     leafColor: "#228B22",
     leafSize: 15,
     container: null as unknown as HTMLDivElement,
-    treeRef: null,
+    treeRef,
   });
 
-  const redrawTree = () => {
-    console.log({ options });
-    console.log({ tree: treeRef.current });
-    if (containerRef.current && !treeRef.current) {
-      treeRef.current = new TreeAnimation({
-        ...options,
-        container: containerRef.current,
-      });
-    }
-  };
   const growTree = () => {
     if (treeRef.current && water >= 10) {
       treeRef.current.growOneLevel();
       setWater((prev) => prev - 10);
-      const seed = treeRef.current.originalSeed;
-      setOptions((prev) => ({ ...prev, ...treeRef.current, seed }));
     }
   };
-  // const growTreeBack = () => {
-  //   if (treeRef.current) {
-  //     treeRef.current.growBackOneLevel();
-  //     const seed = treeRef.current.originalSeed;
-  //     setOptions((prev) => ({ ...prev, ...treeRef.current, seed }));
-  //   }
-  // };
-
-  useEffect(() => {
-    redrawTree();
-  }, [options]);
-  // useEffect(() => {
-  //   const timer = setInterval(growTree, 500);
-  //   return () => {
-  //     clearInterval(timer);
-  //   };
-  // });
 
   const completeTask = (id: number) => {
     const completedTask = tasks.find((task) => task.id === id);
@@ -121,13 +91,24 @@ function Index() {
                 <span className=" font-futura-heavy">
                   Дерево другого пользователя
                 </span>
-                <img
-                  src="https://media.istockphoto.com/id/543052538/nl/foto/tree.webp?s=2048x2048&w=is&k=20&c=-8vJIKAwtEVvJND28S4KC9aY6mTWncdiOPQZAtbEsTs="
-                  width={200}
-                  height={200}
-                  className="rounded-md"
-                  alt=""
-                />
+                <div className="flex border shadow-md rounded-md bg-white w-[200px] h-[200px] max-w-[200px]">
+                  <Tree
+                    {...{
+                      seed: Math.random() * 100000,
+                      depth: Math.round(Math.random() * 11),
+                      growthSpeed: 50,
+                      treeScale: 1,
+                      branchWidth: 1,
+                      colorMode: "gradient" as "gradient" | "solid",
+                      color: "#000000",
+                      gradientColorStart: "#8B4513",
+                      gradientColorEnd: "#228B22",
+                      leafColor: "#228B22",
+                      leafSize: 15 + Math.round(Math.random() * 11),
+                      container: null as unknown as HTMLDivElement,
+                    }}
+                  />
+                </div>
               </div>
             </Link>
           );
@@ -156,10 +137,10 @@ function Index() {
           </p>
         </div>
         <div className="flex flex-col items-center">
-          <div
-            className="flex border shadow-md rounded-md h-[300px] bg-white   max-lg:w-[300px] max-lg:max-w-[300px] max-xl:w-[400px] max-xl:max-w-[400px] w-[500px] max-w-[500px]"
-            ref={containerRef}
-          />
+          <div className="flex border shadow-md rounded-md h-[300px] bg-white   max-lg:w-[300px] max-lg:max-w-[300px] max-xl:w-[400px] max-xl:max-w-[400px] w-[500px] max-w-[500px]">
+            <Tree ref={treeRef} {...options} />
+          </div>
+
           <div>
             <p className="text-xl">
               Текущее количество воды:{" "}

@@ -11,6 +11,7 @@ export interface TreeOptions {
   leafColor: string;
   leafSize: number;
   seed: number | string;
+  shouldAnimate?: boolean;
 }
 
 export interface Branch {

@@ -4,6 +4,7 @@ class TreeAnimation {
   container: HTMLDivElement;
   fullDepth: number;
   depth: number;
+  shouldAnimate?: boolean;
   pixelRatio: number;
   growthSpeed: number;
   treeScale: number;
@@ -44,6 +45,7 @@ class TreeAnimation {
     this.leafColor = options.leafColor;
     this.leafSize = options.leafSize;
     this.originalSeed = options.seed;
+    this.shouldAnimate = options.shouldAnimate ?? true; // default true
     this.seed = Math.random() * 100000;
     // if (this.seed !== undefined) {
     //   const totalCount = 10000;
@@ -138,7 +140,13 @@ class TreeAnimation {
         this.branches[d][k].cntFrame = 0;
       }
     }
-    this.animate();
+    if (this.shouldAnimate) {
+      this.animate(); // go frame by frame
+    } else {
+      // instantly draw the whole tree in one pass
+      this.currentDepth = this.depth;
+      this.animate();
+    }
   }
 
   growOneLevel() {

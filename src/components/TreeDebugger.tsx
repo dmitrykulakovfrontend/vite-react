@@ -1,19 +1,19 @@
 import { type Dispatch, type SetStateAction } from "react";
 import type { TreeOptions } from "../types/Tree";
-
+type TreeDebuggerProps = {
+  options: TreeOptions;
+  setOptions: Dispatch<SetStateAction<TreeOptions>>;
+  redrawTree: () => void;
+  growTree: () => void;
+  growTreeBack: () => void;
+};
 const TreeDebugger = ({
   options,
   setOptions,
   redrawTree,
   growTree,
   growTreeBack,
-}: {
-  options: TreeOptions;
-  setOptions: Dispatch<SetStateAction<TreeOptions>>;
-  redrawTree: () => void;
-  growTree: () => void;
-  growTreeBack: () => void;
-}) => {
+}: TreeDebuggerProps) => {
   return (
     <div className="w-full p-4 overflow-y-auto bg-gray-100 md:w-64">
       {/* Seed */}

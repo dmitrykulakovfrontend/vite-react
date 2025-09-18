@@ -306,31 +306,28 @@ class TreeAnimation {
         }
         if (e.touches.length === 2) {
           e.preventDefault();
+
           const dx = e.touches[0].clientX - e.touches[1].clientX;
           const dy = e.touches[0].clientY - e.touches[1].clientY;
           const dist = Math.sqrt(dx * dx + dy * dy);
 
+          const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+          const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+
           if (lastDist !== null) {
             const zoomFactor = dist / lastDist;
-            const newScale = Math.min(
-              Math.max(this.viewportTransform.scale * zoomFactor, 0.1),
-              5,
-            );
+            const { x, y, scale } = this.viewportTransform;
+            const newScale = Math.min(Math.max(scale * zoomFactor, 0.1), 5);
 
-            // Zoom towards the midpoint of the two fingers
-            const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
-            const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+            // Convert pinch midpoint to world coords
+            const worldX = (midX - x) / scale;
+            const worldY = (midY - y) / scale;
 
-            this.viewportTransform.x =
-              midX -
-              (midX - this.viewportTransform.x) *
-                (newScale / this.viewportTransform.scale);
-            this.viewportTransform.y =
-              midY -
-              (midY - this.viewportTransform.y) *
-                (newScale / this.viewportTransform.scale);
-
+            // Recalculate transform so world point stays fixed under fingers
+            this.viewportTransform.x = midX - worldX * newScale;
+            this.viewportTransform.y = midY - worldY * newScale;
             this.viewportTransform.scale = newScale;
+
             this.render();
           }
           lastDist = dist;

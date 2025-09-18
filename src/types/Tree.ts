@@ -10,8 +10,13 @@ export interface TreeOptions {
   gradientColorEnd: string;
   leafColor: string;
   leafSize: number;
-  seed: number | string;
+  seed: number;
   shouldAnimate?: boolean;
+  mainTree?: boolean;
+}
+
+export interface Forest {
+  trees: TreeOptions[];
 }
 
 export interface Branch {
@@ -20,8 +25,5 @@ export interface Branch {
   endX: number;
   endY: number;
   lineWidth: number;
-  frame: number;
-  cntFrame: number;
   depth: number;
-  draw: (ctx: CanvasRenderingContext2D, speed: number) => boolean;
 }

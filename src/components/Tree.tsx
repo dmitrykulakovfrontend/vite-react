@@ -1,13 +1,13 @@
 import { forwardRef, useEffect, useRef, useImperativeHandle } from "react";
 import TreeAnimation from "../utils/TreeAnimation";
-import type { TreeOptions } from "../types/Tree";
+import type { Forest, TreeOptions } from "../types/Tree";
 
 export type TreeHandle = {
-  growOneLevel: () => void;
+  growOneLevel: (tree: TreeOptions) => void;
   reset: () => void;
 };
 
-export const Tree = forwardRef<TreeHandle, TreeOptions>((props, ref) => {
+export const Tree = forwardRef<TreeHandle, Forest>((props, ref) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const treeRef = useRef<TreeAnimation | null>(null);
 
@@ -22,8 +22,8 @@ export const Tree = forwardRef<TreeHandle, TreeOptions>((props, ref) => {
   }, [props]);
 
   useImperativeHandle(ref, () => ({
-    growOneLevel: () => {
-      treeRef.current?.growOneLevel();
+    growOneLevel: (tree: TreeOptions) => {
+      treeRef.current?.growOneLevel(tree);
     },
     reset: () => {
       if (containerRef.current) {

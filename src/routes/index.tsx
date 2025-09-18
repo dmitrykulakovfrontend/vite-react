@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -7,7 +7,6 @@ export const Route = createFileRoute("/")({
 import { useRef, useState } from "react";
 import type { TreeOptions } from "../types/Tree";
 import { Tree, type TreeHandle } from "../components/Tree";
-import InfiniteScroll from "react-infinite-scroll-component";
 
 function Index() {
   const treeRef = useRef<TreeHandle>(null);
@@ -15,7 +14,7 @@ function Index() {
   const [options] = useState<
     TreeOptions & { treeRef?: React.RefObject<TreeHandle | null> }
   >({
-    seed: "Dmitry" as string | number,
+    seed: 1337,
     depth: 1,
     growthSpeed: 50,
     treeScale: 1,
@@ -28,10 +27,11 @@ function Index() {
     leafSize: 15,
     container: null as unknown as HTMLDivElement,
     treeRef,
+    mainTree: true,
   });
   const growTree = () => {
     if (treeRef.current && water >= 10) {
-      treeRef.current.growOneLevel();
+      treeRef.current.growOneLevel(options);
       setWater((prev) => prev - 10);
     }
   };
@@ -47,23 +47,27 @@ function Index() {
       setTasks(updatedTasks);
     }
   };
-  const [trees, setTrees] = useState(
-    new Array(15).fill(1).map((_, i) => ({ id: i + 1 })),
+  const [trees] = useState(
+    new Array(30000).fill(1).map(() => {
+      const size = Math.round(Math.random() * 10) + 1;
+      return {
+        seed: Math.random() * 100000,
+        depth: size,
+        growthSpeed: 50,
+        treeScale: 1,
+        branchWidth: 1,
+        colorMode: "gradient" as "gradient" | "solid",
+        color: "#000000",
+        gradientColorStart: "#8B4513",
+        gradientColorEnd: "#228B22",
+        leafColor: "#228B22",
+        leafSize: 15 + size,
+        container: null as unknown as HTMLDivElement,
+        shouldAnimate: false,
+        mainTree: false,
+      };
+    }),
   );
-
-  const fetchMoreData = () => {
-    // a fake async api call like which sends
-    // 20 more records in .5 secs
-    setTimeout(() => {
-      setTrees(
-        trees.concat(
-          new Array(15)
-            .fill(1)
-            .map((_, i) => ({ id: (trees.at(-1)?.id || 0) + i + 1 })),
-        ),
-      );
-    }, 500);
-  };
 
   const [tasks, setTasks] = useState([
     {
@@ -93,7 +97,7 @@ function Index() {
   ]);
 
   return (
-    <div className="flex flex-col items-center w-full h-screen gap-4 p-4 justify-evenly ">
+    <div className="flex flex-col items-center w-full gap-4 p-4 justify-evenly ">
       <div className="flex flex-col items-center gap-2">
         <div className="flex flex-col text-lg">
           <p>
@@ -118,7 +122,7 @@ function Index() {
         </div>
         <div className="flex flex-col items-center">
           <div className="flex border shadow-md rounded-md h-[300px] bg-white   max-lg:w-[300px] max-lg:max-w-[300px] max-xl:w-[400px] max-xl:max-w-[400px] w-[500px] max-w-[500px]">
-            <Tree ref={treeRef} {...options} />
+            <Tree ref={treeRef} trees={[options]} />
           </div>
 
           <div>
@@ -158,65 +162,18 @@ function Index() {
                     </span>
                   </div>
                 </div>
-                // <div
-                //   key={task.id}
-                //   className="flex flex-col text-black justify-between rounded-md shadow-md p-4 w-[240px] h-[260px] bg-white"
-                // >
-                //   <div className="flex flex-col items-center justify-around h-full gap-2">
-                //     <h3 className="text-lg text-center font-futura-heavy">
-                //       {task.title}
-                //     </h3>
-                //     <p className="mt-2 text-center">{task.description}</p>
-                //   </div>
-                //   <p className="mt-2 text-center text-blue-600 font-futura-heavy">
-                //     +{task.reward}💧
-                //   </p>
-                // </div>
               ))}
             </div>
           </div>
         </div>
       </div>
-      <InfiniteScroll
-        dataLength={trees.length}
-        next={fetchMoreData}
-        hasMore={true}
-        loader={<h4>Loading...</h4>}
-      >
-        <div className="flex flex-wrap items-start justify-center bg-white">
-          {trees.map((tree) => {
-            return (
-              <Link
-                key={tree.id}
-                to="/forest"
-                className="[&.active]:font-bold block"
-              >
-                <div className="flex flex-col items-center justify-center cursor-pointer">
-                  <div className="flex  bg-white w-[200px] h-[200px] max-w-[200px]">
-                    <Tree
-                      {...{
-                        seed: Math.random() * 100000,
-                        depth: Math.round(Math.random() * 11),
-                        growthSpeed: 50,
-                        treeScale: 1,
-                        branchWidth: 1,
-                        colorMode: "gradient" as "gradient" | "solid",
-                        color: "#000000",
-                        gradientColorStart: "#8B4513",
-                        gradientColorEnd: "#228B22",
-                        leafColor: "#228B22",
-                        leafSize: 15 + Math.round(Math.random() * 11),
-                        container: null as unknown as HTMLDivElement,
-                        shouldAnimate: false,
-                      }}
-                    />
-                  </div>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-      </InfiniteScroll>
+      <div className="w-full h-screen bg-gray-100">
+        <Tree
+          {...{
+            trees,
+          }}
+        />
+      </div>
     </div>
   );
 }

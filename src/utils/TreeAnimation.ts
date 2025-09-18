@@ -293,7 +293,9 @@ class TreeAnimation {
       "touchmove",
       (e: TouchEvent) => {
         if (e.touches.length === 1) {
-          e.preventDefault(); // stop the page from scrolling
+          e.preventDefault();
+          lastDist = null; // reset pinch distance
+
           const localX = e.touches[0].clientX;
           const localY = e.touches[0].clientY;
 
@@ -302,8 +304,10 @@ class TreeAnimation {
 
           this.previousX = localX;
           this.previousY = localY;
+
           this.render();
         }
+
         if (e.touches.length === 2) {
           e.preventDefault();
 
@@ -319,18 +323,21 @@ class TreeAnimation {
             const { x, y, scale } = this.viewportTransform;
             const newScale = Math.min(Math.max(scale * zoomFactor, 0.1), 5);
 
-            // Convert pinch midpoint to world coords
             const worldX = (midX - x) / scale;
             const worldY = (midY - y) / scale;
 
-            // Recalculate transform so world point stays fixed under fingers
             this.viewportTransform.x = midX - worldX * newScale;
             this.viewportTransform.y = midY - worldY * newScale;
             this.viewportTransform.scale = newScale;
 
             this.render();
           }
+
           lastDist = dist;
+
+          // update previousX/Y so when one finger lifts, panning continues smoothly
+          this.previousX = midX;
+          this.previousY = midY;
         }
       },
       { passive: false },

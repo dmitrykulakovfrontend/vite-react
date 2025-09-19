@@ -1,16 +1,13 @@
-import type { Branch, TreeOptions } from "../types/Tree";
+import type { Branch, Tree } from "../types/Tree";
 import type { Forest } from "../types/Tree";
 import throttle from "./throttle";
 
-type ModifiedTreeOptions = TreeOptions & {
+type ModifiedTreeOptions = Tree & {
   branches: Branch[][];
-  animation: null | number;
   currentDepth: number;
   treeTop: number;
   treeX: number;
   treeY: number;
-  randCounter: number;
-  randSeq: number[];
   rng: () => number;
 };
 type Colors = typeof colors;
@@ -21,12 +18,12 @@ const colors = {
   grass: "#009A17",
   trunk: "#8B4513",
   witheredTrunk: "#5A4634",
-  witheredLeaf: "#A48B56",
+  witheredLeaf: "#FFD700",
   dyingTrunk: "#602020",
   dyingLeaf: "#A1372F",
 } as const;
 class TreeAnimation {
-  trees: TreeOptions[];
+  trees: Tree[];
   container: HTMLDivElement;
   maxDepth: number;
   treeScale: number;
@@ -44,6 +41,8 @@ class TreeAnimation {
   treesPerRow: number;
   distanceBetween: number;
   colors: Colors;
+  branchWidth: number;
+  defaultLeafSize: number;
 
   constructor(options: Forest & { container: HTMLDivElement }) {
     this.trees = options.trees;
@@ -63,11 +62,13 @@ class TreeAnimation {
     this.previousX = 0;
     this.previousY = 0;
     this.maxDepth = 11;
-    this.rowHeight = 450;
+    this.rowHeight = 150;
     this.treesPerRow = 500;
-    this.distanceBetween = 500;
+    this.distanceBetween = 150;
     // this.treeScale = 0.3725;
     this.treeScale = 1;
+    this.branchWidth = 3;
+    this.defaultLeafSize = 2;
 
     this.hasCentered = false;
     this.addEventListeners();
@@ -159,6 +160,7 @@ class TreeAnimation {
           const treeY = Math.floor(i / this.treesPerRow) * this.rowHeight; // vertical spacing per row
           const tree = this.trees[i];
           tree.treeScale = this.treeScale;
+          tree.leafSize = tree.depth * 1.5;
           const screenX =
             treeX * this.viewportTransform.scale + this.viewportTransform.x;
           const screenY =
@@ -179,13 +181,10 @@ class TreeAnimation {
           const internalTree: ModifiedTreeOptions = {
             ...tree,
             branches: Array.from({ length: this.maxDepth }, () => []),
-            animation: null,
             currentDepth: 0,
             treeTop: Infinity,
             treeX,
             treeY,
-            randCounter: 0, // no longer needed
-            randSeq: [], // no longer needed
             rng,
           };
 
@@ -213,7 +212,7 @@ class TreeAnimation {
     const trunkHeight = (tree.treeScale || 1) * 5 * this.maxDepth;
     ctx.moveTo(tree.treeX, tree.treeY);
     ctx.lineTo(tree.treeX, tree.treeY - trunkHeight);
-    ctx.lineWidth = tree.branchWidth * 1.5;
+    ctx.lineWidth = this.branchWidth * 1.5;
     ctx.strokeStyle = this.getTrunkColor(tree);
     ctx.stroke();
     ctx.closePath();
@@ -224,7 +223,7 @@ class TreeAnimation {
     ctx.lineTo(tree.treeX - trunkHeight / 4, tree.treeY - trunkHeight);
     ctx.moveTo(tree.treeX, tree.treeY - trunkHeight / 2);
     ctx.lineTo(tree.treeX + trunkHeight / 4, tree.treeY - trunkHeight);
-    ctx.lineWidth = tree.branchWidth;
+    ctx.lineWidth = this.branchWidth;
     ctx.stroke();
     ctx.closePath();
   }
@@ -388,28 +387,29 @@ class TreeAnimation {
     this.ctx.clearRect(0, 0, this.stageWidth, this.stageHeight);
   }
 
-  growOneLevel(tree: TreeOptions) {
+  growOneLevel(tree: Tree) {
     const t = this.trees?.find((tr) => tr.seed === tree.seed);
     if (t && t.depth < this.maxDepth) {
       t.depth++;
       t.leafSize++;
-      if (t.witheredLevel > 0) {
-        t.witheredLevel--;
+      if (t.decayProgress > 0) {
+        t.decayProgress = Math.max((t.decayProgress || 0) - 1, 0);
       }
       this.updateZooming({
         preventDefault: () => {},
         clientX: this.stageWidth / 2,
         clientY: this.stageHeight,
-        deltaY: 40, // negative = zoom in
+        deltaY: 20, // negative = zoom in
       } as unknown as WheelEvent);
       this.render();
     }
   }
 
-  witherTree(tree: TreeOptions) {
+  witherTree(tree: Tree) {
     const t = this.trees?.find((tr) => tr.seed === tree.seed);
-    if (t && t.witheredLevel < 2) {
-      t.witheredLevel++;
+    if (t) {
+      // Increment progress, capping at 2 (fully decayed)
+      t.decayProgress = Math.min((t.decayProgress || 0) + 0.1, 2);
       this.render();
     }
   }
@@ -432,24 +432,44 @@ class TreeAnimation {
     depth: number,
     tree: ModifiedTreeOptions,
   ) {
+    // stop recursion
     if (depth >= tree.depth) return;
 
     const scale = tree.treeScale || 1;
-    const len = (depth === 0 ? 3 : this.random(0, 11, tree)) * scale;
-    const factor = this.maxDepth - depth;
-    const endX = startX + Math.cos(this.degToRad(angle)) * len * factor;
-    const endY = startY + Math.sin(this.degToRad(angle)) * len * factor;
+    const remaining = Math.max(1, tree.depth - depth);
+
+    // Tunable length/decay
+    const baseLen = 8 * scale; // overall size knob
+    const decay = 0.72; // 0.6-0.85: smaller = rapidly shorter branches
+    const jitterPct = this.random(-0.18, 0.18, tree); // +/- ~18% length jitter
+    const len =
+      baseLen *
+      Math.pow(decay, depth) *
+      (1 + jitterPct) *
+      Math.min(remaining, 6);
+
+    const endX = startX + Math.cos(this.degToRad(angle)) * len;
+    const endY = startY + Math.sin(this.degToRad(angle)) * len;
+
     if (startY < tree.treeTop) tree.treeTop = startY;
     if (endY < tree.treeTop) tree.treeTop = endY;
-    const branchWidthFactor = tree.branchWidth;
+
+    // sensible line width scaled by remaining depth (clamped)
+    const rawWidth =
+      (this.branchWidth || 1) *
+      (0.9 + (remaining / Math.max(1, tree.depth)) * 1.1);
+    const lineWidth = Math.min(Math.max(rawWidth, 0.5), 12);
+
     const branch = {
       startX,
       startY,
       endX,
       endY,
-      lineWidth: factor * branchWidthFactor,
+      lineWidth,
       depth,
     };
+
+    // draw branch
     this.ctx.beginPath();
     this.ctx.moveTo(branch.startX, branch.startY);
     this.ctx.lineTo(branch.endX, branch.endY);
@@ -457,22 +477,73 @@ class TreeAnimation {
     this.ctx.strokeStyle = this.getTrunkColor(tree);
     this.ctx.stroke();
     this.ctx.closePath();
+
+    // store branch
     tree.branches[depth].push(branch);
-    this.createBranch(
-      endX,
-      endY,
-      angle - this.random(15, 23, tree),
-      depth + 1,
-      tree,
-    );
-    this.createBranch(
-      endX,
-      endY,
-      angle + this.random(15, 23, tree),
-      depth + 1,
-      tree,
-    );
+    if (depth >= tree.depth - 2 && tree.leafSize > 0) {
+      const leavesPerBranch = Math.max(1, Math.floor(tree.leafSize / 6));
+      for (let i = 0; i < leavesPerBranch; i++) {
+        const jitterX = this.random(-tree.leafSize, tree.leafSize, tree);
+        const jitterY = this.random(-tree.leafSize, tree.leafSize, tree);
+        this.drawLeaf(endX + jitterX, endY + jitterY, tree);
+      }
+    }
+
+    // Branching behavior
+    const alwaysSplitUntil = 2; // top levels always split to give a canopy
+    const baseSplitChance = 0.86 - depth * 0.12; // decreases with depth
+    const splitChance =
+      depth <= alwaysSplitUntil ? 1 : Math.max(0.25, baseSplitChance);
+
+    // angle jitter helper (actually used this time)
+    const angleJitter = () => this.random(-6, 6, tree); // degrees
+
+    const leftOffset = 14 + this.random(0, 10, tree) + angleJitter();
+    const rightOffset = 14 + this.random(0, 10, tree) + angleJitter();
+
+    const doLeft = this.random(0, 1, tree) < splitChance;
+    const doRight = this.random(0, 1, tree) < splitChance;
+
+    if (doLeft) {
+      this.createBranch(endX, endY, angle - leftOffset, depth + 1, tree);
+    }
+    if (doRight) {
+      this.createBranch(endX, endY, angle + rightOffset, depth + 1, tree);
+    }
+    const didSplit = doLeft || doRight;
+    let didContinue = false;
+
+    // If neither side split, give it a chance to continue straight
+    if (!didSplit) {
+      if (this.random(0, 1, tree) < 0.8 && depth < tree.depth - 1) {
+        this.createBranch(
+          endX,
+          endY,
+          angle + this.random(-4, 4, tree),
+          depth + 1,
+          tree,
+        );
+        didContinue = true;
+      }
+    }
+    if (!didSplit && !didContinue && tree.leafSize > 0) {
+      const numLeaves = this.random(3, 6, tree);
+      for (let i = 0; i < numLeaves; i++) {
+        // Place leaves near the end of the branch
+        const t = this.random(0.7, 1, tree);
+        const x =
+          startX +
+          (endX - startX) * t +
+          this.random(-tree.leafSize, tree.leafSize, tree);
+        const y =
+          startY +
+          (endY - startY) * t +
+          this.random(-tree.leafSize, tree.leafSize, tree);
+        this.drawLeaf(x, y, tree);
+      }
+    }
   }
+
   makeSeededRNG(seed: number) {
     let s = seed;
     return () => {
@@ -483,13 +554,29 @@ class TreeAnimation {
   drawLeaf(x: number, y: number, tree: ModifiedTreeOptions) {
     this.ctx.beginPath();
     this.ctx.arc(x, y, tree.leafSize, 0, Math.PI * 2);
-    // this.ctx.fillStyle = tree.leafColor;
-    this.ctx.fillStyle = this.getLeafColor(tree);
+
+    // KEY CHANGE: Use the seeded RNG to give each leaf a unique, stable threshold
+    const leafDecayThreshold = tree.rng(); // A value from 0.0 to 1.0
+    const currentDecay = tree.decayProgress || 0;
+
+    // Compare the tree's progress to the leaf's individual threshold
+    if (currentDecay < leafDecayThreshold) {
+      // Decay hasn't reached this leaf's threshold yet
+      this.ctx.fillStyle = this.colors.leaf; // Green
+    } else if (currentDecay < leafDecayThreshold + 1) {
+      // Decay is past the green->yellow threshold, but not yet yellow->red
+      this.ctx.fillStyle = this.colors.witheredLeaf; // Yellow
+    } else {
+      // Decay has surpassed both thresholds
+      this.ctx.fillStyle = this.colors.dyingLeaf; // Red
+    }
+
     this.ctx.fill();
     this.ctx.closePath();
   }
-  getTrunkColor(tree: TreeOptions) {
-    switch (tree.witheredLevel) {
+  getTrunkColor(tree: Tree) {
+    const stage = Math.floor(tree.decayProgress || 0);
+    switch (stage) {
       case 0:
         return this.colors.trunk;
       case 1:
@@ -500,7 +587,7 @@ class TreeAnimation {
         return this.colors.trunk;
     }
   }
-  getLeafColor(tree: TreeOptions) {
+  getLeafColor(tree: Tree) {
     switch (tree.witheredLevel) {
       case 0:
         return this.colors.leaf;
@@ -516,8 +603,8 @@ class TreeAnimation {
   drawFullTree(tree: ModifiedTreeOptions) {
     // Reset tree top
     tree.treeTop = Infinity;
-    if (tree.witheredLevel > 0) {
-      tree.treeScale = (tree.treeScale || 1) / (tree.witheredLevel * 1.5);
+    if (tree.decayProgress > 0) {
+      tree.treeScale = (tree.treeScale || 1) * (1 - tree.decayProgress * 0.1);
     }
 
     // Draw all branches recursively
@@ -529,14 +616,8 @@ class TreeAnimation {
       0,
       tree,
     );
-
-    // Draw leaves
-    for (let d = 0; d < tree.branches.length; d++) {
-      for (const branch of tree.branches[d]) {
-        if (branch.depth === tree.depth - 1) {
-          this.drawLeaf(branch.endX, branch.endY, tree);
-        }
-      }
+    if (this.isMainTree) {
+      console.log(tree.branches);
     }
 
     // Draw fruits
@@ -544,26 +625,27 @@ class TreeAnimation {
     for (let d = 0; d < tree.branches.length; d++) {
       for (const branch of tree.branches[d]) {
         if (
-          branch.depth === this.maxDepth - 1 &&
-          this.random(0, 1, tree) < 0.05 &&
-          tree.witheredLevel < 1
+          branch.depth >= this.maxDepth - 1 &&
+          this.random(0, 1, tree) < 0.8 && // 80% chance
+          tree.decayProgress < 1
         ) {
           const dx = branch.endX - branch.startX;
           const dy = branch.endY - branch.startY;
           const len = Math.hypot(dx, dy) || 1;
           const nx = dx / len;
           const ny = dy / len;
-          const offset = Math.min(tree.leafSize * 0.35, 8);
+          const offset = Math.min(3, tree.leafSize * 0.35);
           const ax = branch.endX + nx * offset;
           const ay = branch.endY + ny * offset;
 
-          const fruitRadius = Math.max(3, Math.floor(tree.leafSize * 0.2));
+          const fruitRadius = Math.max(1, Math.floor(tree.leafSize * 0.2));
           this.ctx.beginPath();
           this.ctx.arc(ax, ay, fruitRadius, 0, Math.PI * 2);
           this.ctx.fillStyle = fruitType;
           this.ctx.fill();
           this.ctx.closePath();
 
+          // tiny highlight
           this.ctx.beginPath();
           this.ctx.arc(
             ax - fruitRadius * 0.35,

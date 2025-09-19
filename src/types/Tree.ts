@@ -1,15 +1,15 @@
-export interface TreeOptions {
+export interface Tree {
+  leafSize: number;
   container: HTMLDivElement;
   depth: number;
   treeScale?: number;
-  branchWidth: number;
-  leafSize: number;
   seed: number;
+  decayProgress: number; // Add this new property
   witheredLevel: number;
 }
 
 export interface Forest {
-  trees: TreeOptions[];
+  trees: Tree[];
   isMainTree?: boolean;
 }
 

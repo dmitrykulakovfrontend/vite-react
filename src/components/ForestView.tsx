@@ -1,14 +1,14 @@
 import { forwardRef, useEffect, useRef, useImperativeHandle } from "react";
 import TreeAnimation from "../utils/TreeAnimation";
-import type { Forest, TreeOptions } from "../types/Tree";
+import type { Forest, Tree } from "../types/Tree";
 
 export type TreeHandle = {
-  witherTree: (tree: TreeOptions) => void;
-  growOneLevel: (tree: TreeOptions) => void;
+  witherTree: (tree: Tree) => void;
+  growOneLevel: (tree: Tree) => void;
   reset: () => void;
 };
 
-export const Tree = forwardRef<TreeHandle, Forest>((props, ref) => {
+export const ForestView = forwardRef<TreeHandle, Forest>((props, ref) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const treeRef = useRef<TreeAnimation | null>(null);
 
@@ -23,10 +23,10 @@ export const Tree = forwardRef<TreeHandle, Forest>((props, ref) => {
   }, [props]);
 
   useImperativeHandle(ref, () => ({
-    growOneLevel: (tree: TreeOptions) => {
+    growOneLevel: (tree: Tree) => {
       treeRef.current?.growOneLevel(tree);
     },
-    witherTree: (tree: TreeOptions) => {
+    witherTree: (tree: Tree) => {
       treeRef.current?.witherTree(tree);
     },
     reset: () => {

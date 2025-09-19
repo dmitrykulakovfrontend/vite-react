@@ -5,21 +5,21 @@ export const Route = createFileRoute("/")({
 });
 
 import { useRef, useState } from "react";
-import type { TreeOptions } from "../types/Tree";
-import { Tree, type TreeHandle } from "../components/Tree";
+import type { Tree } from "../types/Tree";
+import { ForestView, type TreeHandle } from "../components/ForestView";
 
 function Index() {
   const treeRef = useRef<TreeHandle>(null);
   const [water, setWater] = useState(100);
   const [options] = useState<
-    TreeOptions & { treeRef?: React.RefObject<TreeHandle | null> }
+    Tree & { treeRef?: React.RefObject<TreeHandle | null> }
   >({
     seed: 1337,
     depth: 1,
-    branchWidth: 1,
-    leafSize: 15,
     container: null as unknown as HTMLDivElement,
     witheredLevel: 0,
+    decayProgress: 0,
+    leafSize: 2,
     treeRef,
   });
   const growTree = () => {
@@ -51,18 +51,18 @@ function Index() {
       return {
         seed: Math.random() * 100000,
         depth: size,
-        branchWidth: 1,
-        leafSize: 15 + size,
         container: null as unknown as HTMLDivElement,
         witheredLevel: Math.round(Math.random() * 2),
-      } satisfies TreeOptions;
+        leafSize: 2,
+        decayProgress: Math.pow(Math.random(), 12) * 2,
+      } satisfies Tree;
     }),
   );
 
   const [tasks, setTasks] = useState([
     {
       id: 1,
-      title: "📝 Пройти тест",
+      title: "📝 Пройти тест ",
       description:
         "Пройдите небольшой тест по вашей профессии и получите баллы",
       reward: 5,
@@ -112,7 +112,7 @@ function Index() {
         </div>
         <div className="flex flex-col items-center">
           <div className="flex shadow-md rounded-md h-[300px] bg-white   max-lg:w-[300px] max-lg:max-w-[300px] max-xl:w-[400px] max-xl:max-w-[400px] w-[500px] max-w-[500px]">
-            <Tree ref={treeRef} trees={[options]} isMainTree />
+            <ForestView ref={treeRef} trees={[options]} isMainTree />
           </div>
 
           <div>
@@ -164,7 +164,7 @@ function Index() {
         </div>
       </div>
       <div className="w-full h-screen bg-gray-100">
-        <Tree
+        <ForestView
           {...{
             trees,
           }}

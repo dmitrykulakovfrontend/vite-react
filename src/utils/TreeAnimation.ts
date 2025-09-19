@@ -87,11 +87,11 @@ class TreeAnimation {
     if (this.isMainTree) {
       const horizonY = (this.canvas.height / 2) * this.viewportTransform.scale;
 
-      // fill sky: from top of canvas down to horizon
+      // fill sky
       this.ctx.fillStyle = this.colors.sky;
       this.ctx.fillRect(0, 0, this.canvas.width, horizonY);
 
-      // fill grass: from horizon down to bottom of canvas
+      // fill grass
       this.ctx.fillStyle = this.colors.grass;
       this.ctx.fillRect(
         0,
@@ -271,7 +271,6 @@ class TreeAnimation {
   addEventListeners() {
     window.addEventListener("resize", this.resize.bind(this));
 
-    // Throttle your methods once, binding `this` properly
     const throttledMouseMove = throttle(this.onMouseMove.bind(this), 20);
     const throttledMouseWheel = throttle(this.onMouseWheel.bind(this), 20);
 
@@ -279,7 +278,6 @@ class TreeAnimation {
       this.previousX = e.clientX;
       this.previousY = e.clientY;
 
-      // Add mousemove once
       this.canvas.addEventListener("mousemove", throttledMouseMove);
     });
 
@@ -291,7 +289,7 @@ class TreeAnimation {
     this.canvas.addEventListener(
       "wheel",
       (e: WheelEvent) => {
-        e.preventDefault(); // now this will work
+        e.preventDefault();
         throttledMouseWheel(e);
       },
       { passive: false },
@@ -352,7 +350,6 @@ class TreeAnimation {
 
           lastDist = dist;
 
-          // update previousX/Y so when one finger lifts, panning continues smoothly
           this.previousX = midX;
           this.previousY = midY;
         }
@@ -399,7 +396,7 @@ class TreeAnimation {
         preventDefault: () => {},
         clientX: this.stageWidth / 2,
         clientY: this.stageHeight,
-        deltaY: 20, // negative = zoom in
+        deltaY: -20, // negative = zoom in
       } as unknown as WheelEvent);
       this.render();
     }
@@ -438,8 +435,7 @@ class TreeAnimation {
     const scale = tree.treeScale || 1;
     const remaining = Math.max(1, tree.depth - depth);
 
-    // Tunable length/decay
-    const baseLen = 8 * scale; // overall size knob
+    const baseLen = 8 * scale;
     const decay = 0.72; // 0.6-0.85: smaller = rapidly shorter branches
     const jitterPct = this.random(-0.18, 0.18, tree); // +/- ~18% length jitter
     const len =
@@ -454,7 +450,6 @@ class TreeAnimation {
     if (startY < tree.treeTop) tree.treeTop = startY;
     if (endY < tree.treeTop) tree.treeTop = endY;
 
-    // sensible line width scaled by remaining depth (clamped)
     const rawWidth =
       (this.branchWidth || 1) *
       (0.9 + (remaining / Math.max(1, tree.depth)) * 1.1);
@@ -489,13 +484,13 @@ class TreeAnimation {
       }
     }
 
-    // Branching behavior
+    // Branching
     const alwaysSplitUntil = 2; // top levels always split to give a canopy
     const baseSplitChance = 0.86 - depth * 0.12; // decreases with depth
     const splitChance =
       depth <= alwaysSplitUntil ? 1 : Math.max(0.25, baseSplitChance);
 
-    // angle jitter helper (actually used this time)
+    // angle jitter helper
     const angleJitter = () => this.random(-6, 6, tree); // degrees
 
     const leftOffset = 14 + this.random(0, 10, tree) + angleJitter();
@@ -555,19 +550,14 @@ class TreeAnimation {
     this.ctx.beginPath();
     this.ctx.arc(x, y, tree.leafSize, 0, Math.PI * 2);
 
-    // KEY CHANGE: Use the seeded RNG to give each leaf a unique, stable threshold
     const leafDecayThreshold = tree.rng(); // A value from 0.0 to 1.0
     const currentDecay = tree.decayProgress || 0;
 
-    // Compare the tree's progress to the leaf's individual threshold
     if (currentDecay < leafDecayThreshold) {
-      // Decay hasn't reached this leaf's threshold yet
       this.ctx.fillStyle = this.colors.leaf; // Green
     } else if (currentDecay < leafDecayThreshold + 1) {
-      // Decay is past the green->yellow threshold, but not yet yellow->red
       this.ctx.fillStyle = this.colors.witheredLeaf; // Yellow
     } else {
-      // Decay has surpassed both thresholds
       this.ctx.fillStyle = this.colors.dyingLeaf; // Red
     }
 
@@ -587,19 +577,6 @@ class TreeAnimation {
         return this.colors.trunk;
     }
   }
-  getLeafColor(tree: Tree) {
-    switch (tree.witheredLevel) {
-      case 0:
-        return this.colors.leaf;
-      case 1:
-        return this.colors.witheredLeaf;
-      case 2:
-        return this.colors.dyingLeaf;
-      default:
-        return this.colors.leaf;
-    }
-  }
-
   drawFullTree(tree: ModifiedTreeOptions) {
     // Reset tree top
     tree.treeTop = Infinity;

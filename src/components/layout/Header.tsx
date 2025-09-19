@@ -8,7 +8,7 @@ const Header = ({
   setMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
   return (
-    <header className="fixed top-0 left-0 flex items-center justify-between w-full p-2 bg-white shadow-md">
+    <header className="fixed top-0 left-0 z-50 flex items-center justify-between w-full p-2 bg-white shadow-md">
       <Link to="/" className="[&.active]:font-bold shrink-0">
         <img
           src={"/team_logo.webp"}
@@ -40,18 +40,10 @@ const Header = ({
         </li>
         <li>
           <Link
-            to="/"
+            to="/tasks"
             className="[&.active]:font-bold block p-1 hover:bg-gray-100 rounded"
           >
-            О нас
-          </Link>
-        </li>
-        <li>
-          <Link
-            to="/forest"
-            className="[&.active]:font-bold block p-1 hover:bg-gray-100 rounded"
-          >
-            Лес
+            Задачи
           </Link>
         </li>
         <li className="flex flex-col gap-2 mt-2 sm:hidden">

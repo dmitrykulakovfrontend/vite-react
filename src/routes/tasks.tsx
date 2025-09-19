@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -7,46 +8,198 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { Task } from "@/types/Tasks";
+import type { Rarity, Task } from "@/types/Tasks";
 import { createFileRoute } from "@tanstack/react-router";
 import {
   flexRender,
   getCoreRowModel,
+  getFilteredRowModel,
   getPaginationRowModel,
+  getSortedRowModel,
   useReactTable,
   type ColumnDef,
+  type ColumnFiltersState,
+  type SortingState,
 } from "@tanstack/react-table";
+import { ArrowDown, ArrowUp, SearchIcon } from "lucide-react";
+import { useState } from "react";
+
+const rarityMap: Record<Rarity, number> = {
+  Обычный: 1,
+  Редкий: 2,
+  Эпический: 3,
+  Легендарный: 4,
+};
 export const Route = createFileRoute("/tasks")({
   component: Tasks,
 });
 const columns: ColumnDef<Task>[] = [
   {
     accessorKey: "title",
-    header: "Название",
+    header: ({ column }) => {
+      const isSorted = column.getIsSorted();
+      return (
+        <Button
+          variant="ghost"
+          className="p-0 rounded-none"
+          onClick={() => column.toggleSorting(isSorted === "asc")}
+        >
+          Название
+          {isSorted === "asc" ? (
+            <ArrowUp className="w-4 h-4 ml-2" />
+          ) : isSorted === "desc" ? (
+            <ArrowDown className="w-4 h-4 ml-2" />
+          ) : (
+            ""
+          )}
+        </Button>
+      );
+    },
   },
   {
     accessorKey: "description",
-    header: "Описание",
+    header: ({ column }) => {
+      const isSorted = column.getIsSorted();
+      return (
+        <Button
+          variant="ghost"
+          className="p-0 rounded-none"
+          onClick={() => column.toggleSorting(isSorted === "asc")}
+        >
+          Описание
+          {isSorted === "asc" ? (
+            <ArrowUp className="w-4 h-4 ml-2" />
+          ) : isSorted === "desc" ? (
+            <ArrowDown className="w-4 h-4 ml-2" />
+          ) : (
+            ""
+          )}
+        </Button>
+      );
+    },
+    cell: ({ row }) => {
+      const description = row.original.description;
+      return <p className="max-w-[200px]">{description}</p>;
+    },
   },
   {
     accessorKey: "category",
-    header: "Категория",
+    header: ({ column }) => {
+      const isSorted = column.getIsSorted();
+      return (
+        <Button
+          variant="ghost"
+          className="p-0 rounded-none"
+          onClick={() => column.toggleSorting(isSorted === "asc")}
+        >
+          Категория
+          {isSorted === "asc" ? (
+            <ArrowUp className="w-4 h-4 ml-2" />
+          ) : isSorted === "desc" ? (
+            <ArrowDown className="w-4 h-4 ml-2" />
+          ) : (
+            ""
+          )}
+        </Button>
+      );
+    },
   },
   {
     accessorKey: "xpReward",
-    header: "Опыт",
+    header: ({ column }) => {
+      const isSorted = column.getIsSorted();
+      return (
+        <Button
+          variant="ghost"
+          className="p-0 rounded-none"
+          onClick={() => column.toggleSorting(isSorted === "asc")}
+        >
+          Опыт
+          {isSorted === "asc" ? (
+            <ArrowUp className="w-4 h-4 ml-2" />
+          ) : isSorted === "desc" ? (
+            <ArrowDown className="w-4 h-4 ml-2" />
+          ) : (
+            ""
+          )}
+        </Button>
+      );
+    },
   },
   {
     accessorKey: "manaReward",
-    header: "Мана",
+    header: ({ column }) => {
+      const isSorted = column.getIsSorted();
+      return (
+        <Button
+          variant="ghost"
+          className="p-0 rounded-none"
+          onClick={() => column.toggleSorting(isSorted === "asc")}
+        >
+          Мана
+          {isSorted === "asc" ? (
+            <ArrowUp className="w-4 h-4 ml-2" />
+          ) : isSorted === "desc" ? (
+            <ArrowDown className="w-4 h-4 ml-2" />
+          ) : (
+            ""
+          )}
+        </Button>
+      );
+    },
   },
   {
     accessorKey: "minRank",
-    header: "Минимальный ранг",
+    header: ({ column }) => {
+      const isSorted = column.getIsSorted();
+      return (
+        <Button
+          variant="ghost"
+          className="p-0 rounded-none"
+          onClick={() => column.toggleSorting(isSorted === "asc")}
+        >
+          Минимальный ранг
+          {isSorted === "asc" ? (
+            <ArrowUp className="w-4 h-4 ml-2" />
+          ) : isSorted === "desc" ? (
+            <ArrowDown className="w-4 h-4 ml-2" />
+          ) : (
+            ""
+          )}
+        </Button>
+      );
+    },
   },
   {
     accessorKey: "competencies",
-    header: "Компетенции",
+    sortingFn: (a, b) => {
+      const aSum = Object.values(a.original.competencies).reduce(
+        (acc, v) => acc + v,
+      );
+      const bSum = Object.values(b.original.competencies).reduce(
+        (acc, v) => acc + v,
+      );
+      return aSum - bSum;
+    },
+    header: ({ column }) => {
+      const isSorted = column.getIsSorted();
+      return (
+        <Button
+          variant="ghost"
+          className="p-0 rounded-none"
+          onClick={() => column.toggleSorting(isSorted === "asc")}
+        >
+          Компетенции
+          {isSorted === "asc" ? (
+            <ArrowUp className="w-4 h-4 ml-2" />
+          ) : isSorted === "desc" ? (
+            <ArrowDown className="w-4 h-4 ml-2" />
+          ) : (
+            ""
+          )}
+        </Button>
+      );
+    },
     cell: ({ row }) => {
       const comps = row.original.competencies;
       return (
@@ -62,14 +215,38 @@ const columns: ColumnDef<Task>[] = [
   },
   {
     accessorKey: "artifactReward",
-    header: "Артефакт",
+    accessorFn: (row: Task) =>
+      row.artifactReward
+        ? (rarityMap[
+            (row.artifactReward.rarity ?? "Обычный").toString().trim() as Rarity
+          ] ?? 1)
+        : 0,
+    header: ({ column }) => {
+      const isSorted = column.getIsSorted();
+      return (
+        <Button
+          variant="ghost"
+          className="p-0 rounded-none"
+          onClick={() => column.toggleSorting(isSorted === "asc")}
+        >
+          Артефакт
+          {isSorted === "asc" ? (
+            <ArrowUp className="w-4 h-4 ml-2" />
+          ) : isSorted === "desc" ? (
+            <ArrowDown className="w-4 h-4 ml-2" />
+          ) : (
+            ""
+          )}
+        </Button>
+      );
+    },
     cell: ({ row }) => {
       const artifact = row.original.artifactReward;
       if (!artifact) return "—";
       return (
-        <div className="max-w-xs">
-          <div>{artifact.name}</div>
-          <div>{artifact.description}</div>
+        <div className="max-w-[200px]">
+          <p>{artifact.name}</p>
+          <p>{artifact.description}</p>
           <small>{artifact.rarity ?? "Обычный"}</small>
         </div>
       );
@@ -278,15 +455,36 @@ function Tasks() {
   //     clearInterval(timer);
   //   };
   // });
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const table = useReactTable<Task>({
     data: tasks,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
+    onSortingChange: setSorting,
+    getSortedRowModel: getSortedRowModel(),
+    onColumnFiltersChange: setColumnFilters,
+    getFilteredRowModel: getFilteredRowModel(),
+    state: {
+      sorting,
+      columnFilters,
+    },
   });
   return (
     <div className="p-4 overflow-hidden">
-      <Table className="w-full text-black bg-white rounded-t-md">
+      <div className="relative flex items-center">
+        <SearchIcon className="absolute w-4 h-4 text-black left-1" />
+        <Input
+          placeholder="Поиск по названию"
+          value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
+          onChange={(event) =>
+            table.getColumn("title")?.setFilterValue(event.target.value)
+          }
+          className="max-w-sm pl-6 text-black bg-white rounded-none rounded-t-md"
+        />
+      </div>
+      <Table className="w-full text-black bg-white rounded-tr-md">
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>

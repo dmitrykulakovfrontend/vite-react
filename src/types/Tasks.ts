@@ -10,12 +10,12 @@ export type Competency =
   | "Трёхмерное мышление"
   | "Базовая экономика"
   | "Основы аэронавигации";
-
+export type Rarity = "Обычный" | "Редкий" | "Эпический" | "Легендарный";
 export interface Artifact {
   image: string; // ссылка на изображение
   name: string;
   description: string;
-  rarity?: "Обычный" | "Редкий" | "Эпический" | "Легендарный";
+  rarity: Rarity;
 }
 
 export interface Task {

@@ -470,6 +470,9 @@ function Tasks() {
       sorting,
       columnFilters,
     },
+    initialState: {
+      pagination: { pageSize: 7, pageIndex: 0 },
+    },
   });
   return (
     <div className="p-4 overflow-hidden">
@@ -484,7 +487,7 @@ function Tasks() {
           className="max-w-sm pl-6 text-black bg-white rounded-none rounded-t-md"
         />
       </div>
-      <Table className="w-full text-black bg-white rounded-tr-md">
+      <Table className="w-full text-black bg-white rounded-tr-md h-96">
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
@@ -520,7 +523,7 @@ function Tasks() {
           ) : (
             <TableRow>
               <TableCell colSpan={columns.length} className="h-24 text-center">
-                No results.
+                Ничего не найдено
               </TableCell>
             </TableRow>
           )}

@@ -1,22 +1,16 @@
 export interface TreeOptions {
   container: HTMLDivElement;
   depth: number;
-  growthSpeed: number;
-  treeScale: number;
+  treeScale?: number;
   branchWidth: number;
-  colorMode: "gradient" | "solid";
-  color: string;
-  gradientColorStart: string;
-  gradientColorEnd: string;
-  leafColor: string;
   leafSize: number;
   seed: number;
-  shouldAnimate?: boolean;
-  mainTree?: boolean;
+  witheredLevel: number;
 }
 
 export interface Forest {
   trees: TreeOptions[];
+  isMainTree?: boolean;
 }
 
 export interface Branch {

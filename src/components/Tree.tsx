@@ -3,6 +3,7 @@ import TreeAnimation from "../utils/TreeAnimation";
 import type { Forest, TreeOptions } from "../types/Tree";
 
 export type TreeHandle = {
+  witherTree: (tree: TreeOptions) => void;
   growOneLevel: (tree: TreeOptions) => void;
   reset: () => void;
 };
@@ -24,6 +25,9 @@ export const Tree = forwardRef<TreeHandle, Forest>((props, ref) => {
   useImperativeHandle(ref, () => ({
     growOneLevel: (tree: TreeOptions) => {
       treeRef.current?.growOneLevel(tree);
+    },
+    witherTree: (tree: TreeOptions) => {
+      treeRef.current?.witherTree(tree);
     },
     reset: () => {
       if (containerRef.current) {

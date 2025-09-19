@@ -13,39 +13,37 @@ type ModifiedTreeOptions = TreeOptions & {
   randSeq: number[];
   rng: () => number;
 };
+type Colors = typeof colors;
+
+const colors = {
+  sky: "#00C0F0",
+  leaf: "#30B700",
+  grass: "#009A17",
+  trunk: "#8B4513",
+  witheredTrunk: "#5A4634",
+  witheredLeaf: "#A48B56",
+  dyingTrunk: "#602020",
+  dyingLeaf: "#A1372F",
+} as const;
 class TreeAnimation {
   trees: TreeOptions[];
   container: HTMLDivElement;
   maxDepth: number;
-  depth?: number;
-  shouldAnimate?: boolean;
-  pixelRatio?: number;
-  growthSpeed?: number;
-  treeScale?: number;
-  branchWidth?: number;
+  treeScale: number;
   colorMode?: "gradient" | "solid";
-  color?: string;
-  gradientColorStart?: string;
-  gradientColorEnd?: string;
-  leafColor?: string;
-  leafSize?: number;
-  seed?: number;
-  randSeq?: number[];
-  randCounter?: number;
   canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
-  branches?: Branch[][];
-  animation?: number | null;
-  currentDepth?: number;
   stageWidth: number;
   stageHeight: number;
-  treeTop?: number;
-  treeX?: number;
-  treeY?: number;
   viewportTransform: { x: number; y: number; scale: number };
   previousX: number;
   previousY: number;
   hasCentered: boolean;
+  isMainTree: boolean;
+  rowHeight: number;
+  treesPerRow: number;
+  distanceBetween: number;
+  colors: Colors;
 
   constructor(options: Forest & { container: HTMLDivElement }) {
     this.trees = options.trees;
@@ -55,13 +53,22 @@ class TreeAnimation {
     this.canvas = document.createElement("canvas");
     this.canvas.width = this.stageWidth;
     this.canvas.height = this.stageHeight;
+    this.isMainTree = options.isMainTree ?? false;
     this.container.appendChild(this.canvas);
     const ctx = this.canvas.getContext("2d");
     if (!ctx) throw new Error("Canvas context not available");
     this.ctx = ctx;
+    this.colors = colors;
+
     this.previousX = 0;
     this.previousY = 0;
     this.maxDepth = 11;
+    this.rowHeight = 450;
+    this.treesPerRow = 500;
+    this.distanceBetween = 500;
+    // this.treeScale = 0.3725;
+    this.treeScale = 1;
+
     this.hasCentered = false;
     this.addEventListeners();
     this.viewportTransform = {
@@ -76,23 +83,36 @@ class TreeAnimation {
     this.ctx.setTransform(1, 0, 0, 1, 0, 0);
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
+    if (this.isMainTree) {
+      const horizonY = (this.canvas.height / 2) * this.viewportTransform.scale;
+
+      // fill sky: from top of canvas down to horizon
+      this.ctx.fillStyle = this.colors.sky;
+      this.ctx.fillRect(0, 0, this.canvas.width, horizonY);
+
+      // fill grass: from horizon down to bottom of canvas
+      this.ctx.fillStyle = this.colors.grass;
+      this.ctx.fillRect(
+        0,
+        horizonY,
+        this.canvas.width,
+        this.canvas.height - horizonY,
+      );
+    } else {
+      this.ctx.fillStyle = this.colors.grass;
+      this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    }
     let minX = Infinity;
     let maxX = -Infinity;
     let minY = Infinity;
     let maxY = -Infinity;
 
-    const rowHeight = 450;
-    const treesPerRow = 500;
-    const distanceBetween = 500;
-    // const treeScale = 0.3725;
-    const treeScale = 1;
-
     if (this.trees) {
       for (let i = 0; i < this.trees.length; i++) {
-        const treeX = (i % treesPerRow) * distanceBetween;
-        const treeY = Math.floor(i / treesPerRow) * rowHeight;
+        const treeX = (i % this.treesPerRow) * this.distanceBetween;
+        const treeY = Math.floor(i / this.treesPerRow) * this.rowHeight;
         const tree = this.trees[i];
-        tree.treeScale = treeScale;
+        tree.treeScale = this.treeScale;
         const size = tree.treeScale * this.maxDepth;
 
         minX = Math.min(minX, treeX - size);
@@ -101,7 +121,7 @@ class TreeAnimation {
         maxY = Math.max(maxY, treeY + size);
       }
 
-      if (!this.hasCentered && this.trees.length > 1) {
+      if (!this.hasCentered && !this.isMainTree) {
         const centerX = (minX + maxX) / 2;
         const centerY = (minY + maxY) / 2;
 
@@ -111,12 +131,11 @@ class TreeAnimation {
           this.stageHeight / 2 - centerY * this.viewportTransform.scale;
 
         this.hasCentered = true;
-      } else if (!this.hasCentered && this.trees.length == 1) {
+      } else if (this.isMainTree) {
         const centerX = (minX + maxX) / 2;
         this.viewportTransform.x =
           this.stageWidth / 2 - centerX * this.viewportTransform.scale;
         this.viewportTransform.y = this.stageHeight;
-        this.hasCentered = true;
       }
 
       // Now apply transform once, after centering
@@ -136,10 +155,10 @@ class TreeAnimation {
           const MID_DETAIL = 0.5; // draw simplified tree if between 8-20px
           // below 8px, draw as a simple dot
 
-          const treeX = (i % treesPerRow) * distanceBetween; // horizontal spacing
-          const treeY = Math.floor(i / treesPerRow) * rowHeight; // vertical spacing per row
+          const treeX = (i % this.treesPerRow) * this.distanceBetween; // horizontal spacing
+          const treeY = Math.floor(i / this.treesPerRow) * this.rowHeight; // vertical spacing per row
           const tree = this.trees[i];
-          tree.treeScale = treeScale;
+          tree.treeScale = this.treeScale;
           const screenX =
             treeX * this.viewportTransform.scale + this.viewportTransform.x;
           const screenY =
@@ -180,7 +199,7 @@ class TreeAnimation {
             this.drawSimplifiedTree(internalTree);
           } else {
             // Very small: just a dot
-            this.ctx.fillStyle = tree.color;
+            this.ctx.fillStyle = this.getTrunkColor(tree);
             this.ctx.fillRect(internalTree.treeX, internalTree.treeY, 2, 2);
           }
         }
@@ -191,12 +210,11 @@ class TreeAnimation {
     const ctx = this.ctx;
     ctx.beginPath();
     // simple trunk
-    const trunkHeight = tree.treeScale * 5 * this.maxDepth;
+    const trunkHeight = (tree.treeScale || 1) * 5 * this.maxDepth;
     ctx.moveTo(tree.treeX, tree.treeY);
     ctx.lineTo(tree.treeX, tree.treeY - trunkHeight);
     ctx.lineWidth = tree.branchWidth * 1.5;
-    ctx.strokeStyle =
-      tree.colorMode === "gradient" ? tree.gradientColorStart : tree.color;
+    ctx.strokeStyle = this.getTrunkColor(tree);
     ctx.stroke();
     ctx.closePath();
 
@@ -370,36 +388,28 @@ class TreeAnimation {
     this.ctx.clearRect(0, 0, this.stageWidth, this.stageHeight);
   }
 
-  startTree(
-    posX: number,
-    posY: number,
-    tree: ModifiedTreeOptions,
-    clear = true,
-  ) {
-    if (clear) this.clearCanvas(); // only clear if needed
-    const treeX = posX;
-    const treeY = posY;
-
-    const maxScale =
-      Math.min(this.stageWidth, this.stageHeight) / (13 * this.maxDepth);
-    if (tree.treeScale > maxScale) tree.treeScale = maxScale;
-
-    this.createBranch(treeX, treeY, -90, 0, tree);
-    // instantly draw the whole tree in one pass
-    this.animate(tree.depth, tree);
-  }
-
   growOneLevel(tree: TreeOptions) {
     const t = this.trees?.find((tr) => tr.seed === tree.seed);
     if (t && t.depth < this.maxDepth) {
       t.depth++;
       t.leafSize++;
+      if (t.witheredLevel > 0) {
+        t.witheredLevel--;
+      }
       this.updateZooming({
         preventDefault: () => {},
         clientX: this.stageWidth / 2,
         clientY: this.stageHeight,
         deltaY: 40, // negative = zoom in
       } as unknown as WheelEvent);
+      this.render();
+    }
+  }
+
+  witherTree(tree: TreeOptions) {
+    const t = this.trees?.find((tr) => tr.seed === tree.seed);
+    if (t && t.witheredLevel < 2) {
+      t.witheredLevel++;
       this.render();
     }
   }
@@ -424,7 +434,7 @@ class TreeAnimation {
   ) {
     if (depth >= tree.depth) return;
 
-    const scale = tree.treeScale;
+    const scale = tree.treeScale || 1;
     const len = (depth === 0 ? 3 : this.random(0, 11, tree)) * scale;
     const factor = this.maxDepth - depth;
     const endX = startX + Math.cos(this.degToRad(angle)) * len * factor;
@@ -444,8 +454,7 @@ class TreeAnimation {
     this.ctx.moveTo(branch.startX, branch.startY);
     this.ctx.lineTo(branch.endX, branch.endY);
     this.ctx.lineWidth = branch.lineWidth;
-    this.ctx.strokeStyle =
-      tree.colorMode === "gradient" ? tree.gradientColorStart : tree.color;
+    this.ctx.strokeStyle = this.getTrunkColor(tree);
     this.ctx.stroke();
     this.ctx.closePath();
     tree.branches[depth].push(branch);
@@ -474,14 +483,42 @@ class TreeAnimation {
   drawLeaf(x: number, y: number, tree: ModifiedTreeOptions) {
     this.ctx.beginPath();
     this.ctx.arc(x, y, tree.leafSize, 0, Math.PI * 2);
-    this.ctx.fillStyle = tree.leafColor;
+    // this.ctx.fillStyle = tree.leafColor;
+    this.ctx.fillStyle = this.getLeafColor(tree);
     this.ctx.fill();
     this.ctx.closePath();
+  }
+  getTrunkColor(tree: TreeOptions) {
+    switch (tree.witheredLevel) {
+      case 0:
+        return this.colors.trunk;
+      case 1:
+        return this.colors.witheredTrunk;
+      case 2:
+        return this.colors.dyingTrunk;
+      default:
+        return this.colors.trunk;
+    }
+  }
+  getLeafColor(tree: TreeOptions) {
+    switch (tree.witheredLevel) {
+      case 0:
+        return this.colors.leaf;
+      case 1:
+        return this.colors.witheredLeaf;
+      case 2:
+        return this.colors.dyingLeaf;
+      default:
+        return this.colors.leaf;
+    }
   }
 
   drawFullTree(tree: ModifiedTreeOptions) {
     // Reset tree top
     tree.treeTop = Infinity;
+    if (tree.witheredLevel > 0) {
+      tree.treeScale = (tree.treeScale || 1) / (tree.witheredLevel * 1.5);
+    }
 
     // Draw all branches recursively
     this.createBranch(
@@ -508,7 +545,8 @@ class TreeAnimation {
       for (const branch of tree.branches[d]) {
         if (
           branch.depth === this.maxDepth - 1 &&
-          this.random(0, 1, tree) < 0.05
+          this.random(0, 1, tree) < 0.05 &&
+          tree.witheredLevel < 1
         ) {
           const dx = branch.endX - branch.startX;
           const dy = branch.endY - branch.startY;
@@ -539,148 +577,6 @@ class TreeAnimation {
           this.ctx.closePath();
         }
       }
-    }
-  }
-
-  animate(currentDepth: number, tree: ModifiedTreeOptions) {
-    // this.clearCanvas();
-
-    // collect terminal-leaf positions so we can draw apples afterwards (on top)
-    const leafQueue: {
-      sx: number;
-      sy: number;
-      ex: number;
-      ey: number;
-      depth: number;
-    }[] = [];
-    const fruitType = this.random(0, 1, tree) > 0.5 ? "red" : "orange";
-
-    // draw fully-grown depths (0 .. currentDepth-1)
-    for (let d = 0; d < currentDepth; d++) {
-      if (d >= tree.depth) break;
-      for (let k = 0; k < tree.branches[d].length; k++) {
-        const branch = tree.branches[d][k];
-        this.ctx.beginPath();
-        this.ctx.moveTo(branch.startX, branch.startY);
-        this.ctx.lineTo(branch.endX, branch.endY);
-        this.ctx.lineWidth = branch.lineWidth;
-        if (this.colorMode === "gradient") {
-          const grad = this.ctx.createLinearGradient(
-            tree.treeX,
-            tree.treeY,
-            tree.treeX,
-            tree.treeTop,
-          );
-          grad.addColorStop(0, tree.gradientColorStart);
-          grad.addColorStop(1, tree.gradientColorEnd);
-          this.ctx.strokeStyle = grad;
-        } else {
-          this.ctx.strokeStyle = tree.color;
-        }
-        this.ctx.stroke();
-        this.ctx.closePath();
-
-        // queue terminal leaves for later drawing
-        if (branch.depth === tree.depth - 1) {
-          leafQueue.push({
-            sx: branch.startX,
-            sy: branch.startY,
-            ex: branch.endX,
-            ey: branch.endY,
-            depth: branch.depth,
-          });
-        }
-      }
-    }
-
-    // handle the currently growing depth
-    let stillGrowing = false;
-    if (tree.currentDepth < tree.depth) {
-      const currentDone = true;
-      for (let k = 0; k < tree.branches[tree.currentDepth].length; k++) {
-        const branch = tree.branches[tree.currentDepth][k];
-        // finished this frame — draw it fully and queue its leaf if terminal
-        this.ctx.beginPath();
-        this.ctx.moveTo(branch.startX, branch.startY);
-        this.ctx.lineTo(branch.endX, branch.endY);
-        this.ctx.lineWidth = branch.lineWidth;
-        if (this.colorMode === "gradient") {
-          const grad = this.ctx.createLinearGradient(
-            tree.treeX,
-            tree.treeY,
-            tree.treeX,
-            tree.treeTop,
-          );
-          grad.addColorStop(0, tree.gradientColorStart);
-          grad.addColorStop(1, tree.gradientColorEnd);
-          this.ctx.strokeStyle = grad;
-        } else {
-          this.ctx.strokeStyle = tree.color;
-        }
-        this.ctx.stroke();
-        this.ctx.closePath();
-
-        if (branch.depth === tree.depth - 1) {
-          leafQueue.push({
-            sx: branch.startX,
-            sy: branch.startY,
-            ex: branch.endX,
-            ey: branch.endY,
-            depth: branch.depth,
-          });
-        }
-      }
-      if (currentDone) {
-        tree.currentDepth++;
-        stillGrowing = true;
-      }
-    }
-
-    // --- Draw all leaves (so apples can be drawn on top) ---
-    for (const leaf of leafQueue) {
-      this.drawLeaf(leaf.ex, leaf.ey, tree);
-    }
-    // --- Draw fruits on top of leaves ---
-    for (const leaf of leafQueue) {
-      // only add fruits when tree is fully grown
-      if (tree.depth === this.maxDepth && this.random(0, 1, tree) < 0.03) {
-        const dx = leaf.ex - leaf.sx;
-        const dy = leaf.ey - leaf.sy;
-        const len = Math.hypot(dx, dy) || 1;
-        const nx = dx / len;
-        const ny = dy / len;
-        const offset = Math.min(tree.leafSize * 0.35, 8);
-        const ax = leaf.ex + nx * offset;
-        const ay = leaf.ey + ny * offset;
-
-        const fruitRadius = Math.max(3, Math.floor(tree.leafSize * 0.2));
-        this.ctx.beginPath();
-        this.ctx.arc(ax, ay, fruitRadius, 0, Math.PI * 2);
-        this.ctx.fillStyle = fruitType;
-        this.ctx.fill();
-        this.ctx.closePath();
-
-        // highlight
-        this.ctx.beginPath();
-        this.ctx.arc(
-          ax - fruitRadius * 0.35,
-          ay - fruitRadius * 0.35,
-          fruitRadius * 0.35,
-          0,
-          Math.PI * 2,
-        );
-        this.ctx.fillStyle = "rgba(255,255,255,0.7)";
-        this.ctx.fill();
-        this.ctx.closePath();
-      }
-    }
-
-    if (stillGrowing) {
-      this.animation = requestAnimationFrame(
-        this.animate.bind(this, currentDepth, tree),
-      );
-    } else {
-      if (this.animation) cancelAnimationFrame(this.animation);
     }
   }
 }

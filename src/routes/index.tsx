@@ -16,23 +16,21 @@ function Index() {
   >({
     seed: 1337,
     depth: 1,
-    growthSpeed: 50,
-    treeScale: 1,
     branchWidth: 1,
-    colorMode: "gradient" as "gradient" | "solid",
-    color: "#000000",
-    gradientColorStart: "#8B4513",
-    gradientColorEnd: "#228B22",
-    leafColor: "#228B22",
     leafSize: 15,
     container: null as unknown as HTMLDivElement,
+    witheredLevel: 0,
     treeRef,
-    mainTree: true,
   });
   const growTree = () => {
     if (treeRef.current && water >= 10) {
       treeRef.current.growOneLevel(options);
       setWater((prev) => prev - 10);
+    }
+  };
+  const witherTree = () => {
+    if (treeRef.current) {
+      treeRef.current.witherTree(options);
     }
   };
 
@@ -53,19 +51,11 @@ function Index() {
       return {
         seed: Math.random() * 100000,
         depth: size,
-        growthSpeed: 50,
-        treeScale: 1,
         branchWidth: 1,
-        colorMode: "gradient" as "gradient" | "solid",
-        color: "#000000",
-        gradientColorStart: "#8B4513",
-        gradientColorEnd: "#228B22",
-        leafColor: "#228B22",
         leafSize: 15 + size,
         container: null as unknown as HTMLDivElement,
-        shouldAnimate: false,
-        mainTree: false,
-      };
+        witheredLevel: Math.round(Math.random() * 2),
+      } satisfies TreeOptions;
     }),
   );
 
@@ -121,8 +111,8 @@ function Index() {
           </p>
         </div>
         <div className="flex flex-col items-center">
-          <div className="flex border shadow-md rounded-md h-[300px] bg-white   max-lg:w-[300px] max-lg:max-w-[300px] max-xl:w-[400px] max-xl:max-w-[400px] w-[500px] max-w-[500px]">
-            <Tree ref={treeRef} trees={[options]} />
+          <div className="flex shadow-md rounded-md h-[300px] bg-white   max-lg:w-[300px] max-lg:max-w-[300px] max-xl:w-[400px] max-xl:max-w-[400px] w-[500px] max-w-[500px]">
+            <Tree ref={treeRef} trees={[options]} isMainTree />
           </div>
 
           <div>
@@ -136,6 +126,12 @@ function Index() {
             className="p-2 mt-4 bg-[linear-gradient(to_bottom,#3faaeb,#347df4)] rounded cursor-pointer font-futura-heavy max-lg:w-[300px] max-lg:max-w-[300px] max-xl:w-[400px] max-xl:max-w-[400px] w-[500px] max-w-[500px]"
           >
             Полить ( -10💧)
+          </button>
+          <button
+            onClick={witherTree}
+            className="p-2 mt-4 bg-[linear-gradient(to_bottom,#faea09,#eecc09)] rounded cursor-pointer font-futura-heavy max-lg:w-[300px] max-lg:max-w-[300px] max-xl:w-[400px] max-xl:max-w-[400px] w-[500px] max-w-[500px]"
+          >
+            Проверка засыхание дерева
           </button>
           <div className="w-full mt-4">
             <h2 className="text-xl mb-2 text-center max-[52rem]:text-lg">

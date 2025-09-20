@@ -210,12 +210,6 @@ class TreeAnimation {
       );
       if (this.trees) {
         for (let i = 0; i < this.trees.length; i++) {
-          // thresholds in pixels
-
-          // const FULL_DETAIL = 1; // draw full tree if bigger than 20px
-          const MID_DETAIL = 0.5; // draw simplified tree if between 8-20px
-          // below 8px, draw as a simple dot
-
           const treeX = (i % this.treesPerRow) * this.distanceBetween; // horizontal spacing
           const treeY = Math.floor(i / this.treesPerRow) * this.rowHeight; // vertical spacing per row
           const tree = this.trees[i];
@@ -248,19 +242,7 @@ class TreeAnimation {
             rng,
           };
 
-          // eslint-disable-next-line no-constant-condition
-          if (true) {
-            // if (approxSize >= FULL_DETAIL) {
-            // Full detail tree
-            this.drawFullTree(internalTree);
-          } else if (approxSize >= MID_DETAIL) {
-            // Mid detail: draw simplified
-            this.drawSimplifiedTree(internalTree);
-          } else {
-            // Very small: just a dot
-            this.ctx.fillStyle = this.getTrunkColor(tree);
-            this.ctx.fillRect(internalTree.treeX, internalTree.treeY, 2, 2);
-          }
+          this.drawFullTree(internalTree);
         }
       }
     }
@@ -272,7 +254,7 @@ class TreeAnimation {
       this.ctx.font = "bold 48px FuturaPTHeavy,sans-serif";
       this.ctx.textAlign = "center";
       this.ctx.textBaseline = "top";
-      const padding = 10;
+      const padding = 30;
       if (this.planet === "Земле") {
         this.ctx.fillText("Земля", this.canvas.width / 2, padding);
       } else if (this.planet === "Юпитере") {
@@ -488,8 +470,8 @@ class TreeAnimation {
             tree.decayProgress = Math.max((tree.decayProgress || 0) - 1, 0);
           }
         }
-        if (Math.random() < 0.05) {
-          tree.decayProgress = Math.min((tree.decayProgress || 0) + 0.1, 2);
+        if (Math.random() < 0.1) {
+          tree.decayProgress = Math.min((tree.decayProgress || 0) + 0.2, 2);
         }
       }
     }
@@ -559,10 +541,21 @@ class TreeAnimation {
     };
 
     // draw branch
+    const baseWidth =
+      (this.branchWidth || 1) *
+      (0.9 + (remaining / Math.max(1, tree.depth)) * 1.1);
+    const startWidth = Math.min(Math.max(baseWidth, 0.5), 12);
+
+    // Control point for the curve - pushes the branch outwards slightly
+    const cpX = startX + (endX - startX) * 0.5 + (endY - startY) * 0.1;
+    const cpY = startY + (endY - startY) * 0.5 - (endX - startX) * 0.1;
+
     this.ctx.beginPath();
-    this.ctx.moveTo(branch.startX, branch.startY);
-    this.ctx.lineTo(branch.endX, branch.endY);
-    this.ctx.lineWidth = branch.lineWidth;
+    this.ctx.moveTo(startX, startY);
+    this.ctx.quadraticCurveTo(cpX, cpY, endX, endY);
+
+    this.ctx.lineWidth = startWidth; // Using line width is simpler than a polygon
+    this.ctx.lineCap = "round"; // Makes joints look much smoother
     this.ctx.strokeStyle = this.getTrunkColor(tree);
     this.ctx.stroke();
     this.ctx.closePath();

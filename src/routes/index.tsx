@@ -6,11 +6,12 @@ import {
   motion,
   AnimatePresence,
   useMotionValue,
-  useSpring,
   useTransform,
+  animate,
 } from "framer-motion";
 import { useMainStore } from "@/providers/store";
 import type { Planet } from "@/types/Tree";
+import { Pause, Play } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -29,16 +30,21 @@ function Index() {
   const [planetIndex, setPlanetIndex] = useState(0);
   const count = useMotionValue(32000);
 
-  const spring = useSpring(count, {
-    stiffness: 1,
-  });
-
-  const rounded = useTransform(spring, (latest) =>
+  const rounded = useTransform(count, (latest) =>
     Math.round(latest).toLocaleString(),
   );
+  const difference = useTransform(count, (latest) => {
+    const diff = Math.round(latest) - 32000;
+    return `(+${diff.toLocaleString()})`;
+  });
 
   useEffect(() => {
-    count.set(45000);
+    const controls = animate(count, 50000, {
+      duration: 25000, // A very slow animation (20 seconds)
+      ease: "linear",
+    });
+
+    return controls.stop;
   }, [count]);
 
   useEffect(() => {
@@ -54,7 +60,7 @@ function Index() {
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [planetsArray.length]);
+  }, [planetsArray.length, planetsArray]);
   useEffect(() => {
     let intervalId = undefined;
     if (isSimulationActive) {
@@ -94,7 +100,7 @@ function Index() {
   return (
     <div className="flex items-center max-lg:flex-col max-lg:mt-8 w-full h-full gap-4 justify-evenly ">
       <div className="flex flex-col items-center justify-center px-2 max-lg:w-full w-[30%] gap-4">
-        <div className="flex flex-col items-start justify-center max-w-sm gap-4">
+        <div className="flex flex-col items-start justify-center w-full max-w-[500px] gap-4">
           <img src="/logo_white.png" width={420} height={240} />
           <div className="text-2xl">
             <p>Войди в историю!</p>
@@ -107,7 +113,7 @@ function Index() {
                   initial="initial"
                   animate="animate"
                   exit="exit"
-                  className="text-blue-sky text-center w-28 font-futura-heavy inline-block" // Use inline-block
+                  className={`text-blue-sky text-center ${planetsArray[planetIndex] === "Юпитере" ? "w-28" : "w-20"} font-futura-heavy inline-block`} // Use inline-block
                 >
                   {planetsArray[planetIndex]}
                 </motion.span>
@@ -118,6 +124,9 @@ function Index() {
               Уже посажено:{" "}
               <motion.span className="font-sans font-semibold text-blue-sky">
                 {rounded}
+              </motion.span>
+              <motion.span className="ml-2 font-sans font-semibold text-green-400">
+                {difference}
               </motion.span>{" "}
               деревьев
             </p>
@@ -127,7 +136,7 @@ function Index() {
           </Button>
         </div>
       </div>
-      <div className="w-[45%] aspect-square rounded-full max-lg:w-[70%] max-sm:w-full bg-gray-100 relative">
+      <div className="w-[40%] aspect-square rounded-full max-lg:w-[70%] max-sm:w-full bg-gray-100 relative">
         <ForestView
           ref={treeRef}
           {...{
@@ -137,25 +146,31 @@ function Index() {
           }}
           className="[filter:drop-shadow(0_0_2rem_#22d3ee)]  rounded-full overflow-hidden"
         />
-        <div className="flex absolute justify-between items-center flex-wrap max-lg:-bottom-8 gap-4 bottom-4 w-full">
-          <Button
-            className=" max-w-[200px] max-lg:max-w-[150px]  hover:bg-blue-500 bg-blue-light w-full hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white"
-            onClick={() => setSimulationActive((prev) => !prev)}
-          >
-            {isSimulationActive ? "Остановить" : "Продолжить"} симуляцию
-          </Button>
-
-          <Button
-            className=" max-w-[200px] max-lg:max-w-[150px] hover:bg-blue-500  bg-blue-light w-full hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white"
-            onClick={() => setSimulationActive((prev) => !prev)}
-          >
-            <Link
-              to="/forest"
-              className="[&.active]:font-bold block p-1  rounded"
+        <div className="flex absolute justify-center items-center flex-wrap  gap-2 bottom-4 w-full">
+          <div className="relative">
+            <button
+              className="absolute -left-12 bottom-1/2 translate-y-1/2"
+              onClick={() => setSimulationActive((prev) => !prev)}
             >
-              Посмотреть лес
-            </Link>
-          </Button>
+              {isSimulationActive ? (
+                <Pause className="w-full h-full  bg-blue-primary rounded-full p-1" />
+              ) : (
+                <Play className="w-full h-full  bg-blue-primary rounded-full p-1" />
+              )}
+            </button>
+
+            <Button
+              className=" max-w-[200px] max-lg:max-w-[150px] hover:bg-blue-500  bg-blue-light w-full hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white"
+              onClick={() => setSimulationActive((prev) => !prev)}
+            >
+              <Link
+                to="/forest"
+                className="[&.active]:font-bold block p-1  rounded"
+              >
+                Посмотреть лес
+              </Link>
+            </Button>
+          </div>
         </div>
       </div>
     </div>

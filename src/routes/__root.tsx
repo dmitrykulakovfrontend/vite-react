@@ -10,6 +10,8 @@ import useSWR from "swr";
 const RootLayout = () => {
   const [isMenuOpen, setMenuOpen] = useState(false);
   const setTrees = useMainStore((s) => s.setTrees);
+  const user = useMainStore((s) => s.user);
+  console.log(user);
 
   // fetch once here
   const { data } = useSWR<Tree[]>("mock/trees", fakeTrees);

@@ -52,7 +52,7 @@ function Index() {
         }
         return newPlanet;
       });
-    }, 4000);
+    }, 5000);
 
     return () => clearInterval(interval);
   }, [planetsArray.length]);
@@ -63,7 +63,7 @@ function Index() {
         if (treeRef.current) {
           treeRef.current.simulateGrow();
         }
-      }, 4000); // update simulation every 2 seconds
+      }, 1000); // update simulation every 2 seconds
     }
 
     return () => {
@@ -93,7 +93,7 @@ function Index() {
     },
   };
   return (
-    <div className="flex items-center max-lg:flex-col w-full h-full gap-4 justify-evenly ">
+    <div className="flex items-center max-lg:flex-col max-lg:mt-8 w-full h-full gap-4 justify-evenly ">
       <div className="flex flex-col items-center justify-center px-2 max-lg:w-full w-[30%] gap-4">
         <div className="flex flex-col items-start justify-center max-w-sm gap-4">
           <img src="/logo_white.png" width={420} height={240} />
@@ -108,12 +108,12 @@ function Index() {
                   initial="initial"
                   animate="animate"
                   exit="exit"
-                  className="text-blue-sky w-40 font-futura-heavy inline-block" // Use inline-block
+                  className="text-blue-sky text-center w-28 font-futura-heavy inline-block" // Use inline-block
                 >
                   {planetsArray[planetIndex]}
                 </motion.span>
               </AnimatePresence>{" "}
-              собственное именное дерево
+              живое именное дерево
             </p>
             <p>
               Уже посажено:{" "}
@@ -128,7 +128,7 @@ function Index() {
           </Button>
         </div>
       </div>
-      <div className=" w-[70%] max-lg:w-full h-full bg-gray-100 relative">
+      <div className="w-[45%] aspect-square rounded-full max-lg:w-[70%] max-sm:w-full bg-gray-100 relative">
         <ForestView
           ref={treeRef}
           {...{
@@ -136,17 +136,18 @@ function Index() {
             isLoading: true,
             simulation: true,
           }}
+          className="[filter:drop-shadow(0_0_2rem_#22d3ee)]  rounded-full overflow-hidden"
         />
-        <div className="flex absolute justify-center items-center flex-wrap gap-4 bottom-4 w-full">
+        <div className="flex absolute justify-between items-center flex-wrap max-lg:-bottom-8 gap-4 bottom-4 w-full">
           <Button
-            className=" max-w-[200px]  hover:bg-blue-500 bg-blue-light w-full hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white"
+            className=" max-w-[200px] max-lg:max-w-[150px]  hover:bg-blue-500 bg-blue-light w-full hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white"
             onClick={() => setSimulationActive((prev) => !prev)}
           >
             {isSimulationActive ? "Остановить" : "Продолжить"} симуляцию
           </Button>
 
           <Button
-            className=" max-w-[200px] hover:bg-blue-500  bg-blue-light w-full hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white"
+            className=" max-w-[200px] max-lg:max-w-[150px] hover:bg-blue-500  bg-blue-light w-full hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white"
             onClick={() => setSimulationActive((prev) => !prev)}
           >
             <Link

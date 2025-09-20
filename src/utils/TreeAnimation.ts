@@ -149,13 +149,15 @@ class TreeAnimation {
       );
     } else {
       console.log(this.planet);
-      this.ctx.fillStyle = this.colors.grass;
+
       if (this.planet === "Земле") {
         this.ctx.fillStyle = this.colors.grass;
       } else if (this.planet === "Юпитере") {
         this.ctx.fillStyle = this.colors.jupiter;
       } else if (this.planet === "Марсе") {
         this.ctx.fillStyle = this.colors.mars;
+      } else {
+        this.ctx.fillStyle = this.colors.grass; // Default background
       }
 
       // Apply the chosen color and draw the background
@@ -260,6 +262,23 @@ class TreeAnimation {
             this.ctx.fillRect(internalTree.treeX, internalTree.treeY, 2, 2);
           }
         }
+      }
+    }
+
+    // Draw planet name on top of everything, if not main tree
+    if (!this.isMainTree) {
+      this.ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform
+      this.ctx.fillStyle = "white";
+      this.ctx.font = "bold 48px FuturaPTHeavy,sans-serif";
+      this.ctx.textAlign = "center";
+      this.ctx.textBaseline = "top";
+      const padding = 10;
+      if (this.planet === "Земле") {
+        this.ctx.fillText("Земля", this.canvas.width / 2, padding);
+      } else if (this.planet === "Юпитере") {
+        this.ctx.fillText("Юпитер", this.canvas.width / 2, padding);
+      } else if (this.planet === "Марсе") {
+        this.ctx.fillText("Марс", this.canvas.width / 2, padding);
       }
     }
   }
@@ -462,9 +481,15 @@ class TreeAnimation {
   simulateGrow() {
     if (this.trees) {
       for (const tree of this.trees) {
-        if (tree.depth < this.maxDepth) {
+        if (tree.depth < this.maxDepth && Math.random() < 0.3) {
           tree.depth++;
           tree.leafSize++;
+          if (tree.decayProgress > 0) {
+            tree.decayProgress = Math.max((tree.decayProgress || 0) - 1, 0);
+          }
+        }
+        if (Math.random() < 0.05) {
+          tree.decayProgress = Math.min((tree.decayProgress || 0) + 0.1, 2);
         }
       }
     }

@@ -10,7 +10,10 @@ export type TreeHandle = {
   update: (trees: Tree[], isLoading: boolean) => void;
 };
 
-export const ForestView = forwardRef<TreeHandle, Forest>((props, ref) => {
+export const ForestView = forwardRef<
+  TreeHandle,
+  Forest & { className?: string }
+>(({ className, ...props }, ref) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const treeRef = useRef<TreeAnimation | null>(null);
 
@@ -51,5 +54,7 @@ export const ForestView = forwardRef<TreeHandle, Forest>((props, ref) => {
     },
   }));
 
-  return <div ref={containerRef} className="w-full h-full" />;
+  return (
+    <div ref={containerRef} className={"w-full h-full " + " " + className} />
+  );
 });

@@ -11,6 +11,8 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TreeRouteImport } from './routes/tree'
 import { Route as TasksRouteImport } from './routes/tasks'
+import { Route as SignupRouteImport } from './routes/signup'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as ForestRouteImport } from './routes/forest'
 import { Route as IndexRouteImport } from './routes/index'
 
@@ -22,6 +24,16 @@ const TreeRoute = TreeRouteImport.update({
 const TasksRoute = TasksRouteImport.update({
   id: '/tasks',
   path: '/tasks',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ForestRoute = ForestRouteImport.update({
@@ -38,12 +50,16 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/forest': typeof ForestRoute
+  '/login': typeof LoginRoute
+  '/signup': typeof SignupRoute
   '/tasks': typeof TasksRoute
   '/tree': typeof TreeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/forest': typeof ForestRoute
+  '/login': typeof LoginRoute
+  '/signup': typeof SignupRoute
   '/tasks': typeof TasksRoute
   '/tree': typeof TreeRoute
 }
@@ -51,20 +67,24 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/forest': typeof ForestRoute
+  '/login': typeof LoginRoute
+  '/signup': typeof SignupRoute
   '/tasks': typeof TasksRoute
   '/tree': typeof TreeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/forest' | '/tasks' | '/tree'
+  fullPaths: '/' | '/forest' | '/login' | '/signup' | '/tasks' | '/tree'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/forest' | '/tasks' | '/tree'
-  id: '__root__' | '/' | '/forest' | '/tasks' | '/tree'
+  to: '/' | '/forest' | '/login' | '/signup' | '/tasks' | '/tree'
+  id: '__root__' | '/' | '/forest' | '/login' | '/signup' | '/tasks' | '/tree'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ForestRoute: typeof ForestRoute
+  LoginRoute: typeof LoginRoute
+  SignupRoute: typeof SignupRoute
   TasksRoute: typeof TasksRoute
   TreeRoute: typeof TreeRoute
 }
@@ -83,6 +103,20 @@ declare module '@tanstack/react-router' {
       path: '/tasks'
       fullPath: '/tasks'
       preLoaderRoute: typeof TasksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/forest': {
@@ -105,6 +139,8 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ForestRoute: ForestRoute,
+  LoginRoute: LoginRoute,
+  SignupRoute: SignupRoute,
   TasksRoute: TasksRoute,
   TreeRoute: TreeRoute,
 }

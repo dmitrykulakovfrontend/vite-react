@@ -62,23 +62,21 @@ const Header = ({
             Лес
           </Link>
         </li>
-        <li className="flex flex-col gap-2 mt-2 sm:hidden">
-          <button className="bg-[linear-gradient(to_bottom,#3faaeb,#347df4)] rounded-md p-2 text-white">
-            Войти
-          </button>
-          <button className="bg-[linear-gradient(to_bottom,#3faaeb,#347df4)] rounded-md p-2 text-white">
-            Зарегистрироваться
-          </button>
-        </li>
       </ul>
 
       <div className="hidden gap-2 sm:flex">
-        <button className="bg-[linear-gradient(to_bottom,#3faaeb,#347df4)]  rounded px-3 py-2 text-white text-sm">
+        <Link
+          to="/login"
+          className="bg-[linear-gradient(to_bottom,#3faaeb,#347df4)] hover:cursor-pointer rounded px-3 py-2 text-white text-sm"
+        >
           Войти
-        </button>
-        <button className="bg-[linear-gradient(to_bottom,#3faaeb,#347df4)]  rounded px-3 py-2 text-white text-sm">
+        </Link>
+        <Link
+          to="/signup"
+          className="bg-[linear-gradient(to_bottom,#3faaeb,#347df4)] hover:cursor-pointer rounded px-3 py-2 text-white text-sm"
+        >
           Зарегистрироваться
-        </button>
+        </Link>
       </div>
     </header>
   );

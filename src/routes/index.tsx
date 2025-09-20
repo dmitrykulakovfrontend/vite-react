@@ -1,174 +1,162 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { ForestView, type TreeHandle } from "@/components/ForestView";
+import { Button } from "@/components/ui/button";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useRef, useState } from "react";
+import {
+  motion,
+  AnimatePresence,
+  useMotionValue,
+  useSpring,
+  useTransform,
+} from "framer-motion";
+import { useMainStore } from "@/providers/store";
+import type { Planet } from "@/types/Tree";
 
 export const Route = createFileRoute("/")({
   component: Index,
 });
 
-import { useRef, useState } from "react";
-import type { Tree } from "../types/Tree";
-import { ForestView, type TreeHandle } from "../components/ForestView";
-
 function Index() {
+  const trees = useMainStore((state) => state.trees);
   const treeRef = useRef<TreeHandle>(null);
-  const [water, setWater] = useState(100);
-  const [options] = useState<
-    Tree & { treeRef?: React.RefObject<TreeHandle | null> }
-  >({
-    seed: 1337,
-    depth: 1,
-    container: null as unknown as HTMLDivElement,
-    witheredLevel: 0,
-    decayProgress: 0,
-    leafSize: 2,
-    treeRef,
-  });
-  const growTree = () => {
-    if (treeRef.current && water >= 10) {
-      treeRef.current.growOneLevel(options);
-      setWater((prev) => prev - 10);
+  useEffect(() => {
+    if (trees.length > 1 && treeRef.current) {
+      treeRef.current.update(trees, false);
     }
-  };
-  const witherTree = () => {
-    if (treeRef.current) {
-      treeRef.current.witherTree(options);
-    }
-  };
+  }, [trees]);
+  const [isSimulationActive, setSimulationActive] = useState(true);
+  const planetsArray: Planet[] = ["Земле", "Юпитере", "Марсе"];
+  const [planetIndex, setPlanetIndex] = useState(0);
+  const count = useMotionValue(0);
 
-  const completeTask = (id: number) => {
-    const completedTask = tasks.find((task) => task.id === id);
-    if (completedTask && !completedTask.isCompleted) {
-      setWater((prev) => prev + completedTask.reward);
-      completedTask.isCompleted = true;
-      const updatedTasks = tasks.map((task) =>
-        task.id === id ? completedTask : task,
-      );
-      setTasks(updatedTasks);
-    }
-  };
-  const [trees] = useState(
-    new Array(30000).fill(1).map(() => {
-      const size = Math.round(Math.random() * 10) + 1;
-      return {
-        seed: Math.random() * 100000,
-        depth: size,
-        container: null as unknown as HTMLDivElement,
-        witheredLevel: Math.round(Math.random() * 2),
-        leafSize: 2,
-        decayProgress: Math.pow(Math.random(), 12) * 2,
-      } satisfies Tree;
-    }),
+  const spring = useSpring(count, {
+    stiffness: 100,
+    damping: 100,
+  });
+
+  const rounded = useTransform(spring, (latest) =>
+    Math.round(latest).toLocaleString(),
   );
 
-  const [tasks, setTasks] = useState([
-    {
-      id: 1,
-      title: "📝 Пройти тест ",
-      description:
-        "Пройдите небольшой тест по вашей профессии и получите баллы",
-      reward: 5,
-      isCompleted: false,
-    },
-    {
-      id: 2,
-      title: "📊 Заполнить опросник",
-      description:
-        "Ответьте на вопросы опросника о вашей работе и получите воду",
-      reward: 10,
-      isCompleted: false,
-    },
-    {
-      id: 3,
-      title: "💬 Записаться на форум",
-      description:
-        "Присоединитесь к профессиональному форуму и заработайте баллы",
-      reward: 7,
-      isCompleted: false,
-    },
-  ]);
+  useEffect(() => {
+    count.set(32000);
+  }, [count]);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setPlanetIndex((prevIndex) => {
+        const newPlanet =
+          prevIndex === planetsArray.length - 1 ? 0 : prevIndex + 1;
+        if (treeRef.current) {
+          treeRef.current.updatePlanet(planetsArray[newPlanet]);
+        }
+        return newPlanet;
+      });
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [planetsArray.length]);
+  useEffect(() => {
+    let intervalId = undefined;
+    if (isSimulationActive) {
+      intervalId = setInterval(() => {
+        if (treeRef.current) {
+          treeRef.current.simulateGrow();
+        }
+      }, 2000); // update simulation every 2 seconds
+    }
+
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [isSimulationActive]);
+  const textVariants = {
+    initial: {
+      opacity: 0,
+      scale: 0.8,
+    },
+    animate: {
+      opacity: 1,
+      scale: 1,
+      transition: {
+        duration: 0.5,
+      },
+    },
+    exit: {
+      opacity: 0,
+      scale: 0.8,
+      transition: {
+        duration: 0.5,
+      },
+    },
+  };
   return (
-    <div className="flex flex-col items-center w-full gap-4 p-4 justify-evenly ">
-      <div className="flex flex-col items-center gap-2">
-        <div className="flex flex-col text-lg">
-          <p>
-            Имя: <span className="font-futura-heavy">Дмитрий Кулаков</span>
-          </p>
-          <p>
-            Возраст дерева:{" "}
-            <span className="font-futura-heavy">2 дня</span>{" "}
-          </p>
-          <p>
-            Следующее время поливки:{" "}
-            <span className="font-futura-heavy">Через неделю</span>
-          </p>
-          <p>
-            Стадия роста: <span className="font-futura-heavy">Cаженец</span>
-          </p>
-
-          <p>
-            Следующая стадия через:{" "}
-            <span className="font-futura-heavy">60 дней</span>
-          </p>
-        </div>
-        <div className="flex flex-col items-center">
-          <div className="flex shadow-md rounded-md h-[300px] bg-white   max-lg:w-[300px] max-lg:max-w-[300px] max-xl:w-[400px] max-xl:max-w-[400px] w-[500px] max-w-[500px]">
-            <ForestView ref={treeRef} trees={[options]} isMainTree />
-          </div>
-
-          <div>
-            <p className="text-xl">
-              Текущее количество воды:{" "}
-              <span className="font-futura-heavy">{water}💧</span>
+    <div className="flex items-center max-lg:flex-col w-full h-full gap-4 justify-evenly ">
+      <div className="flex flex-col items-center justify-center px-2 max-lg:w-full w-[30%] gap-4">
+        <div className="flex flex-col items-start justify-center max-w-sm gap-4">
+          <img src="/logo_white.png" width={420} height={240} />
+          <div className="text-2xl">
+            <p>Войди в историю!</p>
+            <p>
+              Посади на{" "}
+              <AnimatePresence mode="wait">
+                <motion.span
+                  key={planetsArray[planetIndex]}
+                  variants={textVariants}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                  className="text-blue-sky w-40 font-futura-heavy inline-block" // Use inline-block
+                >
+                  {planetsArray[planetIndex]}
+                </motion.span>
+              </AnimatePresence>{" "}
+              собственное именное дерево
+            </p>
+            <p>
+              Уже посажено:{" "}
+              <motion.span className="font-sans font-semibold text-blue-sky">
+                {rounded}
+              </motion.span>{" "}
+              деревьев
             </p>
           </div>
-          <button
-            onClick={growTree}
-            className="p-2 mt-4 bg-[linear-gradient(to_bottom,#3faaeb,#347df4)] rounded cursor-pointer font-futura-heavy max-lg:w-[300px] max-lg:max-w-[300px] max-xl:w-[400px] max-xl:max-w-[400px] w-[500px] max-w-[500px]"
-          >
-            Полить ( -10💧)
-          </button>
-          <button
-            onClick={witherTree}
-            className="p-2 mt-4 bg-[linear-gradient(to_bottom,#faea09,#eecc09)] rounded cursor-pointer font-futura-heavy max-lg:w-[300px] max-lg:max-w-[300px] max-xl:w-[400px] max-xl:max-w-[400px] w-[500px] max-w-[500px]"
-          >
-            Проверка засыхание дерева
-          </button>
-          <div className="w-full mt-4">
-            <h2 className="text-xl mb-2 text-center max-[52rem]:text-lg">
-              Задачи для получения воды:
-            </h2>
-            <div className="flex flex-wrap gap-4 justify-center max-[52rem]:flex-col max-[52rem]:items-center">
-              {tasks.map((task) => (
-                <div
-                  key={task.id}
-                  className={`max-w-xs overflow-hidden text-black rounded shadow-lg ${task.isCompleted ? "bg-green-400" : "bg-white"} ${task.isCompleted ? "" : "hover:bg-gray-200"} ${task.isCompleted ? "cursor-default" : "cursor-pointer"}`}
-                  onClick={() => completeTask(task.id)}
-                >
-                  <div className="px-6 py-4">
-                    <div className="mb-2 text-xl font-futura-heavy">
-                      {task.title}
-                    </div>
-                    <p className="text-base text-gray-700">
-                      {task.description}
-                    </p>
-                  </div>
-                  <div className="px-6 pt-4 pb-2">
-                    <span className="inline-block p-1 pl-2 pr-2 ml-auto mb-2 text-sm text-right text-white bg-[linear-gradient(to_bottom,#3faaeb,#347df4)] rounded-full font-futura-heavy">
-                      +{task.reward}💧
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          <Button className="bg-[linear-gradient(to_bottom,#3faaeb,#347df4)] w-full hover:cursor-pointer font-futura-heavy rounded p-2 text-white">
+            Посадить своё дерево
+          </Button>
         </div>
       </div>
-      <div className="w-full h-screen bg-gray-100">
+      <div className=" w-[70%] max-lg:w-full h-full bg-gray-100 relative">
         <ForestView
+          ref={treeRef}
           {...{
             trees,
+            isLoading: true,
+            simulation: true,
           }}
         />
+        <div className="flex absolute justify-center items-center flex-wrap gap-4 bottom-4 w-full">
+          <Button
+            className=" max-w-[200px]  hover:bg-blue-500 bg-blue-light w-full hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white"
+            onClick={() => setSimulationActive((prev) => !prev)}
+          >
+            {isSimulationActive ? "Остановить" : "Продолжить"} симуляцию
+          </Button>
+
+          <Button
+            className=" max-w-[200px] hover:bg-blue-500  bg-blue-light w-full hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white"
+            onClick={() => setSimulationActive((prev) => !prev)}
+          >
+            <Link
+              to="/forest"
+              className="[&.active]:font-bold block p-1  rounded"
+            >
+              Посмотреть лес
+            </Link>
+          </Button>
+        </div>
       </div>
     </div>
   );

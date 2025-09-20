@@ -11,9 +11,9 @@ const Header = ({
     <header className="fixed top-0 left-0 z-50 flex items-center justify-between w-full p-2 bg-white shadow-md">
       <Link to="/" className="[&.active]:font-bold shrink-0">
         <img
-          src={"/team_logo.webp"}
-          width="40"
-          height="40"
+          src={"/logo_2_small.png"}
+          width="150"
+          height="30"
           alt="Логотип компании"
         />
       </Link>
@@ -44,6 +44,22 @@ const Header = ({
             className="[&.active]:font-bold block p-1 hover:bg-gray-100 rounded"
           >
             Задачи
+          </Link>
+        </li>
+        <li>
+          <Link
+            to="/tree"
+            className="[&.active]:font-bold block p-1 hover:bg-gray-100 rounded"
+          >
+            Профиль
+          </Link>
+        </li>
+        <li>
+          <Link
+            to="/forest"
+            className="[&.active]:font-bold block p-1 hover:bg-gray-100 rounded"
+          >
+            Лес
           </Link>
         </li>
         <li className="flex flex-col gap-2 mt-2 sm:hidden">

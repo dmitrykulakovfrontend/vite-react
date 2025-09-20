@@ -445,16 +445,6 @@ const tasks: Task[] = [
   },
 ];
 function Tasks() {
-  // const { data } = useSWR("https://pokeapi.co/api/v2/pokemon/ditto", {
-  //   refreshInterval: 3000,
-  // });
-  // useEffect(() => {
-  //   const timer = setInterval(() => console.log(data), 3000);
-  //   console.log({ data });
-  //   return () => {
-  //     clearInterval(timer);
-  //   };
-  // });
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const table = useReactTable<Task>({

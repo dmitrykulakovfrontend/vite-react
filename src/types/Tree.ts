@@ -7,10 +7,13 @@ export interface Tree {
   decayProgress: number; // Add this new property
   witheredLevel: number;
 }
-
+export type Planet = "Земле" | "Юпитере" | "Марсе";
 export interface Forest {
   trees: Tree[];
+  isLoading: boolean;
   isMainTree?: boolean;
+  simulation?: boolean;
+  planet?: Planet;
 }
 
 export interface Branch {

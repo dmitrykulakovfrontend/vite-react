@@ -1,11 +1,13 @@
 import { forwardRef, useEffect, useRef, useImperativeHandle } from "react";
 import TreeAnimation from "../utils/TreeAnimation";
-import type { Forest, Tree } from "../types/Tree";
+import type { Forest, Planet, Tree } from "../types/Tree";
 
 export type TreeHandle = {
+  updatePlanet(planet: Planet): void;
+  simulateGrow(): void;
   witherTree: (tree: Tree) => void;
   growOneLevel: (tree: Tree) => void;
-  reset: () => void;
+  update: (trees: Tree[], isLoading: boolean) => void;
 };
 
 export const ForestView = forwardRef<TreeHandle, Forest>((props, ref) => {
@@ -23,18 +25,28 @@ export const ForestView = forwardRef<TreeHandle, Forest>((props, ref) => {
   }, [props]);
 
   useImperativeHandle(ref, () => ({
+    updatePlanet: (planet: Planet) => {
+      console.log(planet);
+      console.log(1);
+      if (treeRef.current) {
+        treeRef.current.planet = planet;
+        treeRef.current.render();
+      }
+    },
+    simulateGrow: () => {
+      treeRef.current?.simulateGrow();
+    },
     growOneLevel: (tree: Tree) => {
       treeRef.current?.growOneLevel(tree);
     },
     witherTree: (tree: Tree) => {
       treeRef.current?.witherTree(tree);
     },
-    reset: () => {
-      if (containerRef.current) {
-        treeRef.current = new TreeAnimation({
-          ...props,
-          container: containerRef.current,
-        });
+    update: (trees: Tree[], isLoading: boolean) => {
+      if (containerRef.current && treeRef.current) {
+        treeRef.current.trees = trees;
+        treeRef.current.isLoading = isLoading;
+        treeRef.current.render();
       }
     },
   }));

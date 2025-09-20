@@ -20,8 +20,8 @@
 }
 
 @theme inline {
-  --font-futura-book: "FuturaPTBook";
-  --font-futura-heavy: "FuturaPTHeavy";
+  --font-futura-book: "FuturaPTBook", "sans-serif";
+  --font-futura-heavy: "FuturaPTHeavy", "sans-serif";
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -57,9 +57,18 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+
+  --color-blue-dark: #283a97;
+  --color-blue-primary: #005dab;
+  --color-blue-light: #00aef7;
+  --color-blue-sky: #6adef6;
 }
 canvas {
   aspect-ratio: unset !important;
+}
+html,
+body {
+  height: 100%;
 }
 :root {
   font-synthesis: none;

@@ -1,4 +1,4 @@
-import type { Branch, Tree } from "../types/Tree";
+import type { Branch, Planet, Tree } from "../types/Tree";
 import type { Forest } from "../types/Tree";
 import throttle from "./throttle";
 
@@ -16,6 +16,8 @@ const colors = {
   sky: "#00C0F0",
   leaf: "#30B700",
   grass: "#009A17",
+  jupiter: "#D2B48C",
+  mars: "#D2691E",
   trunk: "#8B4513",
   witheredTrunk: "#5A4634",
   witheredLeaf: "#FFD700",
@@ -37,15 +39,23 @@ class TreeAnimation {
   previousY: number;
   hasCentered: boolean;
   isMainTree: boolean;
+  isLoading: boolean;
+  simulation: boolean;
   rowHeight: number;
   treesPerRow: number;
   distanceBetween: number;
   colors: Colors;
   branchWidth: number;
   defaultLeafSize: number;
+  gradientOffset: number;
+  direction: number;
+  planet: Planet;
 
   constructor(options: Forest & { container: HTMLDivElement }) {
     this.trees = options.trees;
+    this.isLoading = options.isLoading;
+    this.simulation = options.simulation || false;
+    this.planet = options.planet || "Земле";
     this.container = options.container;
     this.stageWidth = this.container.clientWidth;
     this.stageHeight = this.container.clientHeight;
@@ -58,6 +68,9 @@ class TreeAnimation {
     if (!ctx) throw new Error("Canvas context not available");
     this.ctx = ctx;
     this.colors = colors;
+
+    this.gradientOffset = 0;
+    this.direction = 2;
 
     this.previousX = 0;
     this.previousY = 0;
@@ -75,7 +88,7 @@ class TreeAnimation {
     this.viewportTransform = {
       x: 0,
       y: 0,
-      scale: 1,
+      scale: 0.5,
     };
 
     this.render();
@@ -83,6 +96,41 @@ class TreeAnimation {
   render() {
     this.ctx.setTransform(1, 0, 0, 1, 0, 0);
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    if (this.isLoading) {
+      const w = this.canvas.width;
+      const h = this.canvas.height;
+
+      // Check for boundaries and reverse direction
+      if ((this.gradientOffset += this.direction) >= w) {
+        this.direction = -this.direction;
+      } else if (this.gradientOffset <= 0) {
+        this.direction = 2;
+      }
+
+      // Update the offset based on the current direction
+      this.gradientOffset += this.direction;
+
+      const grad = this.ctx.createLinearGradient(
+        this.gradientOffset - w / 2, // Adjust start and end to center the gradient
+        0,
+        this.gradientOffset + w / 2,
+        h,
+      );
+      grad.addColorStop(0, "rgb(40,58,151)");
+      grad.addColorStop(1, "rgb(0,174,239)");
+
+      this.ctx.fillStyle = grad;
+      this.ctx.fillRect(0, 0, w, h);
+
+      this.ctx.fillStyle = "white";
+      this.ctx.font = "bold 48px FuturaPTBook,sans-serif";
+      this.ctx.textAlign = "center";
+      this.ctx.textBaseline = "middle";
+      this.ctx.fillText("Загрузка...", w / 2, h / 2);
+
+      requestAnimationFrame(() => this.render());
+      return;
+    }
 
     if (this.isMainTree) {
       const horizonY = (this.canvas.height / 2) * this.viewportTransform.scale;
@@ -100,7 +148,17 @@ class TreeAnimation {
         this.canvas.height - horizonY,
       );
     } else {
+      console.log(this.planet);
       this.ctx.fillStyle = this.colors.grass;
+      if (this.planet === "Земле") {
+        this.ctx.fillStyle = this.colors.grass;
+      } else if (this.planet === "Юпитере") {
+        this.ctx.fillStyle = this.colors.jupiter;
+      } else if (this.planet === "Марсе") {
+        this.ctx.fillStyle = this.colors.mars;
+      }
+
+      // Apply the chosen color and draw the background
       this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     }
     let minX = Infinity;
@@ -371,10 +429,9 @@ class TreeAnimation {
     this.stageHeight = this.container.clientHeight;
     this.canvas.width = this.stageWidth;
     this.canvas.height = this.stageHeight;
-    this.ctx.setTransform(1, 0, 0, 1, 0, 0);
 
     // automatically adjust scale
-    this.treeScale = Math.min(this.stageWidth, this.stageHeight) / 800;
+    // this.treeScale = Math.min(this.stageWidth, this.stageHeight) / 800;
 
     this.clearCanvas();
     this.render();
@@ -400,6 +457,18 @@ class TreeAnimation {
       } as unknown as WheelEvent);
       this.render();
     }
+  }
+
+  simulateGrow() {
+    if (this.trees) {
+      for (const tree of this.trees) {
+        if (tree.depth < this.maxDepth) {
+          tree.depth++;
+          tree.leafSize++;
+        }
+      }
+    }
+    this.render();
   }
 
   witherTree(tree: Tree) {

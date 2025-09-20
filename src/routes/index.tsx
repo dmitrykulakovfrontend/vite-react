@@ -30,14 +30,14 @@ function Index() {
   const [planetIndex, setPlanetIndex] = useState(0);
   const [newCountValue, setNewCountValue] = useState(32000);
   const count = useMotionValue(32000);
-
+  const [lastIncrement, setLastIncrement] = useState(0);
   const rounded = useTransform(count, (latest) =>
     Math.round(latest).toLocaleString(),
   );
 
   useEffect(() => {
     const controls = animate(count, newCountValue, {
-      duration: 2, // A very slow animation (20 seconds)
+      duration: 4, // A very slow animation (20 seconds)
       ease: "easeInOut",
     });
 
@@ -60,9 +60,10 @@ function Index() {
   }, [planetsArray.length]);
   useEffect(() => {
     const interval = setInterval(() => {
-      setNewCountValue((prev) => prev + Math.round(Math.random() * 20));
-    }, 3000);
-
+      const increment = Math.floor(Math.random() * 18) + 2;
+      setLastIncrement(increment);
+      setNewCountValue((prev) => prev + increment);
+    }, 5000);
     return () => clearInterval(interval);
   }, []);
   useEffect(() => {
@@ -129,7 +130,7 @@ function Index() {
                 {rounded}
               </motion.span>
               <motion.span className="ml-2 font-sans font-semibold text-green-400">
-                {`(+${newCountValue - Math.round(count.get())})`}
+                (+{lastIncrement})
               </motion.span>
             </p>
           </div>

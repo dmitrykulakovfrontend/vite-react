@@ -52,7 +52,7 @@ function Index() {
         }
         return newPlanet;
       });
-    }, 2000);
+    }, 4000);
 
     return () => clearInterval(interval);
   }, [planetsArray.length]);
@@ -63,7 +63,7 @@ function Index() {
         if (treeRef.current) {
           treeRef.current.simulateGrow();
         }
-      }, 2000); // update simulation every 2 seconds
+      }, 4000); // update simulation every 2 seconds
     }
 
     return () => {

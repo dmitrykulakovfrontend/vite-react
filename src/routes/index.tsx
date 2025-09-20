@@ -121,14 +121,13 @@ function Index() {
               живое именное дерево
             </p>
             <p>
-              Уже посажено:{" "}
+              Уже посажено деревьев:{" "}
               <motion.span className="font-sans font-semibold text-blue-sky">
                 {rounded}
               </motion.span>
               <motion.span className="ml-2 font-sans font-semibold text-green-400">
                 {difference}
-              </motion.span>{" "}
-              деревьев
+              </motion.span>
             </p>
           </div>
           <Button className="bg-[linear-gradient(to_bottom,#3faaeb,#347df4)] w-full hover:cursor-pointer font-futura-heavy rounded p-2 text-white">
@@ -167,7 +166,7 @@ function Index() {
                 to="/forest"
                 className="[&.active]:font-bold block p-1  rounded"
               >
-                Посмотреть лес
+                Посетить лес
               </Link>
             </Button>
           </div>

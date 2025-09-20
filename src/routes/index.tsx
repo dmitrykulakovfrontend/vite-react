@@ -105,7 +105,7 @@ function Index() {
           <div className="text-2xl">
             <p>Войди в историю!</p>
             <p>
-              Посади на{" "}
+              Посади живое именное дерево на:
               <AnimatePresence mode="wait">
                 <motion.span
                   key={planetsArray[planetIndex]}
@@ -117,8 +117,7 @@ function Index() {
                 >
                   {planetsArray[planetIndex]}
                 </motion.span>
-              </AnimatePresence>{" "}
-              живое именное дерево
+              </AnimatePresence>
             </p>
             <p>
               Уже посажено деревьев:{" "}

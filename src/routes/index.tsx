@@ -28,24 +28,21 @@ function Index() {
   const [isSimulationActive, setSimulationActive] = useState(true);
   const planetsArray: Planet[] = ["Земле", "Юпитере", "Марсе"];
   const [planetIndex, setPlanetIndex] = useState(0);
+  const [newCountValue, setNewCountValue] = useState(32000);
   const count = useMotionValue(32000);
 
   const rounded = useTransform(count, (latest) =>
     Math.round(latest).toLocaleString(),
   );
-  const difference = useTransform(count, (latest) => {
-    const diff = Math.round(latest) - 32000;
-    return `(+${diff.toLocaleString()})`;
-  });
 
   useEffect(() => {
-    const controls = animate(count, 50000, {
-      duration: 25000, // A very slow animation (20 seconds)
-      ease: "linear",
+    const controls = animate(count, newCountValue, {
+      duration: 2, // A very slow animation (20 seconds)
+      ease: "easeInOut",
     });
 
     return controls.stop;
-  }, [count]);
+  }, [newCountValue, count]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -60,7 +57,14 @@ function Index() {
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [planetsArray.length, planetsArray]);
+  }, [planetsArray.length]);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setNewCountValue((prev) => prev + Math.round(Math.random() * 20));
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, []);
   useEffect(() => {
     let intervalId = undefined;
     if (isSimulationActive) {
@@ -125,7 +129,7 @@ function Index() {
                 {rounded}
               </motion.span>
               <motion.span className="ml-2 font-sans font-semibold text-green-400">
-                {difference}
+                {`(+${newCountValue - Math.round(count.get())})`}
               </motion.span>
             </p>
           </div>

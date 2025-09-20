@@ -27,11 +27,10 @@ function Index() {
   const [isSimulationActive, setSimulationActive] = useState(true);
   const planetsArray: Planet[] = ["Земле", "Юпитере", "Марсе"];
   const [planetIndex, setPlanetIndex] = useState(0);
-  const count = useMotionValue(0);
+  const count = useMotionValue(32000);
 
   const spring = useSpring(count, {
-    stiffness: 100,
-    damping: 100,
+    stiffness: 1,
   });
 
   const rounded = useTransform(spring, (latest) =>
@@ -39,7 +38,7 @@ function Index() {
   );
 
   useEffect(() => {
-    count.set(32000);
+    count.set(45000);
   }, [count]);
 
   useEffect(() => {

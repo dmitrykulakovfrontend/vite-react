@@ -382,33 +382,68 @@ class TreeAnimation {
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
     // Keep the render loop going if a transition is active
-    if (this.colorTransition.startTime) {
-      requestAnimationFrame(() => this.render());
-    }
+    // if (this.colorTransition.startTime) {
+    //   requestAnimationFrame(() => this.render());
+    // }
   }
   private drawHighlight(treeX: number, treeY: number) {
+    if (!this.userTreePosition) return;
+    const { x: treeWorldX, y: treeWorldY } = this.userTreePosition;
+    const { x: viewX, y: viewY, scale } = this.viewportTransform;
+
+    // Calculate the tree's position on the screen
+    const screenX = treeWorldX * scale + viewX;
+    const screenY = treeWorldY * scale + viewY;
+
+    const centerX = this.canvas.width / 2;
+    const centerY = this.canvas.height / 2;
+    const radius = Math.min(centerX, centerY);
+    const padding = 40; // How far from the edge the indicator will be
+
+    const distance = Math.hypot(screenX - centerX, screenY - centerY);
+
+    // If the tree is not inside the visible circle area, do nothing
+    if (distance > radius - padding) {
+      return;
+    }
     const { ctx } = this;
-    const radius = 80; // The size of the highlight in world units
+    const pinHeight = 120; // Height of the pin in world units
+    const pinWidth = 80; // Width of the pin's top circle
+    const pinTipHeight = 30; // Height of the pointy tip
+
     ctx.save();
-    ctx.globalAlpha = 1; // Set transparency for a subtle glow effect
-
-    // Create a radial gradient (from yellow to transparent)
-    const gradient = ctx.createRadialGradient(
-      treeX,
-      treeY,
+    ctx.setTransform(
+      this.viewportTransform.scale,
       0,
-      treeX,
-      treeY,
-      radius,
+      0,
+      this.viewportTransform.scale,
+      this.viewportTransform.x,
+      this.viewportTransform.y,
     );
-    gradient.addColorStop(0, "rgba(255, 255, 0, 1)"); // Bright center
-    gradient.addColorStop(1, "rgba(255, 255, 0, 0)"); // Fades to transparent
 
-    ctx.fillStyle = gradient;
-    ctx.beginPath();
-    // Draw the circle slightly above the tree base (Y=0)
-    ctx.arc(treeX, treeY, radius, 0, Math.PI * 2);
+    // Position the pin above the tree.
+    const pinBaseX = treeX;
+    const pinBaseY = treeY - pinHeight / 2 - 200; // Adjust Y to be above the tree
+
+    // Pointy tip (triangle)
+    ctx.moveTo(pinBaseX - pinWidth / 4, pinBaseY + pinTipHeight / 2);
+    ctx.lineTo(pinBaseX, pinBaseY + pinHeight / 2); // Tip point
+    ctx.lineTo(pinBaseX + pinWidth / 4, pinBaseY + pinTipHeight / 2);
+    ctx.closePath();
+
+    ctx.fillStyle = "red";
     ctx.fill();
+    ctx.strokeStyle = "white";
+    ctx.lineWidth = 5;
+    ctx.stroke();
+
+    // Draw the text "YOU ARE HERE"
+    ctx.font = "bold 30px Arial, sans-serif"; // You can adjust font-family
+    ctx.fillStyle = "white";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("Ваше дерево", pinBaseX, pinBaseY - 20); // Adjust Y for text position
+
     ctx.restore();
   }
 
@@ -418,18 +453,14 @@ class TreeAnimation {
     const { x: treeWorldX, y: treeWorldY } = this.userTreePosition;
     const { x: viewX, y: viewY, scale } = this.viewportTransform;
 
-    // Calculate the tree's position on the screen
     const screenX = treeWorldX * scale + viewX;
     const screenY = treeWorldY * scale + viewY;
 
-    // --- NEW LOGIC FOR CIRCLE ---
     const centerX = this.canvas.width / 2;
     const centerY = this.canvas.height / 2;
-    // Assumes the circle takes up the smaller of the canvas dimensions
     const radius = Math.min(centerX, centerY);
     const padding = 40; // How far from the edge the indicator will be
 
-    // 1. New Visibility Check: Check distance from center
     const distance = Math.hypot(screenX - centerX, screenY - centerY);
 
     // If the tree is inside the visible circle area, do nothing
@@ -437,30 +468,27 @@ class TreeAnimation {
       return;
     }
 
-    // 2. New Position Calculation: Use trigonometry ✨
-    // The angle calculation is the same
     const angle = Math.atan2(screenY - centerY, screenX - centerX);
 
-    // Position the indicator on the circumference of the padded circle
     const indicatorX = centerX + (radius - padding) * Math.cos(angle);
     const indicatorY = centerY + (radius - padding) * Math.sin(angle);
 
-    // --- Drawing the Arrow (this part remains the same) ---
-    this.ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset canvas transform
+    // Drawing the Arrow
+    this.ctx.setTransform(1, 0, 0, 1, 0, 0);
     this.ctx.save();
-    this.ctx.translate(indicatorX, indicatorY); // Move to the indicator's position
+    this.ctx.translate(indicatorX, indicatorY);
     this.ctx.rotate(angle); // Rotate to point towards the tree
 
     // Draw a triangle shape
-    this.ctx.fillStyle = "rgba(255, 223, 0, 0.85)"; // Gold color
-    this.ctx.strokeStyle = "rgba(0, 0, 0, 0.6)";
-    this.ctx.lineWidth = 2;
-    this.ctx.beginPath();
     this.ctx.moveTo(15, 0);
-    this.ctx.lineTo(-10, -10);
+    this.ctx.lineTo(-10, -10); // Tip point
     this.ctx.lineTo(-10, 10);
     this.ctx.closePath();
+
+    this.ctx.fillStyle = "red";
     this.ctx.fill();
+    this.ctx.strokeStyle = "white";
+    this.ctx.lineWidth = 5;
     this.ctx.stroke();
 
     this.ctx.restore();

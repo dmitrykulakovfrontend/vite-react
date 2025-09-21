@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import { useMainStore } from "@/providers/store";
-import useSWR from "swr";
+import { mutate } from "swr";
 import { useCookies } from "react-cookie";
 
 export const Route = createFileRoute("/login")({
@@ -13,8 +13,8 @@ function RouteComponent() {
   const { setUser } = useMainStore();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [cookies, setCookie] = useCookies(["auth-token"]);
-  const { mutate } = useSWR("https://hrzero.ru/api/passport/");
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -26,27 +26,31 @@ function RouteComponent() {
     };
 
     try {
-      const userData = await mutate(async () => {
-        const response = await fetch("https://hrzero.ru/api/passport/", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: cookies["auth-token"],
-          },
-          body: JSON.stringify(jsonrpc),
-        });
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-        const data = await response.json();
-        if (data.error) {
-          throw new Error(data.error.message);
-        }
-        return data.result;
-      });
+      const userData = await mutate(
+        "https://hrzero.ru/api/passport/",
+        async () => {
+          const response = await fetch("https://hrzero.ru/api/passport/", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: cookies["auth-token"],
+            },
+            body: JSON.stringify(jsonrpc),
+          });
+          if (!response.ok) {
+            throw new Error("Network response was not ok");
+          }
+          const data = await response.json();
+          if (data.error) {
+            setError(data.error.message);
+            throw new Error(data.error.message);
+          }
+          return data.result;
+        },
+        {},
+      );
 
       if (userData) {
-        console.error(userData);
         setUser(userData.user);
         setCookie("auth-token", userData.token);
         navigate({ to: "/" });
@@ -98,6 +102,7 @@ function RouteComponent() {
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
+          <p className="text-red-500 text-center">{error}</p>
           <div>
             <button
               type="submit"

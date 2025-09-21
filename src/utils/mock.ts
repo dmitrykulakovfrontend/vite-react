@@ -1,4 +1,5 @@
-import type { Tree } from "@/types/Tree";
+import type { Planet, Tree } from "@/types/Tree";
+export const planetsArray: Planet[] = ["Земля", "Юпитер", "Марс"];
 
 export async function fakeTrees(): Promise<Tree[]> {
   return new Promise((resolve) =>

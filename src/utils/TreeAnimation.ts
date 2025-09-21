@@ -15,9 +15,11 @@ type Colors = typeof colors;
 const colors = {
   sky: "#00C0F0",
   leaf: "#30B700",
-  grass: "#009A17",
-  jupiter: "#D2B48C",
-  mars: "#D2691E",
+  planets: {
+    Земля: "#009A17",
+    Марс: "#D2691E",
+    Юпитер: "#D2B48C",
+  } as Record<Planet, string>,
   trunk: "#8B4513",
   witheredTrunk: "#5A4634",
   witheredLeaf: "#FFD700",
@@ -53,14 +55,14 @@ class TreeAnimation {
   currentColor: { r: number; g: number; b: number };
   targetColor: { r: number; g: number; b: number };
   colorTransition: { startTime: number | null; duration: number };
-  currentUserTree?: Tree;
+  currentUserTree?: Tree | null;
   userTreePosition: { x: number; y: number } | null; // Add this line
 
   constructor(options: Forest & { container: HTMLDivElement }) {
     this.trees = options.trees;
     this.isLoading = options.isLoading;
     this.simulation = options.simulation || false;
-    this.planet = options.planet || "Земле";
+    this.planet = options.planet || "Земля";
     this.container = options.container;
     this.stageWidth = this.container.clientWidth;
     this.stageHeight = this.container.clientHeight;
@@ -74,8 +76,8 @@ class TreeAnimation {
     this.ctx = ctx;
 
     this.colors = colors;
-    this.currentColor = this.hexToRgb(this.colors.grass);
-    this.targetColor = this.hexToRgb(this.colors.grass);
+    this.currentColor = this.hexToRgb(this.colors.planets[this.planet]);
+    this.targetColor = this.hexToRgb(this.colors.planets[this.planet]);
     this.colorTransition = { startTime: null, duration: 2000 }; // 2-second duration
 
     this.currentUserTree = options.currentUserTree;
@@ -152,7 +154,7 @@ class TreeAnimation {
       this.ctx.fillRect(0, 0, this.canvas.width, horizonY);
 
       // fill grass
-      this.ctx.fillStyle = this.colors.grass;
+      this.ctx.fillStyle = this.colors.planets[this.planet];
       this.ctx.fillRect(
         0,
         horizonY,
@@ -279,12 +281,8 @@ class TreeAnimation {
       this.ctx.textAlign = "center";
       this.ctx.textBaseline = "top";
       const padding = 30;
-      if (this.planet === "Земле") {
-        this.ctx.fillText("Земля", this.canvas.width / 2, padding);
-      } else if (this.planet === "Юпитере") {
-        this.ctx.fillText("Юпитер", this.canvas.width / 2, padding);
-      } else if (this.planet === "Марсе") {
-        this.ctx.fillText("Марс", this.canvas.width / 2, padding);
+      if (this.planet) {
+        this.ctx.fillText(this.planet, this.canvas.width / 2, padding);
       }
     }
 
@@ -328,21 +326,8 @@ class TreeAnimation {
 
   private updateBackgroundColor() {
     // Determine the desired color based on the current planet
-    let desiredColorHex: string;
-    switch (this.planet) {
-      case "Юпитере":
-        desiredColorHex = this.colors.jupiter;
-        break;
-      case "Марсе":
-        desiredColorHex = this.colors.mars;
-        break;
-      case "Земле":
-      default:
-        desiredColorHex = this.colors.grass;
-        break;
-    }
 
-    const desiredColorRgb = this.hexToRgb(desiredColorHex);
+    const desiredColorRgb = this.hexToRgb(this.colors.planets[this.planet]);
 
     // If the target color changes, start a new transition
     if (
@@ -385,53 +370,60 @@ class TreeAnimation {
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
     // Keep the render loop going if a transition is active
-    // if (this.colorTransition.startTime) {
-    //   requestAnimationFrame(() => this.render());
-    // }
+    if (this.colorTransition.startTime && !this.simulation) {
+      requestAnimationFrame(() => this.render());
+    }
   }
   private drawHighlight(treeX: number, treeY: number) {
-    const { ctx } = this;
     if (!this.userTreePosition) return;
+
+    const { ctx, viewportTransform, canvas, simulation } = this;
     const { x: treeWorldX, y: treeWorldY } = this.userTreePosition;
-    const { x: viewX, y: viewY, scale } = this.viewportTransform;
+    const { x: viewX, y: viewY, scale } = viewportTransform;
 
     // Calculate the tree's position on the screen
     const screenX = treeWorldX * scale + viewX;
     const screenY = treeWorldY * scale + viewY;
 
-    const centerX = this.canvas.width / 2;
-    const centerY = this.canvas.height / 2;
-    const radius = Math.min(centerX, centerY);
-    const padding = 40; // How far from the edge the indicator will be
+    const { width: w, height: h } = canvas;
+    const padding = 40;
 
-    const distance = Math.hypot(screenX - centerX, screenY - centerY);
+    // Determine if the highlight should be drawn based on the mode
+    let shouldDrawHighlight = false;
 
-    // If the tree is not inside the visible circle area, do nothing
-    if (distance > radius - padding) {
+    if (simulation) {
+      const centerX = w / 2;
+      const centerY = h / 2;
+      const radius = Math.min(centerX, centerY);
+      const distance = Math.hypot(screenX - centerX, screenY - centerY);
+      shouldDrawHighlight = distance < radius - padding;
+    } else {
+      shouldDrawHighlight =
+        screenX > padding &&
+        screenX < w - padding &&
+        screenY > padding &&
+        screenY < h - padding;
+    }
+
+    // If the highlight should not be drawn, exit early
+    if (!shouldDrawHighlight) {
       return;
     }
-    const pinHeight = 120; // Height of the pin in world units
-    const pinWidth = 80; // Width of the pin's top circle
-    const pinTipHeight = 30; // Height of the pointy tip
 
+    // Common drawing logic for the highlight pin
     ctx.save();
-    ctx.setTransform(
-      this.viewportTransform.scale,
-      0,
-      0,
-      this.viewportTransform.scale,
-      this.viewportTransform.x,
-      this.viewportTransform.y,
-    );
+    ctx.setTransform(scale, 0, 0, scale, viewX, viewY);
 
-    // Position the pin above the tree.
+    const pinHeight = 120;
+    const pinWidth = 80;
+    const pinTipHeight = 30;
     const pinBaseX = treeX;
-    const pinBaseY = treeY - pinHeight / 2 - 200; // Adjust Y to be above the tree
+    const pinBaseY = treeY - pinHeight / 2 - 200;
 
-    // Pointy tip (triangle)
+    // Draw the pin's pointy tip
     ctx.beginPath();
     ctx.moveTo(pinBaseX - pinWidth / 4, pinBaseY + pinTipHeight / 2);
-    ctx.lineTo(pinBaseX, pinBaseY + pinHeight / 2); // Tip point
+    ctx.lineTo(pinBaseX, pinBaseY + pinHeight / 2);
     ctx.lineTo(pinBaseX + pinWidth / 4, pinBaseY + pinTipHeight / 2);
     ctx.closePath();
 
@@ -440,12 +432,13 @@ class TreeAnimation {
     ctx.strokeStyle = "white";
     ctx.lineWidth = 5;
     ctx.stroke();
-    // Draw the text "YOU ARE HERE"
-    ctx.font = "bold 30px Arial, sans-serif"; // You can adjust font-family
+
+    // Draw the "Ваше дерево" text
+    ctx.font = "bold 30px Arial, sans-serif";
     ctx.fillStyle = "white";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText("Ваше дерево", pinBaseX, pinBaseY - 20); // Adjust Y for text position
+    ctx.fillText("Ваше дерево", pinBaseX, pinBaseY - 20);
 
     ctx.restore();
   }
@@ -455,36 +448,69 @@ class TreeAnimation {
 
     const { x: treeWorldX, y: treeWorldY } = this.userTreePosition;
     const { x: viewX, y: viewY, scale } = this.viewportTransform;
+    const { width: w, height: h } = this.canvas;
+    const padding = 40;
 
+    // Calculate the tree's position on the screen
     const screenX = treeWorldX * scale + viewX;
     const screenY = treeWorldY * scale + viewY;
 
-    const centerX = this.canvas.width / 2;
-    const centerY = this.canvas.height / 2;
-    const radius = Math.min(centerX, centerY);
-    const padding = 40; // How far from the edge the indicator will be
+    // Determine if the indicator needs to be drawn and its position
+    let indicatorX, indicatorY, angle;
 
-    const distance = Math.hypot(screenX - centerX, screenY - centerY);
+    if (this.simulation) {
+      const centerX = w / 2;
+      const centerY = h / 2;
+      const radius = Math.min(centerX, centerY);
+      const distance = Math.hypot(screenX - centerX, screenY - centerY);
 
-    // If the tree is inside the visible circle area, do nothing
-    if (distance < radius - padding) {
-      return;
+      // If the tree is visible within the simulation circle, do nothing
+      if (distance < radius - padding) {
+        return;
+      }
+
+      angle = Math.atan2(screenY - centerY, screenX - centerX);
+      indicatorX = centerX + (radius - padding) * Math.cos(angle);
+      indicatorY = centerY + (radius - padding) * Math.sin(angle);
+    } else {
+      // If the tree is visible on screen, do nothing
+      if (
+        screenX > padding &&
+        screenX < w - padding &&
+        screenY > padding &&
+        screenY < h - padding
+      ) {
+        return;
+      }
+
+      const centerX = w / 2;
+      const centerY = h / 2;
+      angle = Math.atan2(screenY - centerY, screenX - centerX);
+      const boundX = w - padding;
+      const boundY = h - padding;
+      const tan = Math.tan(angle);
+
+      if (Math.abs((boundY - centerY) / tan) < boundX - centerX) {
+        // It intersects with the top or bottom edge first
+        indicatorY = screenY > centerY ? boundY : padding;
+        indicatorX = centerX + (indicatorY - centerY) / tan;
+      } else {
+        // It intersects with the left or right edge first
+        indicatorX = screenX > centerX ? boundX : padding;
+        indicatorY = centerY + (indicatorX - centerX) * tan;
+      }
     }
 
-    const angle = Math.atan2(screenY - centerY, screenX - centerX);
-
-    const indicatorX = centerX + (radius - padding) * Math.cos(angle);
-    const indicatorY = centerY + (radius - padding) * Math.sin(angle);
-
-    // Drawing the Arrow
+    // Common drawing logic for the arrow
     this.ctx.setTransform(1, 0, 0, 1, 0, 0);
     this.ctx.save();
     this.ctx.translate(indicatorX, indicatorY);
-    this.ctx.rotate(angle); // Rotate to point towards the tree
+    this.ctx.rotate(angle);
 
     // Draw a triangle shape
+    this.ctx.beginPath();
     this.ctx.moveTo(15, 0);
-    this.ctx.lineTo(-10, -10); // Tip point
+    this.ctx.lineTo(-10, -10);
     this.ctx.lineTo(-10, 10);
     this.ctx.closePath();
 

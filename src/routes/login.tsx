@@ -13,7 +13,7 @@ function RouteComponent() {
   const { setUser } = useMainStore();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [cookies] = useCookies(["auth-token"]);
+  const [cookies, setCookie] = useCookies(["auth-token"]);
   const { mutate } = useSWR("https://hrzero.ru/api/passport/");
 
   const handleSubmit = async (e: FormEvent) => {
@@ -46,8 +46,10 @@ function RouteComponent() {
       });
 
       if (userData) {
+        console.error(userData);
         setUser(userData.user);
-        navigate({ to: "/tree" });
+        setCookie("auth-token", userData.token);
+        navigate({ to: "/" });
       }
     } catch (error) {
       console.error("Login failed:", error);

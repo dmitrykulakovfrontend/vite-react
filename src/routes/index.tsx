@@ -10,8 +10,8 @@ import {
   animate,
 } from "framer-motion";
 import { useMainStore } from "@/providers/store";
-import type { Planet } from "@/types/Tree";
 import { Pause, Play } from "lucide-react";
+import { planetsArray } from "@/utils/mock";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -19,14 +19,14 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const trees = useMainStore((state) => state.trees);
+  const user = useMainStore((state) => state.user);
   const treeRef = useRef<TreeHandle>(null);
   useEffect(() => {
     if (trees.length > 1 && treeRef.current) {
-      treeRef.current.update(trees, false, trees[15250]);
+      treeRef.current.update(trees, false, user ? trees[15250] : null);
     }
   }, [trees]);
   const [isSimulationActive, setSimulationActive] = useState(true);
-  const planetsArray: Planet[] = ["Земле", "Юпитере", "Марсе"];
   const [planetIndex, setPlanetIndex] = useState(0);
   const [newCountValue, setNewCountValue] = useState(32000);
   const count = useMotionValue(32000);
@@ -35,6 +35,12 @@ function Index() {
     Math.round(latest).toLocaleString(),
   );
   const opacity = useMotionValue(0);
+
+  const planetMap = {
+    Земля: "Земле",
+    Марс: "Марсе",
+    Юпитер: "Юпитере",
+  };
 
   useEffect(() => {
     if (lastIncrement !== 0) {
@@ -137,9 +143,9 @@ function Index() {
                   initial="initial"
                   animate="animate"
                   exit="exit"
-                  className={`text-blue-sky text-center ${planetsArray[planetIndex] === "Юпитере" ? "w-28" : "w-20"} font-futura-heavy inline-block`} // Use inline-block
+                  className={`text-blue-sky text-center ${planetsArray[planetIndex] === "Юпитер" ? "w-28" : "w-20"} font-futura-heavy inline-block`} // Use inline-block
                 >
-                  {planetsArray[planetIndex]}
+                  {planetMap[planetsArray[planetIndex]]}
                 </motion.span>
               </AnimatePresence>
             </p>

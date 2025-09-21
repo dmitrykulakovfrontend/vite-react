@@ -46,7 +46,7 @@ const RootLayout = () => {
   const user = useMainStore((s) => s.user);
   const [cookies] = useCookies(["auth-token"]);
   // Use SWR to fetch user data
-  const { data, error } = useSWR(
+  const { data, error, isLoading } = useSWR(
     cookies["auth-token"] ? "https://hrzero.ru/api/passport/" : null,
     (url) => userFetcher(url, cookies["auth-token"]),
   );
@@ -65,8 +65,8 @@ const RootLayout = () => {
   }, [trees, setTrees]);
 
   // Handle loading and error states for user data
-  if (error) return <div>Failed to load user.</div>;
-  if (cookies["auth-token"] && !data) return <div>Loading...</div>;
+  if (error) console.log(error);
+  if (isLoading) return <div>Loading...</div>;
   return (
     <>
       <Header isMenuOpen={isMenuOpen} setMenuOpen={setMenuOpen} />

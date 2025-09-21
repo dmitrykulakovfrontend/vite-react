@@ -1,5 +1,5 @@
 import { useMainStore } from "@/providers/store";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useCookies } from "react-cookie";
 
 const Header = ({
@@ -12,9 +12,11 @@ const Header = ({
   const setUser = useMainStore((s) => s.setUser);
   const user = useMainStore((s) => s.user);
   const [, setCookies] = useCookies(["auth-token"]);
+  const navigate = useNavigate();
   const logout = () => {
     setCookies("auth-token", "", { path: "/" });
     setUser(null);
+    navigate({ to: "/" });
   };
   const links = [
     { to: "/", label: "Главная" },

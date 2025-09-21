@@ -7,8 +7,14 @@ const Header = ({
   isMenuOpen: boolean;
   setMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
+  const links = [
+    { to: "/", label: "Главная" },
+    { to: "/tasks", label: "Задачи" },
+    { to: "/tree", label: "Профиль" },
+    { to: "/forest", label: "Лес" },
+  ];
   return (
-    <header className="fixed top-0 left-0 z-50 flex items-center justify-between w-full p-2 bg-[linear-gradient(150deg,#01538b00_45%,#1b688ea6_100%)] text-white shadow-md">
+    <header className="fixed top-0 left-0 z-50 flex items-center justify-between w-full p-2 bg-transparent text-white">
       <Link to="/" className="[&.active]:font-bold shrink-0">
         <img
           src={"/logo_white_small.png"}
@@ -30,38 +36,19 @@ const Header = ({
           isMenuOpen ? "block" : "hidden sm:flex"
         }`}
       >
-        <li>
-          <Link
-            to="/"
-            className="[&.active]:font-bold block p-1 hover:bg-gray-100 rounded"
-          >
-            Главная
-          </Link>
-        </li>
-        <li>
-          <Link
-            to="/tasks"
-            className="[&.active]:font-bold block p-1 hover:bg-gray-100 rounded"
-          >
-            Задачи
-          </Link>
-        </li>
-        <li>
-          <Link
-            to="/tree"
-            className="[&.active]:font-bold block p-1 hover:bg-gray-100 rounded"
-          >
-            Профиль
-          </Link>
-        </li>
-        <li>
-          <Link
-            to="/forest"
-            className="[&.active]:font-bold block p-1 hover:bg-gray-100 rounded"
-          >
-            Лес
-          </Link>
-        </li>
+        {links.map((link) => (
+          <li key={link.to}>
+            <Link
+              to={link.to}
+              className="[&.active]:font-bold block py-2 h-full font-futura-heavy hover:opacity-90 hover:cursor-pointer"
+              activeProps={{
+                className: "border-b-4 border-white border-solid",
+              }}
+            >
+              {link.label}
+            </Link>
+          </li>
+        ))}
       </ul>
 
       <div className="hidden gap-2 sm:flex">

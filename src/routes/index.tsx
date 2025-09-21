@@ -34,11 +34,23 @@ function Index() {
   const rounded = useTransform(count, (latest) =>
     Math.round(latest).toLocaleString(),
   );
+  const opacity = useMotionValue(0);
+
+  useEffect(() => {
+    if (lastIncrement !== 0) {
+      const animation = animate(opacity, [0, 1, 1, 0], {
+        duration: 6,
+        ease: "linear",
+        times: [0, 0.1, 0.9, 1], // The key change
+      });
+      return () => animation.stop();
+    }
+  }, [lastIncrement, opacity]);
 
   useEffect(() => {
     const controls = animate(count, newCountValue, {
-      duration: 4, // A very slow animation (20 seconds)
-      ease: "easeInOut",
+      duration: 6, // A very slow animation (20 seconds)
+      ease: "linear",
     });
 
     return controls.stop;
@@ -58,12 +70,20 @@ function Index() {
 
     return () => clearInterval(interval);
   }, [planetsArray.length]);
+  console.log({ newCountValue, count: count.get(), lastIncrement });
   useEffect(() => {
-    const interval = setInterval(() => {
-      const increment = Math.floor(Math.random() * 18) + 2;
-      setLastIncrement(increment);
-      setNewCountValue((prev) => prev + increment);
-    }, 5000);
+    function randomizeCounter() {
+      const increment = Math.floor(Math.random() * 8) + 2;
+      const isNegative = Math.random() < 0.2;
+      if (isNegative) {
+        setLastIncrement(() => increment);
+        setNewCountValue((prev) => prev - increment);
+      } else {
+        setLastIncrement(() => increment);
+        setNewCountValue((prev) => prev + increment);
+      }
+    }
+    const interval = setInterval(randomizeCounter, 7000);
     return () => clearInterval(interval);
   }, []);
   useEffect(() => {
@@ -129,8 +149,15 @@ function Index() {
               <motion.span className="font-sans font-semibold text-blue-sky">
                 {rounded}
               </motion.span>
-              <motion.span className="ml-2 font-sans font-semibold text-green-400">
-                (+{lastIncrement})
+              <motion.span
+                style={{ opacity }}
+                className={`ml-2 font-sans font-semibold ${count.get() < newCountValue ? "text-green-400" : "text-red-400"}`}
+              >
+                {lastIncrement === 0
+                  ? ``
+                  : count.get() < newCountValue
+                    ? `(+${lastIncrement})`
+                    : `(-${lastIncrement})`}
               </motion.span>
             </p>
           </div>
@@ -154,6 +181,11 @@ function Index() {
             <button
               className="absolute -left-12 bottom-1/2 translate-y-1/2"
               onClick={() => setSimulationActive((prev) => !prev)}
+              title={
+                isSimulationActive
+                  ? "Остановить симуляцию"
+                  : "Запустить симуляцию"
+              }
             >
               {isSimulationActive ? (
                 <Pause className="w-full h-full  bg-blue-primary hover:bg-blue-500 rounded-full p-1 hover:cursor-pointer" />

@@ -470,8 +470,8 @@ class TreeAnimation {
             tree.decayProgress = Math.max((tree.decayProgress || 0) - 1, 0);
           }
         }
-        if (Math.random() < 0.1) {
-          tree.decayProgress = Math.min((tree.decayProgress || 0) + 0.2, 2);
+        if (tree.depth < this.maxDepth && Math.random() < 0.5) {
+          tree.decayProgress = Math.min((tree.decayProgress || 0) + 0.3, 2);
         }
       }
     }

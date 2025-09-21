@@ -34,9 +34,6 @@ function RouteComponent() {
             },
             body: JSON.stringify(jsonrpc),
           });
-          if (!response.ok) {
-            throw new Error("Network response was not ok");
-          }
           const data = await response.json();
           if (data.error) {
             setError(data.error.message);

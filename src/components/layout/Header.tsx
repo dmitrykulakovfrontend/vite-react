@@ -32,7 +32,7 @@ const Header = ({
       </button>
 
       <ul
-        className={`flex flex-col sm:flex-row gap-2 sm:gap-4 absolute sm:static top-full left-0 w-full sm:w-auto bg-white sm:bg-transparent p-2 sm:p-0 transition-all ${
+        className={`flex flex-col sm:flex-row gap-2 sm:gap-4 absolute sm:static top-full left-0 w-full sm:w-auto bg-transparent sm:bg-transparent p-2 sm:p-0 transition-all ${
           isMenuOpen ? "block" : "hidden sm:flex"
         }`}
       >
@@ -42,7 +42,8 @@ const Header = ({
               to={link.to}
               className="[&.active]:font-bold block py-2 h-full font-futura-heavy hover:opacity-90 hover:cursor-pointer"
               activeProps={{
-                className: "border-b-4 border-white border-solid",
+                className:
+                  "sm:border-b-4 max-sm:border-l-4 pl-2 sm:pl-0 border-white border-solid",
               }}
             >
               {link.label}

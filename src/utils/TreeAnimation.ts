@@ -54,6 +54,7 @@ class TreeAnimation {
   targetColor: { r: number; g: number; b: number };
   colorTransition: { startTime: number | null; duration: number };
   currentUserTree?: Tree;
+  userTreePosition: { x: number; y: number } | null; // Add this line
 
   constructor(options: Forest & { container: HTMLDivElement }) {
     this.trees = options.trees;
@@ -78,6 +79,7 @@ class TreeAnimation {
     this.colorTransition = { startTime: null, duration: 2000 }; // 2-second duration
 
     this.currentUserTree = options.currentUserTree;
+    this.userTreePosition = null; // And initialize it here
 
     this.gradientOffset = 0;
     this.direction = 2;
@@ -85,7 +87,7 @@ class TreeAnimation {
     this.previousX = 0;
     this.previousY = 0;
     this.maxDepth = 11;
-    this.rowHeight = 150;
+    this.rowHeight = 250;
     this.treesPerRow = 500;
     this.distanceBetween = 150;
     // this.treeScale = 0.3725;
@@ -180,17 +182,34 @@ class TreeAnimation {
       }
 
       if (!this.hasCentered && !this.isMainTree) {
-        // if (this.currentUserTree) {
-        // }
-        const centerX = (minX + maxX) / 2;
-        const centerY = (minY + maxY) / 2;
+        if (this.currentUserTree) {
+          for (let i = 0; i < this.trees.length; i++) {
+            if (this.trees[i].seed === this.currentUserTree.seed) {
+              const treeX = (i % this.treesPerRow) * this.distanceBetween;
+              const treeY = Math.floor(i / this.treesPerRow) * this.rowHeight;
 
-        this.viewportTransform.x =
-          this.stageWidth / 2 - centerX * this.viewportTransform.scale;
-        this.viewportTransform.y =
-          this.stageHeight / 2 - centerY * this.viewportTransform.scale;
+              this.userTreePosition = { x: treeX, y: treeY };
 
-        this.hasCentered = true;
+              this.viewportTransform.x =
+                this.stageWidth / 2 - treeX * this.viewportTransform.scale;
+              this.viewportTransform.y =
+                this.stageHeight / 2 - treeY * this.viewportTransform.scale;
+
+              this.hasCentered = true;
+              break;
+            }
+          }
+        } else {
+          const centerX = (minX + maxX) / 2;
+          const centerY = (minY + maxY) / 2;
+
+          this.viewportTransform.x =
+            this.stageWidth / 2 - centerX * this.viewportTransform.scale;
+          this.viewportTransform.y =
+            this.stageHeight / 2 - centerY * this.viewportTransform.scale;
+
+          this.hasCentered = true;
+        }
       } else if (this.isMainTree) {
         const centerX = (minX + maxX) / 2;
         this.viewportTransform.x =
@@ -240,6 +259,9 @@ class TreeAnimation {
             treeY,
             rng,
           };
+          if (this.currentUserTree && tree.seed === this.currentUserTree.seed) {
+            this.drawHighlight(treeX, treeY);
+          }
 
           this.drawFullTree(internalTree);
         }
@@ -262,6 +284,8 @@ class TreeAnimation {
         this.ctx.fillText("Марс", this.canvas.width / 2, padding);
       }
     }
+
+    this.drawOffscreenIndicator();
   }
   drawSimplifiedTree(tree: ModifiedTreeOptions) {
     const ctx = this.ctx;
@@ -361,6 +385,85 @@ class TreeAnimation {
     if (this.colorTransition.startTime) {
       requestAnimationFrame(() => this.render());
     }
+  }
+  private drawHighlight(treeX: number, treeY: number) {
+    const { ctx } = this;
+    const radius = 80; // The size of the highlight in world units
+    ctx.save();
+    ctx.globalAlpha = 1; // Set transparency for a subtle glow effect
+
+    // Create a radial gradient (from yellow to transparent)
+    const gradient = ctx.createRadialGradient(
+      treeX,
+      treeY,
+      0,
+      treeX,
+      treeY,
+      radius,
+    );
+    gradient.addColorStop(0, "rgba(255, 255, 0, 1)"); // Bright center
+    gradient.addColorStop(1, "rgba(255, 255, 0, 0)"); // Fades to transparent
+
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    // Draw the circle slightly above the tree base (Y=0)
+    ctx.arc(treeX, treeY, radius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  private drawOffscreenIndicator() {
+    if (!this.userTreePosition) return;
+
+    const { x: treeWorldX, y: treeWorldY } = this.userTreePosition;
+    const { x: viewX, y: viewY, scale } = this.viewportTransform;
+
+    // Calculate the tree's position on the screen
+    const screenX = treeWorldX * scale + viewX;
+    const screenY = treeWorldY * scale + viewY;
+
+    // --- NEW LOGIC FOR CIRCLE ---
+    const centerX = this.canvas.width / 2;
+    const centerY = this.canvas.height / 2;
+    // Assumes the circle takes up the smaller of the canvas dimensions
+    const radius = Math.min(centerX, centerY);
+    const padding = 40; // How far from the edge the indicator will be
+
+    // 1. New Visibility Check: Check distance from center
+    const distance = Math.hypot(screenX - centerX, screenY - centerY);
+
+    // If the tree is inside the visible circle area, do nothing
+    if (distance < radius - padding) {
+      return;
+    }
+
+    // 2. New Position Calculation: Use trigonometry ✨
+    // The angle calculation is the same
+    const angle = Math.atan2(screenY - centerY, screenX - centerX);
+
+    // Position the indicator on the circumference of the padded circle
+    const indicatorX = centerX + (radius - padding) * Math.cos(angle);
+    const indicatorY = centerY + (radius - padding) * Math.sin(angle);
+
+    // --- Drawing the Arrow (this part remains the same) ---
+    this.ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset canvas transform
+    this.ctx.save();
+    this.ctx.translate(indicatorX, indicatorY); // Move to the indicator's position
+    this.ctx.rotate(angle); // Rotate to point towards the tree
+
+    // Draw a triangle shape
+    this.ctx.fillStyle = "rgba(255, 223, 0, 0.85)"; // Gold color
+    this.ctx.strokeStyle = "rgba(0, 0, 0, 0.6)";
+    this.ctx.lineWidth = 2;
+    this.ctx.beginPath();
+    this.ctx.moveTo(15, 0);
+    this.ctx.lineTo(-10, -10);
+    this.ctx.lineTo(-10, 10);
+    this.ctx.closePath();
+    this.ctx.fill();
+    this.ctx.stroke();
+
+    this.ctx.restore();
   }
   updateZooming(e: WheelEvent) {
     e.preventDefault();

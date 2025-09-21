@@ -7,7 +7,7 @@ export type TreeHandle = {
   simulateGrow(): void;
   witherTree: (tree: Tree) => void;
   growOneLevel: (tree: Tree) => void;
-  update: (trees: Tree[], isLoading: boolean) => void;
+  update: (trees: Tree[], isLoading: boolean, currentUserTree: Tree) => void;
 };
 
 export const ForestView = forwardRef<
@@ -29,8 +29,6 @@ export const ForestView = forwardRef<
 
   useImperativeHandle(ref, () => ({
     updatePlanet: (planet: Planet) => {
-      console.log(planet);
-      console.log(1);
       if (treeRef.current) {
         treeRef.current.planet = planet;
         treeRef.current.render();
@@ -45,10 +43,11 @@ export const ForestView = forwardRef<
     witherTree: (tree: Tree) => {
       treeRef.current?.witherTree(tree);
     },
-    update: (trees: Tree[], isLoading: boolean) => {
+    update: (trees: Tree[], isLoading: boolean, currentUserTree: Tree) => {
       if (containerRef.current && treeRef.current) {
         treeRef.current.trees = trees;
         treeRef.current.isLoading = isLoading;
+        treeRef.current.currentUserTree = currentUserTree;
         treeRef.current.render();
       }
     },

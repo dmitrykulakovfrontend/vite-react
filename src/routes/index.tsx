@@ -22,7 +22,7 @@ function Index() {
   const treeRef = useRef<TreeHandle>(null);
   useEffect(() => {
     if (trees.length > 1 && treeRef.current) {
-      treeRef.current.update(trees, false);
+      treeRef.current.update(trees, false, trees[0]);
     }
   }, [trees]);
   const [isSimulationActive, setSimulationActive] = useState(true);
@@ -70,7 +70,6 @@ function Index() {
 
     return () => clearInterval(interval);
   }, [planetsArray.length]);
-  console.log({ newCountValue, count: count.get(), lastIncrement });
   useEffect(() => {
     function randomizeCounter() {
       const increment = Math.floor(Math.random() * 8) + 2;

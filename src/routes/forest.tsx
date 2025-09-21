@@ -58,8 +58,8 @@ function Index() {
               }
             }}
           >
-            <SelectTrigger className="w-[180px] border-0 hover:bg-blue-500  bg-blue-primary  hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white">
-              <SelectValue placeholder="Планета" />
+            <SelectTrigger className="w-[180px] border-0 hover:bg-blue-500  bg-blue-primary  hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white! ">
+              <SelectValue placeholder={planetsArray[0]} />
             </SelectTrigger>
             <SelectContent className="bg-blue-primary text-white">
               {planetsArray.map((planet) => (

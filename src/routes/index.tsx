@@ -156,14 +156,14 @@ function Index() {
               onClick={() => setSimulationActive((prev) => !prev)}
             >
               {isSimulationActive ? (
-                <Pause className="w-full h-full  bg-blue-primary rounded-full p-1" />
+                <Pause className="w-full h-full  bg-blue-primary hover:bg-blue-500 rounded-full p-1 hover:cursor-pointer" />
               ) : (
-                <Play className="w-full h-full  bg-blue-primary rounded-full p-1" />
+                <Play className="w-full h-full  bg-blue-primary hover:bg-blue-500 rounded-full p-1 hover:cursor-pointer" />
               )}
             </button>
 
             <Button
-              className=" max-w-[200px] max-lg:max-w-[150px] hover:bg-blue-500  bg-blue-light w-full hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white"
+              className=" max-w-[200px] max-lg:max-w-[150px] hover:bg-blue-500  bg-blue-primary w-full hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white"
               onClick={() => setSimulationActive((prev) => !prev)}
             >
               <Link

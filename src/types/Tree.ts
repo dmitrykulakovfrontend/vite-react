@@ -12,6 +12,7 @@ export interface Forest {
   trees: Tree[];
   isLoading: boolean;
   isMainTree?: boolean;
+  currentUserTree?: Tree;
   simulation?: boolean;
   planet?: Planet;
 }

@@ -50,6 +50,10 @@ class TreeAnimation {
   gradientOffset: number;
   direction: number;
   planet: Planet;
+  currentColor: { r: number; g: number; b: number };
+  targetColor: { r: number; g: number; b: number };
+  colorTransition: { startTime: number | null; duration: number };
+  currentUserTree?: Tree;
 
   constructor(options: Forest & { container: HTMLDivElement }) {
     this.trees = options.trees;
@@ -67,7 +71,13 @@ class TreeAnimation {
     const ctx = this.canvas.getContext("2d");
     if (!ctx) throw new Error("Canvas context not available");
     this.ctx = ctx;
+
     this.colors = colors;
+    this.currentColor = this.hexToRgb(this.colors.grass);
+    this.targetColor = this.hexToRgb(this.colors.grass);
+    this.colorTransition = { startTime: null, duration: 2000 }; // 2-second duration
+
+    this.currentUserTree = options.currentUserTree;
 
     this.gradientOffset = 0;
     this.direction = 2;
@@ -148,20 +158,7 @@ class TreeAnimation {
         this.canvas.height - horizonY,
       );
     } else {
-      console.log(this.planet);
-
-      if (this.planet === "Земле") {
-        this.ctx.fillStyle = this.colors.grass;
-      } else if (this.planet === "Юпитере") {
-        this.ctx.fillStyle = this.colors.jupiter;
-      } else if (this.planet === "Марсе") {
-        this.ctx.fillStyle = this.colors.mars;
-      } else {
-        this.ctx.fillStyle = this.colors.grass; // Default background
-      }
-
-      // Apply the chosen color and draw the background
-      this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+      this.updateBackgroundColor();
     }
     let minX = Infinity;
     let maxX = -Infinity;
@@ -183,6 +180,8 @@ class TreeAnimation {
       }
 
       if (!this.hasCentered && !this.isMainTree) {
+        // if (this.currentUserTree) {
+        // }
         const centerX = (minX + maxX) / 2;
         const centerY = (minY + maxY) / 2;
 
@@ -285,6 +284,83 @@ class TreeAnimation {
     ctx.lineWidth = this.branchWidth;
     ctx.stroke();
     ctx.closePath();
+  }
+  private hexToRgb(hex: string): { r: number; g: number; b: number } {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    if (!result) return { r: 0, g: 0, b: 0 };
+    return {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16),
+    };
+  }
+
+  private lerp(start: number, end: number, amount: number): number {
+    return start * (1 - amount) + end * amount;
+  }
+
+  private updateBackgroundColor() {
+    // Determine the desired color based on the current planet
+    let desiredColorHex: string;
+    switch (this.planet) {
+      case "Юпитере":
+        desiredColorHex = this.colors.jupiter;
+        break;
+      case "Марсе":
+        desiredColorHex = this.colors.mars;
+        break;
+      case "Земле":
+      default:
+        desiredColorHex = this.colors.grass;
+        break;
+    }
+
+    const desiredColorRgb = this.hexToRgb(desiredColorHex);
+
+    // If the target color changes, start a new transition
+    if (
+      desiredColorRgb.r !== this.targetColor.r ||
+      desiredColorRgb.g !== this.targetColor.g ||
+      desiredColorRgb.b !== this.targetColor.b
+    ) {
+      this.targetColor = desiredColorRgb;
+      this.colorTransition.startTime = Date.now();
+    }
+
+    // If a transition is in progress, calculate the interpolated color
+    if (this.colorTransition.startTime) {
+      const elapsed = Date.now() - this.colorTransition.startTime;
+      const progress = Math.min(1, elapsed / this.colorTransition.duration);
+
+      this.currentColor.r = this.lerp(
+        this.currentColor.r,
+        this.targetColor.r,
+        progress,
+      );
+      this.currentColor.g = this.lerp(
+        this.currentColor.g,
+        this.targetColor.g,
+        progress,
+      );
+      this.currentColor.b = this.lerp(
+        this.currentColor.b,
+        this.targetColor.b,
+        progress,
+      );
+
+      // If the transition is complete, stop it
+      if (progress >= 1) {
+        this.colorTransition.startTime = null;
+      }
+    }
+
+    this.ctx.fillStyle = `rgb(${Math.round(this.currentColor.r)}, ${Math.round(this.currentColor.g)}, ${Math.round(this.currentColor.b)})`;
+    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+    // Keep the render loop going if a transition is active
+    if (this.colorTransition.startTime) {
+      requestAnimationFrame(() => this.render());
+    }
   }
   updateZooming(e: WheelEvent) {
     e.preventDefault();

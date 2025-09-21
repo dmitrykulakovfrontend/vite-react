@@ -8,10 +8,10 @@ const Header = ({
   setMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
   return (
-    <header className="fixed top-0 left-0 z-50 flex items-center justify-between w-full p-2 bg-white shadow-md">
+    <header className="fixed top-0 left-0 z-50 flex items-center justify-between w-full p-2 bg-[linear-gradient(150deg,#01538b00_45%,#1b688ea6_100%)] text-white shadow-md">
       <Link to="/" className="[&.active]:font-bold shrink-0">
         <img
-          src={"/logo_2_small.png"}
+          src={"/logo_white_small.png"}
           width="150"
           height="30"
           alt="Логотип компании"

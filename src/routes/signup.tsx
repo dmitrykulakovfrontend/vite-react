@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
-import useSWR, { mutate } from "swr";
+import { mutate } from "swr";
 import { useCookies } from "react-cookie";
 
 export const Route = createFileRoute("/signup")({

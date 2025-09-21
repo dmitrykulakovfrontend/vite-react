@@ -1,4 +1,6 @@
+import { useMainStore } from "@/providers/store";
 import { Link } from "@tanstack/react-router";
+import { useCookies } from "react-cookie";
 
 const Header = ({
   isMenuOpen,
@@ -7,6 +9,13 @@ const Header = ({
   isMenuOpen: boolean;
   setMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
+  const setUser = useMainStore((s) => s.setUser);
+  const user = useMainStore((s) => s.user);
+  const [, setCookies] = useCookies(["auth-token"]);
+  const logout = () => {
+    setCookies("auth-token", "", { path: "/" });
+    setUser(null);
+  };
   const links = [
     { to: "/", label: "Главная" },
     { to: "/tasks", label: "Задачи" },
@@ -14,7 +23,7 @@ const Header = ({
     { to: "/forest", label: "Лес" },
   ];
   return (
-    <header className="fixed top-0 left-0 z-50 flex items-center justify-between w-full p-2 bg-transparent text-white">
+    <header className="fixed top-0 left-0 z-50 flex items-center justify-between w-full p-2 bg-[#00285e]  text-white">
       <Link to="/" className="[&.active]:font-bold shrink-0">
         <img
           src={"/logo_white_small.png"}
@@ -52,20 +61,39 @@ const Header = ({
         ))}
       </ul>
 
-      <div className="hidden gap-2 sm:flex">
-        <Link
-          to="/login"
-          className="bg-[linear-gradient(to_bottom,#3faaeb,#347df4)] hover:cursor-pointer rounded px-3 py-2 text-white text-sm"
-        >
-          Войти
-        </Link>
-        <Link
-          to="/signup"
-          className="bg-[linear-gradient(to_bottom,#3faaeb,#347df4)] hover:cursor-pointer rounded px-3 py-2 text-white text-sm"
-        >
-          Зарегистрироваться
-        </Link>
-      </div>
+      {user ? (
+        <div className="flex items-center gap-2">
+          <p>{user.email}</p>
+          <img
+            src={user.avatar_url}
+            width={40}
+            height={40}
+            className="rounded-full"
+          />
+          <Link
+            to="/"
+            onClick={logout}
+            className="bg-[linear-gradient(to_bottom,#3faaeb,#347df4)] hover:cursor-pointer rounded px-3 py-2 text-white text-sm"
+          >
+            Выйти
+          </Link>
+        </div>
+      ) : (
+        <div className="hidden gap-2 sm:flex">
+          <Link
+            to="/login"
+            className="bg-[linear-gradient(to_bottom,#3faaeb,#347df4)] hover:cursor-pointer rounded px-3 py-2 text-white text-sm"
+          >
+            Войти
+          </Link>
+          <Link
+            to="/signup"
+            className="bg-[linear-gradient(to_bottom,#3faaeb,#347df4)] hover:cursor-pointer rounded px-3 py-2 text-white text-sm"
+          >
+            Зарегистрироваться
+          </Link>
+        </div>
+      )}
     </header>
   );
 };

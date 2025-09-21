@@ -4,14 +4,14 @@ import type { User } from "@/types/User";
 
 interface State {
   trees: Tree[];
-  user: User;
+  user: User | null;
   setTrees: (nextTrees: Tree[]) => void;
-  setUser: (nextUser: User) => void;
+  setUser: (nextUser: User | null) => void;
 }
 
 export const useMainStore = create<State>((set) => ({
   trees: [],
-  user: { name: "test" },
+  user: null,
   setTrees: (nextTrees) => set({ trees: nextTrees }),
   setUser: (nextUser) => set({ user: nextUser }),
 }));

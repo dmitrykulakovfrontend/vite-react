@@ -259,11 +259,14 @@ class TreeAnimation {
             treeY,
             rng,
           };
-          if (this.currentUserTree && tree.seed === this.currentUserTree.seed) {
-            this.drawHighlight(treeX, treeY);
-          }
 
           this.drawFullTree(internalTree);
+          if (
+            this.currentUserTree &&
+            internalTree.seed === this.currentUserTree.seed
+          ) {
+            this.drawHighlight(treeX, treeY);
+          }
         }
       }
     }
@@ -387,6 +390,7 @@ class TreeAnimation {
     // }
   }
   private drawHighlight(treeX: number, treeY: number) {
+    const { ctx } = this;
     if (!this.userTreePosition) return;
     const { x: treeWorldX, y: treeWorldY } = this.userTreePosition;
     const { x: viewX, y: viewY, scale } = this.viewportTransform;
@@ -406,7 +410,6 @@ class TreeAnimation {
     if (distance > radius - padding) {
       return;
     }
-    const { ctx } = this;
     const pinHeight = 120; // Height of the pin in world units
     const pinWidth = 80; // Width of the pin's top circle
     const pinTipHeight = 30; // Height of the pointy tip
@@ -426,6 +429,7 @@ class TreeAnimation {
     const pinBaseY = treeY - pinHeight / 2 - 200; // Adjust Y to be above the tree
 
     // Pointy tip (triangle)
+    ctx.beginPath();
     ctx.moveTo(pinBaseX - pinWidth / 4, pinBaseY + pinTipHeight / 2);
     ctx.lineTo(pinBaseX, pinBaseY + pinHeight / 2); // Tip point
     ctx.lineTo(pinBaseX + pinWidth / 4, pinBaseY + pinTipHeight / 2);
@@ -436,7 +440,6 @@ class TreeAnimation {
     ctx.strokeStyle = "white";
     ctx.lineWidth = 5;
     ctx.stroke();
-
     // Draw the text "YOU ARE HERE"
     ctx.font = "bold 30px Arial, sans-serif"; // You can adjust font-family
     ctx.fillStyle = "white";

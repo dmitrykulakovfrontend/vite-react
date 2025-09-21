@@ -1,7 +1,12 @@
-import type { Tree } from "./Tree";
-
 export type User = {
-  email?: string;
-  name: string;
-  tree?: Tree;
+  created_at: string;
+  updated_at: string;
+  synced?: boolean;
+  cache: object | null;
+  id: number;
+  email: string;
+  password_hash: string;
+  avatar_url: string;
+  banned?: boolean;
+  metadata?: { [key: string]: unknown };
 };

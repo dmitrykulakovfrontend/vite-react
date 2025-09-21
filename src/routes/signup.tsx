@@ -98,7 +98,7 @@ function RouteComponent() {
           <div>
             <button
               type="submit"
-              className="w-full px-4 py-2 text-sm font-medium text-white bg-[linear-gradient(to_bottom,#3faaeb,#347df4)] border border-transparent rounded-md shadow-sm  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:#347df4"
+              className="w-full px-4 py-2 hover:cursor-pointer text-sm font-medium text-white bg-[linear-gradient(to_bottom,#3faaeb,#347df4)] border border-transparent rounded-md shadow-sm  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:#347df4"
             >
               Зарегистрироваться
             </button>

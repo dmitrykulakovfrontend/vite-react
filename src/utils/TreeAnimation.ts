@@ -267,7 +267,7 @@ class TreeAnimation {
             this.currentUserTree &&
             internalTree.seed === this.currentUserTree.seed
           ) {
-            this.drawHighlight(treeX, treeY);
+            this.drawHighlight(internalTree);
           }
         }
       }
@@ -374,7 +374,7 @@ class TreeAnimation {
       requestAnimationFrame(() => this.render());
     }
   }
-  private drawHighlight(treeX: number, treeY: number) {
+  private drawHighlight(tree: ModifiedTreeOptions) {
     if (!this.userTreePosition) return;
 
     const { ctx, viewportTransform, canvas, simulation } = this;
@@ -409,6 +409,8 @@ class TreeAnimation {
     if (!shouldDrawHighlight) {
       return;
     }
+    ctx.save();
+    ctx.setTransform(scale, 0, 0, scale, viewX, viewY);
 
     // Common drawing logic for the highlight pin
     ctx.save();
@@ -417,8 +419,8 @@ class TreeAnimation {
     const pinHeight = 120;
     const pinWidth = 80;
     const pinTipHeight = 30;
-    const pinBaseX = treeX;
-    const pinBaseY = treeY - pinHeight / 2 - 200;
+    const pinBaseX = tree.treeX;
+    const pinBaseY = tree.treeY - pinHeight / 2 - 200;
 
     // Draw the pin's pointy tip
     ctx.beginPath();
@@ -786,16 +788,26 @@ class TreeAnimation {
     const cpX = startX + (endX - startX) * 0.5 + (endY - startY) * 0.1;
     const cpY = startY + (endY - startY) * 0.5 - (endX - startX) * 0.1;
 
+    if (this.currentUserTree && tree.seed === this.currentUserTree.seed) {
+      this.ctx.beginPath();
+      this.ctx.moveTo(startX, startY);
+      this.ctx.quadraticCurveTo(cpX, cpY, endX, endY);
+      this.ctx.lineWidth = startWidth + 2; // Thicker for the outline
+      this.ctx.lineCap = "round";
+      this.ctx.strokeStyle = "white";
+      this.ctx.stroke();
+      this.ctx.closePath();
+    }
+
+    // Draw the trunk color on top
     this.ctx.beginPath();
     this.ctx.moveTo(startX, startY);
     this.ctx.quadraticCurveTo(cpX, cpY, endX, endY);
-
-    this.ctx.lineWidth = startWidth; // Using line width is simpler than a polygon
-    this.ctx.lineCap = "round"; // Makes joints look much smoother
+    this.ctx.lineWidth = startWidth; // Thinner for the trunk fill
+    this.ctx.lineCap = "round";
     this.ctx.strokeStyle = this.getTrunkColor(tree);
     this.ctx.stroke();
     this.ctx.closePath();
-
     // store branch
     tree.branches[depth].push(branch);
     if (depth >= tree.depth - 2 && tree.leafSize > 0) {

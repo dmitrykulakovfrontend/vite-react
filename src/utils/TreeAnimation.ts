@@ -788,17 +788,6 @@ class TreeAnimation {
     const cpX = startX + (endX - startX) * 0.5 + (endY - startY) * 0.1;
     const cpY = startY + (endY - startY) * 0.5 - (endX - startX) * 0.1;
 
-    if (this.currentUserTree && tree.seed === this.currentUserTree.seed) {
-      this.ctx.beginPath();
-      this.ctx.moveTo(startX, startY);
-      this.ctx.quadraticCurveTo(cpX, cpY, endX, endY);
-      this.ctx.lineWidth = startWidth + 2; // Thicker for the outline
-      this.ctx.lineCap = "round";
-      this.ctx.strokeStyle = "white";
-      this.ctx.stroke();
-      this.ctx.closePath();
-    }
-
     // Draw the trunk color on top
     this.ctx.beginPath();
     this.ctx.moveTo(startX, startY);

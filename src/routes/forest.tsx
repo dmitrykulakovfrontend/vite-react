@@ -25,7 +25,7 @@ function Index() {
   const treeRef = useRef<TreeHandle>(null);
   useEffect(() => {
     if (trees.length > 1 && treeRef.current) {
-      treeRef.current.update(trees, false, user ? trees[15250] : null);
+      treeRef.current.update(trees, false, user ? trees[5250] : null);
     }
   }, [trees, user]);
   const [isSimulationActive, setSimulationActive] = useState(false);

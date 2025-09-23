@@ -47,8 +47,6 @@ class TreeAnimation {
   treesPerRow: number;
   distanceBetween: number;
   colors: Colors;
-  branchWidth: number;
-  defaultLeafSize: number;
   gradientOffset: number;
   direction: number;
   planet: Planet;
@@ -57,6 +55,12 @@ class TreeAnimation {
   colorTransition: { startTime: number | null; duration: number };
   currentUserTree?: Tree | null;
   userTreePosition: { x: number; y: number } | null; // Add this line
+  maxTimesWatered: number;
+  startingDepth: number;
+  maxLeafSize: number;
+  startingLeafSize: number;
+  maxTreeWidth: number;
+  startingTreeWidth: number;
 
   constructor(options: Forest & { container: HTMLDivElement }) {
     this.trees = options.trees;
@@ -75,6 +79,14 @@ class TreeAnimation {
     if (!ctx) throw new Error("Canvas context not available");
     this.ctx = ctx;
 
+    this.maxTimesWatered = 156;
+    this.maxDepth = 44;
+    this.startingDepth = 1;
+    this.maxLeafSize = 156;
+    this.startingLeafSize = 2;
+    this.maxTreeWidth = 55;
+    this.startingTreeWidth = 3;
+
     this.colors = colors;
     this.currentColor = this.hexToRgb(this.colors.planets[this.planet]);
     this.targetColor = this.hexToRgb(this.colors.planets[this.planet]);
@@ -88,14 +100,11 @@ class TreeAnimation {
 
     this.previousX = 0;
     this.previousY = 0;
-    this.maxDepth = 11;
-    this.rowHeight = 250;
+    this.rowHeight = 2000;
     this.treesPerRow = 500;
-    this.distanceBetween = 150;
+    this.distanceBetween = 2000;
     // this.treeScale = 0.3725;
     this.treeScale = 1;
-    this.branchWidth = 3;
-    this.defaultLeafSize = 2;
 
     this.hasCentered = false;
     this.addEventListeners();
@@ -164,52 +173,46 @@ class TreeAnimation {
     } else {
       this.updateBackgroundColor();
     }
-    let minX = Infinity;
-    let maxX = -Infinity;
-    let minY = Infinity;
-    let maxY = -Infinity;
+    const minX = Infinity;
+    const maxX = -Infinity;
+    let closestUserTreePosition: { x: number; y: number } | null = null;
 
     if (this.trees) {
-      for (let i = 0; i < this.trees.length; i++) {
-        const treeX = (i % this.treesPerRow) * this.distanceBetween;
-        const treeY = Math.floor(i / this.treesPerRow) * this.rowHeight;
-        const tree = this.trees[i];
-        tree.treeScale = this.treeScale;
-        const size = tree.treeScale * this.maxDepth;
-
-        minX = Math.min(minX, treeX - size);
-        maxX = Math.max(maxX, treeX + size);
-        minY = Math.min(minY, treeY - size);
-        maxY = Math.max(maxY, treeY + size);
-      }
-
+      // Find the user's tree and center the view ONCE. (Same as before)
       if (!this.hasCentered && !this.isMainTree) {
         if (this.currentUserTree) {
           for (let i = 0; i < this.trees.length; i++) {
             if (this.trees[i].seed === this.currentUserTree.seed) {
-              const treeX = (i % this.treesPerRow) * this.distanceBetween;
-              const treeY = Math.floor(i / this.treesPerRow) * this.rowHeight;
+              const tree = this.trees[i];
+              const depth = this.getTreeDepth(tree.timesWatered);
+              const frequency = 0.2;
+              const amplitude = depth * 5;
+              const treeX =
+                (i % this.treesPerRow) * this.distanceBetween +
+                Math.sin(i * frequency) * amplitude;
+              const treeY =
+                Math.floor(i / this.treesPerRow) * this.rowHeight +
+                Math.cos(i * frequency) * amplitude;
 
               this.userTreePosition = { x: treeX, y: treeY };
-
               this.viewportTransform.x =
                 this.stageWidth / 2 - treeX * this.viewportTransform.scale;
               this.viewportTransform.y =
                 this.stageHeight / 2 - treeY * this.viewportTransform.scale;
-
               this.hasCentered = true;
               break;
             }
           }
-        } else {
-          const centerX = (minX + maxX) / 2;
-          const centerY = (minY + maxY) / 2;
-
+        }
+        if (!this.hasCentered) {
+          const centerX = (this.treesPerRow * this.distanceBetween) / 2;
+          const centerY =
+            (Math.ceil(this.trees.length / this.treesPerRow) * this.rowHeight) /
+            2;
           this.viewportTransform.x =
             this.stageWidth / 2 - centerX * this.viewportTransform.scale;
           this.viewportTransform.y =
             this.stageHeight / 2 - centerY * this.viewportTransform.scale;
-
           this.hasCentered = true;
         }
       } else if (this.isMainTree) {
@@ -217,6 +220,46 @@ class TreeAnimation {
         this.viewportTransform.x =
           this.stageWidth / 2 - centerX * this.viewportTransform.scale;
         this.viewportTransform.y = this.stageHeight;
+      }
+
+      // **NEW**: Logic to find the closest instance of the user's tree on every frame
+      if (this.currentUserTree && this.userTreePosition) {
+        const centerXWorld =
+          (this.stageWidth / 2 - this.viewportTransform.x) /
+          this.viewportTransform.scale;
+        const centerYWorld =
+          (this.stageHeight / 2 - this.viewportTransform.y) /
+          this.viewportTransform.scale;
+        const worldWidth = this.treesPerRow * this.distanceBetween;
+        const numRows = Math.ceil(this.trees.length / this.treesPerRow);
+        const worldHeight = numRows * this.rowHeight;
+
+        let minDistanceSq = Infinity;
+
+        // **THE FIX**: Determine the central world tile based on the CAMERA'S position, not the origin.
+        // This calculates which repetition (n, m) of the world is nearest to the screen's center.
+        const centerTileN = Math.round(
+          (centerXWorld - this.userTreePosition.x) / worldWidth,
+        );
+        const centerTileM = Math.round(
+          (centerYWorld - this.userTreePosition.y) / worldHeight,
+        );
+
+        // Now, check a 3x3 grid of world tiles centered on the CURRENT camera tile.
+        for (let m = centerTileM - 1; m <= centerTileM + 1; m++) {
+          for (let n = centerTileN - 1; n <= centerTileN + 1; n++) {
+            const instanceX = this.userTreePosition.x + n * worldWidth;
+            const instanceY = this.userTreePosition.y + m * worldHeight;
+            const dx = instanceX - centerXWorld;
+            const dy = instanceY - centerYWorld;
+            const distanceSq = dx * dx + dy * dy;
+
+            if (distanceSq < minDistanceSq) {
+              minDistanceSq = distanceSq;
+              closestUserTreePosition = { x: instanceX, y: instanceY };
+            }
+          }
+        }
       }
 
       // Now apply transform once, after centering
@@ -228,51 +271,68 @@ class TreeAnimation {
         this.viewportTransform.x,
         this.viewportTransform.y,
       );
-      if (this.trees) {
-        for (let i = 0; i < this.trees.length; i++) {
-          const treeX = (i % this.treesPerRow) * this.distanceBetween; // horizontal spacing
-          const treeY = Math.floor(i / this.treesPerRow) * this.rowHeight; // vertical spacing per row
-          const tree = this.trees[i];
-          tree.treeScale = this.treeScale;
-          tree.leafSize = tree.depth * 1.5;
-          const screenX =
-            treeX * this.viewportTransform.scale + this.viewportTransform.x;
-          const screenY =
-            treeY * this.viewportTransform.scale + this.viewportTransform.y;
-          const approxSize =
-            tree.treeScale * this.maxDepth * this.viewportTransform.scale + 300;
-          // Skip completely offscreen trees
-          if (
-            screenX + approxSize < 0 ||
-            screenX - approxSize > this.stageWidth ||
-            screenY + approxSize < 0 ||
-            screenY - approxSize > this.stageHeight
-          ) {
-            continue;
-          }
-          const rng = this.makeSeededRNG(tree.seed);
 
-          const internalTree: ModifiedTreeOptions = {
-            ...tree,
-            branches: Array.from({ length: this.maxDepth }, () => []),
-            currentDepth: 0,
-            treeTop: Infinity,
-            treeX,
-            treeY,
-            rng,
-          };
+      // Infinite drawing loop
+      if (this.trees && this.trees.length > 0) {
+        // ... (this part of the logic remains the same as the previous step)
+        const numRows = Math.ceil(this.trees.length / this.treesPerRow);
+        const viewLeft =
+          -this.viewportTransform.x / this.viewportTransform.scale;
+        const viewTop =
+          -this.viewportTransform.y / this.viewportTransform.scale;
+        const viewRight =
+          (this.canvas.width - this.viewportTransform.x) /
+          this.viewportTransform.scale;
+        const viewBottom =
+          (this.canvas.height - this.viewportTransform.y) /
+          this.viewportTransform.scale;
+        const startCol = Math.floor(viewLeft / this.distanceBetween) - 1;
+        const endCol = Math.ceil(viewRight / this.distanceBetween) + 1;
+        const startRow = Math.floor(viewTop / this.rowHeight) - 1;
+        const endRow = Math.ceil(viewBottom / this.rowHeight) + 1;
 
-          this.drawFullTree(internalTree);
-          if (
-            this.currentUserTree &&
-            internalTree.seed === this.currentUserTree.seed
-          ) {
-            this.drawHighlight(internalTree);
+        for (let row = startRow; row < endRow; row++) {
+          for (let col = startCol; col < endCol; col++) {
+            const wrappedRow = ((row % numRows) + numRows) % numRows;
+            const wrappedCol =
+              ((col % this.treesPerRow) + this.treesPerRow) % this.treesPerRow;
+            const treeIndex = wrappedRow * this.treesPerRow + wrappedCol;
+
+            if (treeIndex >= this.trees.length) continue;
+
+            const tree = this.trees[treeIndex];
+            const absoluteIndex = row * this.treesPerRow + col;
+            const frequency = 0.2;
+            const treeX =
+              col * this.distanceBetween + Math.sin(absoluteIndex * frequency);
+            const treeY =
+              row * this.rowHeight + Math.cos(absoluteIndex * frequency);
+            const rng = this.makeSeededRNG(tree.seed);
+            const internalTree: ModifiedTreeOptions = {
+              ...tree,
+              branches: Array.from({ length: this.maxDepth }, () => []),
+              currentDepth: 0,
+              treeTop: Infinity,
+              treeX,
+              treeY,
+              rng,
+            };
+            // this.ctx.font = "bold 30px Arial, sans-serif";
+            // this.ctx.fillStyle = "white";
+            // this.ctx.textAlign = "center";
+            // this.ctx.textBaseline = "middle";
+            // this.ctx.fillText(`${absoluteIndex}`, treeX, treeY - 20);
+            this.drawFullTree(internalTree);
           }
         }
       }
+      if (closestUserTreePosition) {
+        this.drawOffscreenIndicator(closestUserTreePosition);
+      }
     }
-
+    if (closestUserTreePosition) {
+      this.drawHighlight(closestUserTreePosition, this.currentUserTree);
+    }
     // Draw planet name on top of everything, if not main tree
     if (!this.isMainTree) {
       this.ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform
@@ -285,9 +345,47 @@ class TreeAnimation {
         this.ctx.fillText(this.planet, this.canvas.width / 2, padding);
       }
     }
-
-    this.drawOffscreenIndicator();
   }
+
+  growthStage(
+    start: number,
+    goal: number,
+    watered: number,
+    total = this.maxTimesWatered, // watering once a week during 3 years
+  ) {
+    if (watered <= 0) return start;
+    if (watered >= total) return goal;
+
+    const steps = goal - start;
+    if (steps <= 0) return start; // no growth if goal isn’t bigger
+
+    // figure out how many waterings per step
+    const wateringsPerStep = total / steps;
+
+    // number of completed integer steps
+    const completedSteps = Math.floor(watered / wateringsPerStep);
+
+    return start + completedSteps;
+  }
+
+  getTreeDepth(timesWatered: number) {
+    return this.growthStage(this.startingDepth, this.maxDepth, timesWatered);
+  }
+  getLeafSize(timesWatered: number) {
+    return this.growthStage(
+      this.startingLeafSize,
+      this.maxLeafSize,
+      timesWatered,
+    );
+  }
+  getTreeWidth(timesWatered: number) {
+    return this.growthStage(
+      this.startingTreeWidth,
+      this.maxTreeWidth,
+      timesWatered,
+    );
+  }
+
   drawSimplifiedTree(tree: ModifiedTreeOptions) {
     const ctx = this.ctx;
     ctx.beginPath();
@@ -295,7 +393,7 @@ class TreeAnimation {
     const trunkHeight = (tree.treeScale || 1) * 5 * this.maxDepth;
     ctx.moveTo(tree.treeX, tree.treeY);
     ctx.lineTo(tree.treeX, tree.treeY - trunkHeight);
-    ctx.lineWidth = this.branchWidth * 1.5;
+    ctx.lineWidth = this.getTreeWidth(tree.timesWatered) * 1.5;
     ctx.strokeStyle = this.getTrunkColor(tree);
     ctx.stroke();
     ctx.closePath();
@@ -306,7 +404,7 @@ class TreeAnimation {
     ctx.lineTo(tree.treeX - trunkHeight / 4, tree.treeY - trunkHeight);
     ctx.moveTo(tree.treeX, tree.treeY - trunkHeight / 2);
     ctx.lineTo(tree.treeX + trunkHeight / 4, tree.treeY - trunkHeight);
-    ctx.lineWidth = this.branchWidth;
+    ctx.lineWidth = this.getTreeWidth(tree.timesWatered);
     ctx.stroke();
     ctx.closePath();
   }
@@ -374,11 +472,15 @@ class TreeAnimation {
       requestAnimationFrame(() => this.render());
     }
   }
-  private drawHighlight(tree: ModifiedTreeOptions) {
+  private drawHighlight(
+    treePosition: { x: number; y: number },
+    tree: Tree | null | undefined,
+  ) {
     if (!this.userTreePosition) return;
+    if (!tree) return;
 
     const { ctx, viewportTransform, canvas, simulation } = this;
-    const { x: treeWorldX, y: treeWorldY } = this.userTreePosition;
+    const { x: treeWorldX, y: treeWorldY } = treePosition;
     const { x: viewX, y: viewY, scale } = viewportTransform;
 
     // Calculate the tree's position on the screen
@@ -416,39 +518,37 @@ class TreeAnimation {
     ctx.save();
     ctx.setTransform(scale, 0, 0, scale, viewX, viewY);
 
-    const pinHeight = 120;
-    const pinWidth = 80;
-    const pinTipHeight = 30;
-    const pinBaseX = tree.treeX;
-    const pinBaseY = tree.treeY - pinHeight / 2 - 200;
+    const pinBaseX = treeWorldX;
+    const pinBaseY = treeWorldY;
 
     // Draw the pin's pointy tip
-    ctx.beginPath();
-    ctx.moveTo(pinBaseX - pinWidth / 4, pinBaseY + pinTipHeight / 2);
-    ctx.lineTo(pinBaseX, pinBaseY + pinHeight / 2);
-    ctx.lineTo(pinBaseX + pinWidth / 4, pinBaseY + pinTipHeight / 2);
-    ctx.closePath();
+    // ctx.beginPath();
+    // ctx.moveTo(pinBaseX - pinWidth / 4, pinBaseY + pinTipHeight / 2);
+    // ctx.lineTo(pinBaseX, pinBaseY + pinHeight / 2);
+    // ctx.lineTo(pinBaseX + pinWidth / 4, pinBaseY + pinTipHeight / 2);
+    // ctx.closePath();
 
-    ctx.fillStyle = "red";
-    ctx.fill();
-    ctx.strokeStyle = "white";
-    ctx.lineWidth = 5;
-    ctx.stroke();
+    // ctx.fillStyle = "red";
+    // ctx.fill();
+    // ctx.strokeStyle = "white";
+    // ctx.lineWidth = 5;
+    // ctx.stroke();
 
     // Draw the "Ваше дерево" text
     ctx.font = "bold 30px Arial, sans-serif";
     ctx.fillStyle = "white";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText("Ваше дерево", pinBaseX, pinBaseY - 20);
+    ctx.fillText(
+      "Ваше дерево",
+      pinBaseX - 40,
+      pinBaseY - 4 * this.getTreeDepth(tree.timesWatered),
+    );
 
     ctx.restore();
   }
-
-  private drawOffscreenIndicator() {
-    if (!this.userTreePosition) return;
-
-    const { x: treeWorldX, y: treeWorldY } = this.userTreePosition;
+  private drawOffscreenIndicator(treePosition: { x: number; y: number }) {
+    const { x: treeWorldX, y: treeWorldY } = treePosition;
     const { x: viewX, y: viewY, scale } = this.viewportTransform;
     const { width: w, height: h } = this.canvas;
     const padding = 40;
@@ -527,8 +627,8 @@ class TreeAnimation {
   updateZooming(e: WheelEvent) {
     e.preventDefault();
 
-    const mouseX = e.clientX;
-    const mouseY = e.clientY;
+    const mouseX = e.offsetX;
+    const mouseY = e.offsetY;
 
     const { x, y, scale } = this.viewportTransform;
 
@@ -682,9 +782,10 @@ class TreeAnimation {
 
   growOneLevel(tree: Tree) {
     const t = this.trees?.find((tr) => tr.seed === tree.seed);
-    if (t && t.depth < this.maxDepth) {
-      t.depth++;
-      t.leafSize++;
+    if (t) {
+      // if (t && this.getTreeDepth(t.timesWatered) < this.maxDepth) {
+      t.timesWatered = tree.timesWatered;
+      t.timesWatered++;
       if (t.decayProgress > 0) {
         t.decayProgress = Math.max((t.decayProgress || 0) - 1, 0);
       }
@@ -692,7 +793,7 @@ class TreeAnimation {
         preventDefault: () => {},
         clientX: this.stageWidth / 2,
         clientY: this.stageHeight,
-        deltaY: -20, // negative = zoom in
+        deltaY: 0, // negative = zoom in
       } as unknown as WheelEvent);
       this.render();
     }
@@ -701,14 +802,19 @@ class TreeAnimation {
   simulateGrow() {
     if (this.trees) {
       for (const tree of this.trees) {
-        if (tree.depth < this.maxDepth && Math.random() < 0.3) {
-          tree.depth++;
-          tree.leafSize++;
+        if (
+          this.getTreeDepth(tree.timesWatered) < this.maxDepth &&
+          Math.random() < 0.3
+        ) {
+          tree.timesWatered++;
           if (tree.decayProgress > 0) {
             tree.decayProgress = Math.max((tree.decayProgress || 0) - 1, 0);
           }
         }
-        if (tree.depth < this.maxDepth && Math.random() < 0.5) {
+        if (
+          this.getTreeDepth(tree.timesWatered) < this.maxDepth &&
+          Math.random() < 0.5
+        ) {
           tree.decayProgress = Math.min((tree.decayProgress || 0) + 0.3, 2);
         }
       }
@@ -744,19 +850,18 @@ class TreeAnimation {
     tree: ModifiedTreeOptions,
   ) {
     // stop recursion
-    if (depth >= tree.depth) return;
+    if (depth >= this.getTreeDepth(tree.timesWatered)) return;
 
     const scale = tree.treeScale || 1;
-    const remaining = Math.max(1, tree.depth - depth);
 
-    const baseLen = 8 * scale;
+    const baseLen = 12 * scale;
     const decay = 0.72; // 0.6-0.85: smaller = rapidly shorter branches
-    const jitterPct = this.random(-0.18, 0.18, tree); // +/- ~18% length jitter
+    const jitterPct = this.random(-0.33, 0.33, tree); // +/- ~18% length jitter
     const len =
       baseLen *
       Math.pow(decay, depth) *
       (1 + jitterPct) *
-      Math.min(remaining, 6);
+      this.getTreeDepth(tree.timesWatered);
 
     const endX = startX + Math.cos(this.degToRad(angle)) * len;
     const endY = startY + Math.sin(this.degToRad(angle)) * len;
@@ -765,8 +870,11 @@ class TreeAnimation {
     if (endY < tree.treeTop) tree.treeTop = endY;
 
     const rawWidth =
-      (this.branchWidth || 1) *
-      (0.9 + (remaining / Math.max(1, tree.depth)) * 1.1);
+      (this.getTreeWidth(tree.timesWatered) || 1) *
+      (0.9 +
+        (this.getTreeDepth(tree.timesWatered) /
+          Math.max(1, this.getTreeDepth(tree.timesWatered))) *
+          1.1);
     const lineWidth = Math.min(Math.max(rawWidth, 0.5), 12);
 
     const branch = {
@@ -779,10 +887,7 @@ class TreeAnimation {
     };
 
     // draw branch
-    const baseWidth =
-      (this.branchWidth || 1) *
-      (0.9 + (remaining / Math.max(1, tree.depth)) * 1.1);
-    const startWidth = Math.min(Math.max(baseWidth, 0.5), 12);
+    const startWidth = this.getTreeWidth(tree.timesWatered);
 
     // Control point for the curve - pushes the branch outwards slightly
     const cpX = startX + (endX - startX) * 0.5 + (endY - startY) * 0.1;
@@ -799,17 +904,28 @@ class TreeAnimation {
     this.ctx.closePath();
     // store branch
     tree.branches[depth].push(branch);
-    if (depth >= tree.depth - 2 && tree.leafSize > 0) {
-      const leavesPerBranch = Math.max(1, Math.floor(tree.leafSize / 6));
+    if (
+      depth >= this.getTreeDepth(tree.timesWatered) - 2 &&
+      this.getLeafSize(tree.timesWatered) > 0
+    ) {
+      const leavesPerBranch = this.random(1, 4, tree);
       for (let i = 0; i < leavesPerBranch; i++) {
-        const jitterX = this.random(-tree.leafSize, tree.leafSize, tree);
-        const jitterY = this.random(-tree.leafSize, tree.leafSize, tree);
+        const jitterX = this.random(
+          -this.getLeafSize(tree.timesWatered),
+          this.getLeafSize(tree.timesWatered),
+          tree,
+        );
+        const jitterY = this.random(
+          -this.getLeafSize(tree.timesWatered),
+          this.getLeafSize(tree.timesWatered),
+          tree,
+        );
         this.drawLeaf(endX + jitterX, endY + jitterY, tree);
       }
     }
 
     // Branching
-    const alwaysSplitUntil = 2; // top levels always split to give a canopy
+    const alwaysSplitUntil = 3; // top levels always split to give a canopy
     const baseSplitChance = 0.86 - depth * 0.12; // decreases with depth
     const splitChance =
       depth <= alwaysSplitUntil ? 1 : Math.max(0.25, baseSplitChance);
@@ -834,7 +950,10 @@ class TreeAnimation {
 
     // If neither side split, give it a chance to continue straight
     if (!didSplit) {
-      if (this.random(0, 1, tree) < 0.8 && depth < tree.depth - 1) {
+      if (
+        this.random(0, 1, tree) < 0.8 &&
+        depth < this.getTreeDepth(tree.timesWatered) - 1
+      ) {
         this.createBranch(
           endX,
           endY,
@@ -845,19 +964,27 @@ class TreeAnimation {
         didContinue = true;
       }
     }
-    if (!didSplit && !didContinue && tree.leafSize > 0) {
-      const numLeaves = this.random(3, 6, tree);
+    if (!didSplit && !didContinue && this.getLeafSize(tree.timesWatered) > 0) {
+      const numLeaves = this.random(1, 4, tree);
       for (let i = 0; i < numLeaves; i++) {
         // Place leaves near the end of the branch
         const t = this.random(0.7, 1, tree);
         const x =
           startX +
           (endX - startX) * t +
-          this.random(-tree.leafSize, tree.leafSize, tree);
+          this.random(
+            -this.getLeafSize(tree.timesWatered),
+            this.getLeafSize(tree.timesWatered),
+            tree,
+          );
         const y =
           startY +
           (endY - startY) * t +
-          this.random(-tree.leafSize, tree.leafSize, tree);
+          this.random(
+            -this.getLeafSize(tree.timesWatered),
+            this.getLeafSize(tree.timesWatered),
+            tree,
+          );
         this.drawLeaf(x, y, tree);
       }
     }
@@ -872,7 +999,7 @@ class TreeAnimation {
   }
   drawLeaf(x: number, y: number, tree: ModifiedTreeOptions) {
     this.ctx.beginPath();
-    this.ctx.arc(x, y, tree.leafSize, 0, Math.PI * 2);
+    this.ctx.arc(x, y, this.getLeafSize(tree.timesWatered), 0, Math.PI * 2);
 
     const leafDecayThreshold = tree.rng(); // A value from 0.0 to 1.0
     const currentDecay = tree.decayProgress || 0;
@@ -935,11 +1062,17 @@ class TreeAnimation {
           const len = Math.hypot(dx, dy) || 1;
           const nx = dx / len;
           const ny = dy / len;
-          const offset = Math.min(3, tree.leafSize * 0.35);
+          const offset = Math.min(
+            3,
+            this.getLeafSize(tree.timesWatered) * 0.35,
+          );
           const ax = branch.endX + nx * offset;
           const ay = branch.endY + ny * offset;
 
-          const fruitRadius = Math.max(1, Math.floor(tree.leafSize * 0.2));
+          const fruitRadius = Math.max(
+            1,
+            Math.floor(this.getLeafSize(tree.timesWatered) * 0.2),
+          );
           this.ctx.beginPath();
           this.ctx.arc(ax, ay, fruitRadius, 0, Math.PI * 2);
           this.ctx.fillStyle = fruitType;

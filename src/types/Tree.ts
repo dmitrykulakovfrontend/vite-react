@@ -1,7 +1,6 @@
 export interface Tree {
-  leafSize: number;
   container: HTMLDivElement;
-  depth: number;
+  timesWatered: number;
   treeScale?: number;
   seed: number;
   decayProgress: number; // Add this new property

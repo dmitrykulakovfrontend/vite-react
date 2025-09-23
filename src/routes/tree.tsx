@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Slider } from "@/components/ui/slider";
 
 export const Route = createFileRoute("/tree")({
   component: Tree,
@@ -11,16 +12,12 @@ import { ForestView, type TreeHandle } from "../components/ForestView";
 function Tree() {
   const treeRef = useRef<TreeHandle>(null);
   const [water, setWater] = useState(100);
-  const [options] = useState<
-    Tree & { treeRef?: React.RefObject<TreeHandle | null> }
-  >({
+  const [options, setOptions] = useState<Tree>({
     seed: 1337,
-    depth: 1,
+    timesWatered: 1,
     container: null as unknown as HTMLDivElement,
     witheredLevel: 0,
     decayProgress: 0,
-    leafSize: 2,
-    treeRef,
   });
   const growTree = () => {
     if (treeRef.current && water >= 10) {
@@ -33,7 +30,6 @@ function Tree() {
       treeRef.current.witherTree(options);
     }
   };
-
   const completeTask = (id: number) => {
     const completedTask = tasks.find((task) => task.id === id);
     if (completedTask && !completedTask.isCompleted) {
@@ -45,19 +41,6 @@ function Tree() {
       setTasks(updatedTasks);
     }
   };
-  const [trees] = useState(
-    new Array(30000).fill(1).map(() => {
-      const size = Math.round(Math.random() * 10) + 1;
-      return {
-        seed: Math.random() * 100000,
-        depth: size,
-        container: null as unknown as HTMLDivElement,
-        witheredLevel: Math.round(Math.random() * 2),
-        leafSize: 2,
-        decayProgress: Math.pow(Math.random(), 12) * 2,
-      } satisfies Tree;
-    }),
-  );
 
   const [tasks, setTasks] = useState([
     {
@@ -126,6 +109,26 @@ function Tree() {
               <span className="font-futura-heavy">{water}💧</span>
             </p>
           </div>
+          <div className="w-full max-w-[500px] px-4 py-2">
+            <p>Times Watered: {options.timesWatered}</p>
+            <Slider
+              defaultValue={[options.timesWatered]}
+              min={0}
+              max={156}
+              step={1}
+              onValueChange={(value) => {
+                setOptions((prev) => {
+                  if (treeRef.current) {
+                    treeRef.current.growOneLevel({
+                      ...prev,
+                      timesWatered: value[0],
+                    });
+                  }
+                  return { ...prev, timesWatered: value[0] };
+                });
+              }}
+            />
+          </div>
           <button
             onClick={growTree}
             className="p-2 mt-4 bg-[linear-gradient(to_bottom,#3faaeb,#347df4)] rounded cursor-pointer font-futura-heavy max-lg:w-[300px] max-lg:max-w-[300px] max-xl:w-[400px] max-xl:max-w-[400px] w-[500px] max-w-[500px]"
@@ -168,14 +171,14 @@ function Tree() {
           </div>
         </div>
       </div>
-      <div className="w-full h-screen bg-gray-100">
+      {/* <div className="w-full h-screen bg-gray-100">
         <ForestView
           {...{
             trees,
           }}
           isLoading={false}
         />
-      </div>
+      </div> */}
     </div>
   );
 }

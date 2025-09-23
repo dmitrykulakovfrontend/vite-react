@@ -11,7 +11,7 @@ import { ForestView, type TreeHandle } from "../components/ForestView";
 
 function Tree() {
   const treeRef = useRef<TreeHandle>(null);
-  const [water, setWater] = useState(100);
+  const [water, setWater] = useState(1560);
   const [options, setOptions] = useState<Tree>({
     seed: 1337,
     timesWatered: 1,
@@ -21,7 +21,13 @@ function Tree() {
   });
   const growTree = () => {
     if (treeRef.current && water >= 10) {
-      treeRef.current.growOneLevel(options);
+      setOptions((prev) => {
+        treeRef.current!.growOneLevel({
+          ...prev,
+          timesWatered: prev.timesWatered + 1,
+        });
+        return { ...prev, timesWatered: prev.timesWatered + 1 };
+      });
       setWater((prev) => prev - 10);
     }
   };
@@ -99,6 +105,7 @@ function Tree() {
               ref={treeRef}
               trees={[options]}
               isLoading={false}
+              currentUserTree={options}
               isMainTree
             />
           </div>
@@ -113,6 +120,7 @@ function Tree() {
             <p>Times Watered: {options.timesWatered}</p>
             <Slider
               defaultValue={[options.timesWatered]}
+              value={[options.timesWatered]}
               min={0}
               max={156}
               step={1}

@@ -111,7 +111,7 @@ class TreeAnimation {
     this.viewportTransform = {
       x: 0,
       y: 0,
-      scale: 0.5,
+      scale: this.isMainTree ? 0.5 : 0.1,
     };
 
     this.render();
@@ -156,185 +156,203 @@ class TreeAnimation {
     }
 
     if (this.isMainTree) {
-      const horizonY = (this.canvas.height / 2) * this.viewportTransform.scale;
+      // const horizonY = (this.canvas.height / 2) * this.viewportTransform.scale;
 
       // fill sky
       this.ctx.fillStyle = this.colors.sky;
-      this.ctx.fillRect(0, 0, this.canvas.width, horizonY);
+      this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
       // fill grass
       this.ctx.fillStyle = this.colors.planets[this.planet];
       this.ctx.fillRect(
         0,
-        horizonY,
+        this.canvas.height / 2,
         this.canvas.width,
-        this.canvas.height - horizonY,
-      );
-    } else {
-      this.updateBackgroundColor();
-    }
-    const minX = Infinity;
-    const maxX = -Infinity;
-    let closestUserTreePosition: { x: number; y: number } | null = null;
-
-    if (this.trees) {
-      // Find the user's tree and center the view ONCE. (Same as before)
-      if (!this.hasCentered && !this.isMainTree) {
-        if (this.currentUserTree) {
-          for (let i = 0; i < this.trees.length; i++) {
-            if (this.trees[i].seed === this.currentUserTree.seed) {
-              const tree = this.trees[i];
-              const depth = this.getTreeDepth(tree.timesWatered);
-              const frequency = 0.2;
-              const amplitude = depth * 5;
-              const treeX =
-                (i % this.treesPerRow) * this.distanceBetween +
-                Math.sin(i * frequency) * amplitude;
-              const treeY =
-                Math.floor(i / this.treesPerRow) * this.rowHeight +
-                Math.cos(i * frequency) * amplitude;
-
-              this.userTreePosition = { x: treeX, y: treeY };
-              this.viewportTransform.x =
-                this.stageWidth / 2 - treeX * this.viewportTransform.scale;
-              this.viewportTransform.y =
-                this.stageHeight / 2 - treeY * this.viewportTransform.scale;
-              this.hasCentered = true;
-              break;
-            }
-          }
-        }
-        if (!this.hasCentered) {
-          const centerX = (this.treesPerRow * this.distanceBetween) / 2;
-          const centerY =
-            (Math.ceil(this.trees.length / this.treesPerRow) * this.rowHeight) /
-            2;
-          this.viewportTransform.x =
-            this.stageWidth / 2 - centerX * this.viewportTransform.scale;
-          this.viewportTransform.y =
-            this.stageHeight / 2 - centerY * this.viewportTransform.scale;
-          this.hasCentered = true;
-        }
-      } else if (this.isMainTree) {
-        const centerX = (minX + maxX) / 2;
-        this.viewportTransform.x =
-          this.stageWidth / 2 - centerX * this.viewportTransform.scale;
-        this.viewportTransform.y = this.stageHeight;
-      }
-
-      // **NEW**: Logic to find the closest instance of the user's tree on every frame
-      if (this.currentUserTree && this.userTreePosition) {
-        const centerXWorld =
-          (this.stageWidth / 2 - this.viewportTransform.x) /
-          this.viewportTransform.scale;
-        const centerYWorld =
-          (this.stageHeight / 2 - this.viewportTransform.y) /
-          this.viewportTransform.scale;
-        const worldWidth = this.treesPerRow * this.distanceBetween;
-        const numRows = Math.ceil(this.trees.length / this.treesPerRow);
-        const worldHeight = numRows * this.rowHeight;
-
-        let minDistanceSq = Infinity;
-
-        // **THE FIX**: Determine the central world tile based on the CAMERA'S position, not the origin.
-        // This calculates which repetition (n, m) of the world is nearest to the screen's center.
-        const centerTileN = Math.round(
-          (centerXWorld - this.userTreePosition.x) / worldWidth,
-        );
-        const centerTileM = Math.round(
-          (centerYWorld - this.userTreePosition.y) / worldHeight,
-        );
-
-        // Now, check a 3x3 grid of world tiles centered on the CURRENT camera tile.
-        for (let m = centerTileM - 1; m <= centerTileM + 1; m++) {
-          for (let n = centerTileN - 1; n <= centerTileN + 1; n++) {
-            const instanceX = this.userTreePosition.x + n * worldWidth;
-            const instanceY = this.userTreePosition.y + m * worldHeight;
-            const dx = instanceX - centerXWorld;
-            const dy = instanceY - centerYWorld;
-            const distanceSq = dx * dx + dy * dy;
-
-            if (distanceSq < minDistanceSq) {
-              minDistanceSq = distanceSq;
-              closestUserTreePosition = { x: instanceX, y: instanceY };
-            }
-          }
-        }
-      }
-
-      // Now apply transform once, after centering
-      this.ctx.setTransform(
-        this.viewportTransform.scale,
-        0,
-        0,
-        this.viewportTransform.scale,
-        this.viewportTransform.x,
-        this.viewportTransform.y,
+        this.canvas.height / 2,
       );
 
-      // Infinite drawing loop
+      // START: ================== SINGLE TREE DRAWING LOGIC ==================
       if (this.trees && this.trees.length > 0) {
-        // ... (this part of the logic remains the same as the previous step)
-        const numRows = Math.ceil(this.trees.length / this.treesPerRow);
-        const viewLeft =
-          -this.viewportTransform.x / this.viewportTransform.scale;
-        const viewTop =
-          -this.viewportTransform.y / this.viewportTransform.scale;
-        const viewRight =
-          (this.canvas.width - this.viewportTransform.x) /
-          this.viewportTransform.scale;
-        const viewBottom =
-          (this.canvas.height - this.viewportTransform.y) /
-          this.viewportTransform.scale;
-        const startCol = Math.floor(viewLeft / this.distanceBetween) - 1;
-        const endCol = Math.ceil(viewRight / this.distanceBetween) + 1;
-        const startRow = Math.floor(viewTop / this.rowHeight) - 1;
-        const endRow = Math.ceil(viewBottom / this.rowHeight) + 1;
+        const tree = this.trees[0];
 
-        for (let row = startRow; row < endRow; row++) {
-          for (let col = startCol; col < endCol; col++) {
-            const wrappedRow = ((row % numRows) + numRows) % numRows;
-            const wrappedCol =
-              ((col % this.treesPerRow) + this.treesPerRow) % this.treesPerRow;
-            const treeIndex = wrappedRow * this.treesPerRow + wrappedCol;
+        // Center the viewport on the tree's base, which is at world coordinate (0, 0)
+        this.viewportTransform.x = this.stageWidth / 2;
+        this.viewportTransform.y = this.stageHeight; // Place base at the bottom
 
-            if (treeIndex >= this.trees.length) continue;
+        // Apply transformation
+        this.ctx.setTransform(
+          this.viewportTransform.scale,
+          0,
+          0,
+          this.viewportTransform.scale,
+          this.viewportTransform.x,
+          this.viewportTransform.y,
+        );
 
-            const tree = this.trees[treeIndex];
-            const absoluteIndex = row * this.treesPerRow + col;
-            const frequency = 0.2;
-            const treeX =
-              col * this.distanceBetween + Math.sin(absoluteIndex * frequency);
-            const treeY =
-              row * this.rowHeight + Math.cos(absoluteIndex * frequency);
-            const rng = this.makeSeededRNG(tree.seed);
-            const internalTree: ModifiedTreeOptions = {
-              ...tree,
-              branches: Array.from({ length: this.maxDepth }, () => []),
-              currentDepth: 0,
-              treeTop: Infinity,
-              treeX,
-              treeY,
-              rng,
-            };
-            // this.ctx.font = "bold 30px Arial, sans-serif";
-            // this.ctx.fillStyle = "white";
-            // this.ctx.textAlign = "center";
-            // this.ctx.textBaseline = "middle";
-            // this.ctx.fillText(`${absoluteIndex}`, treeX, treeY - 20);
-            this.drawFullTree(internalTree);
+        // Prepare and draw the single tree at world origin (0, 0)
+        const rng = this.makeSeededRNG(tree.seed);
+        const internalTree: ModifiedTreeOptions = {
+          ...tree,
+          branches: Array.from({ length: this.maxDepth }, () => []),
+          currentDepth: 0,
+          treeTop: Infinity,
+          treeX: 0, // Tree's world X coordinate
+          treeY: 0, // Tree's world Y coordinate (origin)
+          rng,
+        };
+        this.drawFullTree(internalTree);
+      }
+      // END: ================== SINGLE TREE DRAWING LOGIC ==================
+    } else {
+      // START: ================== FOREST DRAWING LOGIC (EXISTING) ==================
+      this.updateBackgroundColor();
+      let closestUserTreePosition: { x: number; y: number } | null = null;
+
+      if (this.trees) {
+        // Find the user's tree and center the view ONCE.
+        if (!this.hasCentered) {
+          if (this.currentUserTree) {
+            for (let i = 0; i < this.trees.length; i++) {
+              if (this.trees[i].seed === this.currentUserTree.seed) {
+                const tree = this.trees[i];
+                const depth = this.getTreeDepth(tree.timesWatered);
+                const frequency = 0.2;
+                const amplitude = depth * 5;
+                const treeX =
+                  (i % this.treesPerRow) * this.distanceBetween +
+                  Math.sin(i * frequency) * amplitude;
+                const treeY =
+                  Math.floor(i / this.treesPerRow) * this.rowHeight +
+                  Math.cos(i * frequency) * amplitude;
+
+                this.userTreePosition = { x: treeX, y: treeY };
+                this.viewportTransform.x =
+                  this.stageWidth / 2 - treeX * this.viewportTransform.scale;
+                this.viewportTransform.y =
+                  this.stageHeight / 2 - treeY * this.viewportTransform.scale;
+                this.hasCentered = true;
+                break;
+              }
+            }
           }
+          if (!this.hasCentered) {
+            const centerX = (this.treesPerRow * this.distanceBetween) / 2;
+            const centerY =
+              (Math.ceil(this.trees.length / this.treesPerRow) *
+                this.rowHeight) /
+              2;
+            this.viewportTransform.x =
+              this.stageWidth / 2 - centerX * this.viewportTransform.scale;
+            this.viewportTransform.y =
+              this.stageHeight / 2 - centerY * this.viewportTransform.scale;
+            this.hasCentered = true;
+          }
+        }
+
+        // Logic to find the closest instance of the user's tree on every frame
+        if (this.currentUserTree && this.userTreePosition) {
+          const centerXWorld =
+            (this.stageWidth / 2 - this.viewportTransform.x) /
+            this.viewportTransform.scale;
+          const centerYWorld =
+            (this.stageHeight / 2 - this.viewportTransform.y) /
+            this.viewportTransform.scale;
+          const worldWidth = this.treesPerRow * this.distanceBetween;
+          const numRows = Math.ceil(this.trees.length / this.treesPerRow);
+          const worldHeight = numRows * this.rowHeight;
+
+          let minDistanceSq = Infinity;
+          const centerTileN = Math.round(
+            (centerXWorld - this.userTreePosition.x) / worldWidth,
+          );
+          const centerTileM = Math.round(
+            (centerYWorld - this.userTreePosition.y) / worldHeight,
+          );
+
+          for (let m = centerTileM - 1; m <= centerTileM + 1; m++) {
+            for (let n = centerTileN - 1; n <= centerTileN + 1; n++) {
+              const instanceX = this.userTreePosition.x + n * worldWidth;
+              const instanceY = this.userTreePosition.y + m * worldHeight;
+              const dx = instanceX - centerXWorld;
+              const dy = instanceY - centerYWorld;
+              const distanceSq = dx * dx + dy * dy;
+
+              if (distanceSq < minDistanceSq) {
+                minDistanceSq = distanceSq;
+                closestUserTreePosition = { x: instanceX, y: instanceY };
+              }
+            }
+          }
+        }
+
+        // Apply transform
+        this.ctx.setTransform(
+          this.viewportTransform.scale,
+          0,
+          0,
+          this.viewportTransform.scale,
+          this.viewportTransform.x,
+          this.viewportTransform.y,
+        );
+
+        // Infinite drawing loop
+        if (this.trees && this.trees.length > 0) {
+          const numRows = Math.ceil(this.trees.length / this.treesPerRow);
+          const viewLeft =
+            -this.viewportTransform.x / this.viewportTransform.scale;
+          const viewTop =
+            -this.viewportTransform.y / this.viewportTransform.scale;
+          const viewRight =
+            (this.canvas.width - this.viewportTransform.x) /
+            this.viewportTransform.scale;
+          const viewBottom =
+            (this.canvas.height - this.viewportTransform.y) /
+            this.viewportTransform.scale;
+          const startCol = Math.floor(viewLeft / this.distanceBetween) - 1;
+          const endCol = Math.ceil(viewRight / this.distanceBetween) + 1;
+          const startRow = Math.floor(viewTop / this.rowHeight) - 1;
+          const endRow = Math.ceil(viewBottom / this.rowHeight) + 1;
+
+          for (let row = startRow; row < endRow; row++) {
+            for (let col = startCol; col < endCol; col++) {
+              const wrappedRow = ((row % numRows) + numRows) % numRows;
+              const wrappedCol =
+                ((col % this.treesPerRow) + this.treesPerRow) %
+                this.treesPerRow;
+              const treeIndex = wrappedRow * this.treesPerRow + wrappedCol;
+
+              if (treeIndex >= this.trees.length) continue;
+
+              const tree = this.trees[treeIndex];
+              const absoluteIndex = row * this.treesPerRow + col;
+              const frequency = 0.2;
+              const treeX =
+                col * this.distanceBetween +
+                Math.sin(absoluteIndex * frequency);
+              const treeY =
+                row * this.rowHeight + Math.cos(absoluteIndex * frequency);
+              const rng = this.makeSeededRNG(tree.seed);
+              const internalTree: ModifiedTreeOptions = {
+                ...tree,
+                branches: Array.from({ length: this.maxDepth }, () => []),
+                currentDepth: 0,
+                treeTop: Infinity,
+                treeX,
+                treeY,
+                rng,
+              };
+              this.drawFullTree(internalTree);
+            }
+          }
+        }
+        if (closestUserTreePosition) {
+          this.drawOffscreenIndicator(closestUserTreePosition);
         }
       }
       if (closestUserTreePosition) {
-        this.drawOffscreenIndicator(closestUserTreePosition);
+        this.drawHighlight(closestUserTreePosition, this.currentUserTree);
       }
-    }
-    if (closestUserTreePosition) {
-      this.drawHighlight(closestUserTreePosition, this.currentUserTree);
-    }
-    // Draw planet name on top of everything, if not main tree
-    if (!this.isMainTree) {
+      // Draw planet name on top of everything
       this.ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform
       this.ctx.fillStyle = "white";
       this.ctx.font = "bold 48px FuturaPTHeavy,sans-serif";
@@ -344,6 +362,7 @@ class TreeAnimation {
       if (this.planet) {
         this.ctx.fillText(this.planet, this.canvas.width / 2, padding);
       }
+      // END: ================== FOREST DRAWING LOGIC (EXISTING) ==================
     }
   }
 
@@ -464,7 +483,9 @@ class TreeAnimation {
       }
     }
 
-    this.ctx.fillStyle = `rgb(${Math.round(this.currentColor.r)}, ${Math.round(this.currentColor.g)}, ${Math.round(this.currentColor.b)})`;
+    this.ctx.fillStyle = `rgb(${Math.round(this.currentColor.r)}, ${Math.round(
+      this.currentColor.g,
+    )}, ${Math.round(this.currentColor.b)})`;
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
     // Keep the render loop going if a transition is active
@@ -521,21 +542,8 @@ class TreeAnimation {
     const pinBaseX = treeWorldX;
     const pinBaseY = treeWorldY;
 
-    // Draw the pin's pointy tip
-    // ctx.beginPath();
-    // ctx.moveTo(pinBaseX - pinWidth / 4, pinBaseY + pinTipHeight / 2);
-    // ctx.lineTo(pinBaseX, pinBaseY + pinHeight / 2);
-    // ctx.lineTo(pinBaseX + pinWidth / 4, pinBaseY + pinTipHeight / 2);
-    // ctx.closePath();
-
-    // ctx.fillStyle = "red";
-    // ctx.fill();
-    // ctx.strokeStyle = "white";
-    // ctx.lineWidth = 5;
-    // ctx.stroke();
-
     // Draw the "Ваше дерево" text
-    ctx.font = "bold 30px Arial, sans-serif";
+    ctx.font = `bold ${4 * this.getTreeDepth(tree.timesWatered)}px Arial, sans-serif`;
     ctx.fillStyle = "white";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
@@ -627,19 +635,28 @@ class TreeAnimation {
   updateZooming(e: WheelEvent) {
     e.preventDefault();
 
-    const mouseX = e.offsetX;
-    const mouseY = e.offsetY;
+    let mouseX, mouseY;
+
+    // FIX: If it's the main tree, center the zoom on the tree's base.
+    // Otherwise, zoom towards the mouse pointer.
+    if (this.isMainTree) {
+      mouseX = this.stageWidth / 2;
+      mouseY = this.stageHeight;
+    } else {
+      mouseX = e.offsetX;
+      mouseY = e.offsetY;
+    }
 
     const { x, y, scale } = this.viewportTransform;
 
     const zoomFactor = 1.0 - e.deltaY * 0.001; // >1 zoom in, <1 zoom out
-    const newScale = Math.min(Math.max(scale * zoomFactor, 0.1), 5);
+    const newScale = Math.min(Math.max(scale * zoomFactor, 0.01), 5);
 
     // Convert mouse screen coords into world coords before zoom
     const worldX = (mouseX - x) / scale;
     const worldY = (mouseY - y) / scale;
 
-    // Recalculate transform so mouse world coord stays under cursor
+    // Recalculate transform so the point under the mouse stays there
     this.viewportTransform.x = mouseX - worldX * newScale;
     this.viewportTransform.y = mouseY - worldY * newScale;
     this.viewportTransform.scale = newScale;
@@ -731,15 +748,27 @@ class TreeAnimation {
           const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
 
           if (lastDist !== null) {
+            let zoomCenterX, zoomCenterY;
+
+            // FIX: If it's the main tree, center the zoom on the tree's base.
+            // Otherwise, zoom towards the fingers.
+            if (this.isMainTree) {
+              zoomCenterX = this.stageWidth / 2;
+              zoomCenterY = this.stageHeight;
+            } else {
+              zoomCenterX = midX;
+              zoomCenterY = midY;
+            }
+
             const zoomFactor = dist / lastDist;
             const { x, y, scale } = this.viewportTransform;
             const newScale = Math.min(Math.max(scale * zoomFactor, 0.1), 5);
 
-            const worldX = (midX - x) / scale;
-            const worldY = (midY - y) / scale;
+            const worldX = (zoomCenterX - x) / scale;
+            const worldY = (zoomCenterY - y) / scale;
 
-            this.viewportTransform.x = midX - worldX * newScale;
-            this.viewportTransform.y = midY - worldY * newScale;
+            this.viewportTransform.x = zoomCenterX - worldX * newScale;
+            this.viewportTransform.y = zoomCenterY - worldY * newScale;
             this.viewportTransform.scale = newScale;
 
             this.render();
@@ -789,12 +818,14 @@ class TreeAnimation {
       if (t.decayProgress > 0) {
         t.decayProgress = Math.max((t.decayProgress || 0) - 1, 0);
       }
-      this.updateZooming({
-        preventDefault: () => {},
-        clientX: this.stageWidth / 2,
-        clientY: this.stageHeight,
-        deltaY: 0, // negative = zoom in
-      } as unknown as WheelEvent);
+      if (this.isMainTree) {
+        this.updateZooming({
+          preventDefault: () => {},
+          clientX: this.stageWidth / 2,
+          clientY: this.stageHeight,
+          deltaY: 5, // negative = zoom in
+        } as unknown as WheelEvent);
+      }
       this.render();
     }
   }
@@ -889,7 +920,6 @@ class TreeAnimation {
     // draw branch
     const startWidth = this.getTreeWidth(tree.timesWatered);
 
-    // Control point for the curve - pushes the branch outwards slightly
     const cpX = startX + (endX - startX) * 0.5 + (endY - startY) * 0.1;
     const cpY = startY + (endY - startY) * 0.5 - (endX - startX) * 0.1;
 
@@ -1045,7 +1075,7 @@ class TreeAnimation {
       tree,
     );
     if (this.isMainTree) {
-      console.log(tree.branches);
+      // This console log is safe to keep or remove
     }
 
     // Draw fruits
@@ -1053,9 +1083,9 @@ class TreeAnimation {
     for (let d = 0; d < tree.branches.length; d++) {
       for (const branch of tree.branches[d]) {
         if (
-          branch.depth >= this.maxDepth - 1 &&
+          branch.depth >= this.getTreeDepth(tree.timesWatered) - 2 &&
           this.random(0, 1, tree) < 0.8 && // 80% chance
-          tree.decayProgress < 1
+          (tree.decayProgress || 0) < 1
         ) {
           const dx = branch.endX - branch.startX;
           const dy = branch.endY - branch.startY;

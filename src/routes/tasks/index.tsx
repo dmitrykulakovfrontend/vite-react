@@ -385,7 +385,7 @@ function Tasks() {
   return (
     <div className="p-4">
       <div className="bg-white rounded mb-6 text-black flex flex-col w-fit p-6 mx-auto items-center justify-between">
-        <h1 className="text-2xl font-futura-heavy mb-4">Задачи</h1>
+        {/* <h1 className="text-2xl font-futura-heavy mb-4">Задачи</h1> */}
         <h2 className="text-2xl font-futura-heavy mb-4">
           Количество задач: {data?.length || "Загрузка..."}
         </h2>

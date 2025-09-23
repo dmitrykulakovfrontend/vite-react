@@ -111,7 +111,7 @@ class TreeAnimation {
     this.viewportTransform = {
       x: 0,
       y: 0,
-      scale: this.isMainTree ? 0.5 : 0.1,
+      scale: this.isMainTree ? 0.5 : 0.04,
     };
 
     this.render();

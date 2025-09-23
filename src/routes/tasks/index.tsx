@@ -280,14 +280,14 @@ const columns: ColumnDef<Task>[] = [
     },
   },
 ];
-const fetchTasks = async (url: string) => {
+const fetchTasks = async () => {
   const jsonrpc = {
     jsonrpc: "2.0",
     method: "get_available_tasks",
     id: 1,
   };
 
-  const response = await fetch(url, {
+  const response = await fetch("https://hrzero.ru/api/app/", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -301,6 +301,7 @@ const fetchTasks = async (url: string) => {
   if (tasksData.error) {
     throw new Error(tasksData.error.message);
   }
+  console.log({ result: tasksData.result });
   return tasksData.result;
 };
 function Tasks() {
@@ -308,7 +309,7 @@ function Tasks() {
   const [showInfinite, setShowInfinite] = useState(false);
   const navigate = useNavigate({ from: "/tasks" });
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const { data, isLoading } = useSWR("https://hrzero.ru/api/app/", fetchTasks);
+  const { data, isLoading } = useSWR("tasks", fetchTasks);
   const table = useReactTable<Task>({
     data: data || [],
     columns,
@@ -326,10 +327,9 @@ function Tasks() {
       pagination: { pageSize: 7, pageIndex: 0 },
     },
   });
-  // const [cookies] = useCookies(["auth-token"]);
-  // Use SWR to fetch user data
 
-  if (isLoading || !data) return <div>Loading...</div>;
+  if (isLoading) return <div>Loading...</div>;
+  if (!data) return <div>Loading...</div>;
   interface ChartDataset {
     label: string;
     data: number[];
@@ -463,7 +463,6 @@ function Tasks() {
                   onClick={() => {
                     navigate({
                       to: `/tasks/${row.original.id}`,
-                      state: { task: row.original },
                     });
                   }}
                   data-state={row.getIsSelected() && "selected"}

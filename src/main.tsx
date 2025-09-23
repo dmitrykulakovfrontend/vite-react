@@ -7,7 +7,6 @@ import "./index.css";
 // Import the generated route tree
 import { routeTree } from "./routeTree.gen";
 import { SWRProvider } from "./providers/swr";
-import type { Task } from "./types/Tasks";
 
 // Create a new router instance
 const router = createRouter({ routeTree });
@@ -16,9 +15,6 @@ const router = createRouter({ routeTree });
 declare module "@tanstack/react-router" {
   interface Register {
     router: typeof router;
-  }
-  interface HistoryState {
-    task?: Task;
   }
 }
 

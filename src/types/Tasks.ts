@@ -19,12 +19,26 @@ export interface Artifact {
 }
 
 export interface Task {
+  created_at: string;
+  updated_at: string;
+  synced: boolean;
+  cache: unknown | null;
+  id: number;
   title: string;
   description: string;
-  xpReward: number;
-  manaReward: number;
-  minRank: number;
-  competencies: Partial<Record<Competency, number>>; // насколько прокачивается каждая компетенция
-  category: TaskCategory;
-  artifactReward?: Artifact;
+  user_limit: number | null; // null = без ограничений
+  water_reward: number;
+  mission: Record<string, unknown>;
+  mission_title: string;
+  mission_id: number;
+  goal: Record<string, unknown>;
+  goal_title: string;
+  goal_id: number;
+  skill: Record<string, unknown>;
+  skill_title: string;
+  skill_id: number;
+  online: boolean | null;
+  deadline: string;
+  event_date: string;
+  apple_reward: number | null;
 }

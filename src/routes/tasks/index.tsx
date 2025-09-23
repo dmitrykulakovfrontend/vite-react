@@ -9,7 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { Task } from "@/types/Tasks";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Pie } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import {
@@ -29,7 +29,7 @@ import useSWR from "swr";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-export const Route = createFileRoute("/tasks")({
+export const Route = createFileRoute("/tasks/")({
   component: Tasks,
 });
 const columns: ColumnDef<Task>[] = [
@@ -100,7 +100,7 @@ const columns: ColumnDef<Task>[] = [
     },
   },
   {
-    accessorKey: "mission_id",
+    accessorKey: "mission_title",
     header: ({ column }) => {
       const isSorted = column.getIsSorted();
       return (
@@ -122,7 +122,7 @@ const columns: ColumnDef<Task>[] = [
     },
   },
   {
-    accessorKey: "goal_id",
+    accessorKey: "goal_title",
     header: ({ column }) => {
       const isSorted = column.getIsSorted();
       return (
@@ -144,7 +144,7 @@ const columns: ColumnDef<Task>[] = [
     },
   },
   {
-    accessorKey: "skill_id",
+    accessorKey: "skill_title",
     header: ({ column }) => {
       const isSorted = column.getIsSorted();
       return (
@@ -306,11 +306,9 @@ const fetchTasks = async (url: string) => {
 function Tasks() {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [showInfinite, setShowInfinite] = useState(false);
+  const navigate = useNavigate({ from: "/tasks" });
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const { data, error, isLoading } = useSWR(
-    "https://hrzero.ru/api/app/",
-    fetchTasks,
-  );
+  const { data, isLoading } = useSWR("https://hrzero.ru/api/app/", fetchTasks);
   const table = useReactTable<Task>({
     data: data || [],
     columns,
@@ -339,19 +337,19 @@ function Tasks() {
     borderColor?: string[];
     borderWidth?: number;
   }
-
+  console.log(data);
   interface ChartData {
     labels: string[];
     datasets: ChartDataset[];
   }
 
   const chartData2 = data.reduce(
-    (acc: ChartData, task: Task & { mission_id: number | null }) => {
+    (acc: ChartData, task: Task) => {
       let label: string;
-      if (task.mission_id === null) {
+      if (task.mission_title === null) {
         label = "Без миссии";
       } else {
-        label = `Миссия #${task.mission_id}`;
+        label = task.mission_title;
       }
       if (!acc.labels.includes(label)) {
         acc.labels.push(label);
@@ -383,10 +381,6 @@ function Tasks() {
       ],
     } as ChartData,
   );
-  console.log(chartData2);
-
-  console.log({ data });
-  if (error) console.log(error);
 
   return (
     <div className="p-4">
@@ -465,6 +459,13 @@ function Tasks() {
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
+                  className="hover:cursor-pointer"
+                  onClick={() => {
+                    navigate({
+                      to: `/tasks/${row.original.id}`,
+                      state: { task: row.original },
+                    });
+                  }}
                   data-state={row.getIsSelected() && "selected"}
                 >
                   {row.getVisibleCells().map((cell) => (

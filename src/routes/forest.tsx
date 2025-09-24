@@ -135,6 +135,7 @@ const fetchUsers = async (jwt: string) => {
 function Index() {
   const trees = useMainStore((state) => state.trees);
   const user = useMainStore((state) => state.user);
+  const [isTableVisible, setTableVisible] = useState(true);
   const treeRef = useRef<TreeHandle>(null);
 
   const [cookies] = useCookies(["auth-token"]);
@@ -188,102 +189,117 @@ function Index() {
   return (
     <div className="flex items-center max-lg:flex-col max-lg:mt-8 w-full h-full gap-4 justify-evenly ">
       <div className="w-full h-full bg-gray-100 relative">
-        <div className="w-fit mx-auto absolute top-20 left-20">
-          <div className=" flex items-center justify-between">
-            <div className="relative">
-              <SearchIcon className="absolute w-4 h-4 text-black left-1 bottom-[10px]" />
-              <Input
-                placeholder="Поиск по названию"
-                value={
-                  (table.getColumn("name")?.getFilterValue() as string) ?? ""
-                }
-                onChange={(event) =>
-                  table.getColumn("name")?.setFilterValue(event.target.value)
-                }
-                className="max-w-sm pl-6 text-black bg-white rounded-none rounded-t-md"
-              />
-            </div>
-          </div>
-          <Table className="w-fit mx-auto min-w-xs text-black bg-white rounded-tr-md">
-            <TableHeader>
-              {table.getRowModel().rows.length
-                ? table.getHeaderGroups().map((headerGroup) => (
-                    <TableRow key={headerGroup.id}>
-                      {headerGroup.headers.map((header) => {
-                        return (
-                          <TableHead key={header.id}>
-                            {header.isPlaceholder
-                              ? null
-                              : flexRender(
-                                  header.column.columnDef.header,
-                                  header.getContext(),
-                                )}
-                          </TableHead>
-                        );
-                      })}
-                    </TableRow>
-                  ))
-                : null}
-            </TableHeader>
-            <TableBody>
-              {table.getRowModel().rows.length ? (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    className="hover:cursor-pointer h-12"
-                    data-state={row.getIsSelected() && "selected"}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
-                        )}
-                      </TableCell>
+        <div className="absolute top-0 left-0 p-4 z-10 w-full flex justify-between ">
+          <div>
+            {isTableVisible && (
+              <div className="w-fit mx-auto absolute top-16 left-4">
+                <div className=" flex items-center justify-between">
+                  <div className="relative">
+                    <SearchIcon className="absolute w-4 h-4 text-black left-1 bottom-[10px]" />
+                    <Input
+                      placeholder="Поиск по названию"
+                      value={
+                        (table.getColumn("name")?.getFilterValue() as string) ??
+                        ""
+                      }
+                      onChange={(event) =>
+                        table
+                          .getColumn("name")
+                          ?.setFilterValue(event.target.value)
+                      }
+                      className="max-w-sm pl-6 text-black bg-white rounded-none rounded-t-md"
+                    />
+                  </div>
+                </div>
+                <Table className="w-fit mx-auto min-w-xs text-black bg-white rounded-tr-md">
+                  <TableHeader>
+                    {table.getRowModel().rows.length
+                      ? table.getHeaderGroups().map((headerGroup) => (
+                          <TableRow key={headerGroup.id}>
+                            {headerGroup.headers.map((header) => {
+                              return (
+                                <TableHead key={header.id}>
+                                  {header.isPlaceholder
+                                    ? null
+                                    : flexRender(
+                                        header.column.columnDef.header,
+                                        header.getContext(),
+                                      )}
+                                </TableHead>
+                              );
+                            })}
+                          </TableRow>
+                        ))
+                      : null}
+                  </TableHeader>
+                  <TableBody>
+                    {table.getRowModel().rows.length ? (
+                      table.getRowModel().rows.map((row) => (
+                        <TableRow
+                          key={row.id}
+                          className="hover:cursor-pointer h-12"
+                          data-state={row.getIsSelected() && "selected"}
+                        >
+                          {row.getVisibleCells().map((cell) => (
+                            <TableCell key={cell.id}>
+                              {flexRender(
+                                cell.column.columnDef.cell,
+                                cell.getContext(),
+                              )}
+                            </TableCell>
+                          ))}
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell
+                          colSpan={columns.length}
+                          className="h-24 text-center"
+                        >
+                          Ничего не найдено
+                        </TableCell>
+                      </TableRow>
+                    )}
+                    {Array.from({
+                      length:
+                        table.getState().pagination.pageSize -
+                        table.getRowModel().rows.length,
+                    }).map((_, i) => (
+                      <TableRow key={`filler-${i}`} className="h-12">
+                        <TableCell colSpan={columns.length} />
+                      </TableRow>
                     ))}
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="h-24 text-center"
+                  </TableBody>
+                </Table>
+                <div className="flex items-center justify-center w-full py-4 space-x-2 text-black bg-white rounded-b-md">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => table.previousPage()}
+                    disabled={!table.getCanPreviousPage()}
                   >
-                    Ничего не найдено
-                  </TableCell>
-                </TableRow>
-              )}
-              {Array.from({
-                length:
-                  table.getState().pagination.pageSize -
-                  table.getRowModel().rows.length,
-              }).map((_, i) => (
-                <TableRow key={`filler-${i}`} className="h-12">
-                  <TableCell colSpan={columns.length} />
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-          <div className="flex items-center justify-center w-full py-4 space-x-2 text-black bg-white rounded-b-md">
+                    Предыдущая страница
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => table.nextPage()}
+                    disabled={!table.getCanNextPage()}
+                  >
+                    Следующая страница
+                  </Button>
+                </div>
+              </div>
+            )}
             <Button
-              variant="outline"
-              size="sm"
-              onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage()}
+              className=" max-w-[200px] max-lg:max-w-[150px] hover:bg-blue-500  bg-blue-primary w-full hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white"
+              onClick={() => setTableVisible((v) => !v)}
             >
-              Предыдущая страница
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => table.nextPage()}
-              disabled={!table.getCanNextPage()}
-            >
-              Следующая страница
+              {isTableVisible
+                ? "Скрыть таблицу лидеров"
+                : "Показать таблицу лидеров"}
             </Button>
           </div>
-        </div>
-        <div className="absolute top-4 right-4 z-10">
           <Select
             onValueChange={(value: Planet) => {
               if (treeRef.current) {

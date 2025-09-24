@@ -83,7 +83,7 @@ class TreeAnimation {
     this.maxTimesWatered = 156;
     this.maxDepth = 22;
     this.startingDepth = 1;
-    this.maxLeafSize = 156;
+    this.maxLeafSize = 100;
     this.startingLeafSize = 2;
     this.maxTreeWidth = 55;
     this.startingTreeWidth = 3;
@@ -1084,7 +1084,7 @@ class TreeAnimation {
     // Draw fruits
     for (let d = 0; d < tree.branches.length; d++) {
       for (const branch of tree.branches[d]) {
-        if (branch.depth >= this.maxDepth - 2 && tree.decayProgress < 1) {
+        if (branch.depth >= this.maxDepth - 5 && tree.decayProgress < 1) {
           const dx = branch.endX - branch.startX;
           const dy = branch.endY - branch.startY;
           const len = Math.hypot(dx, dy) || 1;

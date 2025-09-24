@@ -7,17 +7,17 @@ import type { Tree } from "@/types/Tree";
 import { fakeTrees } from "@/utils/mock";
 import useSWR from "swr";
 import { useCookies } from "react-cookie";
-const userFetcher = (url: string, authToken: string) =>
-  fetchUser(url, authToken);
+const userFetcher = (authToken: string) => fetchUser(authToken);
 
-const fetchUser = async (url: string, authToken: string) => {
+const fetchUser = async (authToken: string) => {
+  if (!authToken) return null;
   const jsonrpc = {
     jsonrpc: "2.0",
     method: "my_profile",
     id: 1,
   };
 
-  const response = await fetch(url, {
+  const response = await fetch("https://hrzero.ru/api/passport/", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -47,18 +47,27 @@ const RootLayout = () => {
   const [cookies] = useCookies(["auth-token"]);
   // Use SWR to fetch user data
   const { data, error, isLoading } = useSWR(
-    cookies["auth-token"] ? "https://hrzero.ru/api/passport/" : null,
-    (url) => userFetcher(url, cookies["auth-token"]),
+    "user",
+    () => userFetcher(cookies["auth-token"]),
+    {
+      // revalidateOnMount: false,
+      revalidateOnFocus: false,
+      // revalidateOnReconnect: false,
+    },
   );
 
   useEffect(() => {
     if (data) {
       setUser(data);
     }
-    console.log({ user });
-  }, [data, user, setUser]);
+  }, [data, setUser]);
+  console.log({ user });
 
-  const { data: trees } = useSWR<Tree[]>("mock/trees", fakeTrees);
+  const { data: trees } = useSWR<Tree[]>("mock/trees", fakeTrees, {
+    // revalidateOnMount: false,
+    // revalidateOnFocus: false,
+    // revalidateOnReconnect: false,
+  });
 
   useEffect(() => {
     if (trees) setTrees(trees);

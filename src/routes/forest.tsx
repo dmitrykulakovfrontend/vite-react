@@ -12,22 +12,160 @@ import { useEffect, useRef, useState } from "react";
 
 import { useMainStore } from "@/providers/store";
 import type { Planet } from "@/types/Tree";
-import { Pause, Play } from "lucide-react";
+import { Pause, Play, SearchIcon } from "lucide-react";
 import { planetsArray } from "@/utils/mock";
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  useReactTable,
+  type ColumnDef,
+  type ColumnFiltersState,
+  type SortingState,
+} from "@tanstack/react-table";
+import useSWR from "swr";
+import type { User } from "@/types/User";
+import { useCookies } from "react-cookie";
 
 export const Route = createFileRoute("/forest")({
   component: Index,
 });
-
+const columns: ColumnDef<User & { name: string }>[] = [
+  {
+    id: "rank",
+    header: "Ранг",
+    cell: ({ row }) => row.index + 1,
+  },
+  {
+    accessorKey: "name",
+    header: () => {
+      return (
+        <Button variant="ghost" className="p-0 rounded-none">
+          Герой
+        </Button>
+      );
+    },
+    cell: ({ row }) => {
+      return (
+        <div className="flex items-center gap-2 min-w-[250px]">
+          <img
+            src={row.original.avatar_url}
+            width={30}
+            height={30}
+            className="rounded-full"
+            alt={row.original.name}
+          />
+          <span>{row.original.name}</span>
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: "started_at",
+    header: () => {
+      return (
+        <Button variant="ghost" className="p-0 rounded-none">
+          Начало
+        </Button>
+      );
+    },
+    cell: ({ getValue }) => {
+      const date = new Date(getValue() as string);
+      return <span>{date.toLocaleDateString(new Intl.Locale("ru"))}</span>;
+    },
+  },
+  {
+    accessorKey: "tree_age",
+    header: () => {
+      return (
+        <Button variant="ghost" className="p-0 rounded-none">
+          Размер
+        </Button>
+      );
+    },
+  },
+  {
+    accessorKey: "activity",
+    header: () => {
+      return (
+        <Button variant="ghost" className="p-0 rounded-none">
+          Активность
+        </Button>
+      );
+    },
+  },
+];
+const fetchUsers = async (jwt: string) => {
+  const jsonrpc = {
+    jsonrpc: "2.0",
+    method: "get_user_rating",
+    params: {},
+    id: 1,
+  };
+  // return [];
+  const response = await fetch("https://hrzero.ru/api/app/", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: jwt,
+    },
+    body: JSON.stringify(jsonrpc),
+  });
+  if (!response.ok) {
+    throw new Error("Network response was not ok");
+  }
+  const tasksData = await response.json();
+  if (tasksData.error) {
+    throw new Error(tasksData.error.message);
+  }
+  console.log({ result: tasksData.result });
+  return tasksData.result;
+};
 function Index() {
   const trees = useMainStore((state) => state.trees);
   const user = useMainStore((state) => state.user);
   const treeRef = useRef<TreeHandle>(null);
+
+  const [cookies] = useCookies(["auth-token"]);
+
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const { data } = useSWR("users", () => fetchUsers(cookies["auth-token"]));
+  console.log({ data });
+  const table = useReactTable<User & { name: string }>({
+    data: data || [],
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    onSortingChange: setSorting,
+    getSortedRowModel: getSortedRowModel(),
+    onColumnFiltersChange: setColumnFilters,
+    getFilteredRowModel: getFilteredRowModel(),
+    state: {
+      sorting,
+      columnFilters,
+    },
+    initialState: {
+      pagination: { pageSize: 5, pageIndex: 0 },
+    },
+  });
   useEffect(() => {
     if (trees.length > 1 && treeRef.current) {
       treeRef.current.update(trees, false, user ? trees[5250] : null);
     }
-  }, [trees, user]);
+  }, [trees]);
+  console.log(1);
   const [isSimulationActive, setSimulationActive] = useState(false);
 
   useEffect(() => {
@@ -50,6 +188,101 @@ function Index() {
   return (
     <div className="flex items-center max-lg:flex-col max-lg:mt-8 w-full h-full gap-4 justify-evenly ">
       <div className="w-full h-full bg-gray-100 relative">
+        <div className="w-fit mx-auto absolute top-20 left-20">
+          <div className=" flex items-center justify-between">
+            <div className="relative">
+              <SearchIcon className="absolute w-4 h-4 text-black left-1 bottom-[10px]" />
+              <Input
+                placeholder="Поиск по названию"
+                value={
+                  (table.getColumn("name")?.getFilterValue() as string) ?? ""
+                }
+                onChange={(event) =>
+                  table.getColumn("name")?.setFilterValue(event.target.value)
+                }
+                className="max-w-sm pl-6 text-black bg-white rounded-none rounded-t-md"
+              />
+            </div>
+          </div>
+          <Table className="w-fit mx-auto min-w-xs text-black bg-white rounded-tr-md">
+            <TableHeader>
+              {table.getRowModel().rows.length
+                ? table.getHeaderGroups().map((headerGroup) => (
+                    <TableRow key={headerGroup.id}>
+                      {headerGroup.headers.map((header) => {
+                        return (
+                          <TableHead key={header.id}>
+                            {header.isPlaceholder
+                              ? null
+                              : flexRender(
+                                  header.column.columnDef.header,
+                                  header.getContext(),
+                                )}
+                          </TableHead>
+                        );
+                      })}
+                    </TableRow>
+                  ))
+                : null}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    className="hover:cursor-pointer h-12"
+                    data-state={row.getIsSelected() && "selected"}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-24 text-center"
+                  >
+                    Ничего не найдено
+                  </TableCell>
+                </TableRow>
+              )}
+              {Array.from({
+                length:
+                  table.getState().pagination.pageSize -
+                  table.getRowModel().rows.length,
+              }).map((_, i) => (
+                <TableRow key={`filler-${i}`} className="h-12">
+                  <TableCell colSpan={columns.length} />
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+          <div className="flex items-center justify-center w-full py-4 space-x-2 text-black bg-white rounded-b-md">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => table.previousPage()}
+              disabled={!table.getCanPreviousPage()}
+            >
+              Предыдущая страница
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => table.nextPage()}
+              disabled={!table.getCanNextPage()}
+            >
+              Следующая страница
+            </Button>
+          </div>
+        </div>
         <div className="absolute top-4 right-4 z-10">
           <Select
             onValueChange={(value: Planet) => {

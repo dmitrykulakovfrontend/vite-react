@@ -8,5 +8,5 @@ export type User = {
   password_hash: string;
   avatar_url: string;
   banned?: boolean;
-  metadata?: { [key: string]: unknown };
+  metadata: { name: string; [key: string]: unknown };
 };

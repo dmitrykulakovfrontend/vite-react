@@ -22,6 +22,7 @@ const Header = ({
     { to: "/", label: "Главная" },
     { to: "/tasks", label: "Задачи" },
     { to: "/tree", label: "Профиль" },
+    { to: "/shop", label: "Магазин" },
     { to: "/forest", label: "Лес" },
   ];
   return (
@@ -65,7 +66,7 @@ const Header = ({
 
       {user ? (
         <div className="flex items-center gap-2">
-          <p>{user.email}</p>
+          <p>{user.metadata.name}</p>
           <img
             src={user.avatar_url}
             width={40}

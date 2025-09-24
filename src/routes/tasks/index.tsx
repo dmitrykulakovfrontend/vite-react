@@ -8,10 +8,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { Task } from "@/types/Tasks";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Pie } from "react-chartjs-2";
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import {
   flexRender,
   getCoreRowModel,
@@ -23,6 +19,10 @@ import {
   type ColumnFiltersState,
   type SortingState,
 } from "@tanstack/react-table";
+import type { Task } from "@/types/Tasks";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { Pie } from "react-chartjs-2";
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { ArrowDown, ArrowUp, SearchIcon } from "lucide-react";
 import { useState } from "react";
 import useSWR from "swr";
@@ -76,6 +76,13 @@ const columns: ColumnDef<Task>[] = [
         </Button>
       );
     },
+    cell: ({ getValue }) => {
+      if (getValue()) {
+        const date = new Date(getValue() as string);
+        return <span>{date.toLocaleDateString(new Intl.Locale("ru"))}</span>;
+      }
+      return <span></span>;
+    },
   },
   {
     accessorKey: "deadline",
@@ -97,6 +104,13 @@ const columns: ColumnDef<Task>[] = [
           )}
         </Button>
       );
+    },
+    cell: ({ getValue }) => {
+      if (getValue()) {
+        const date = new Date(getValue() as string);
+        return <span>{date.toLocaleDateString(new Intl.Locale("ru"))}</span>;
+      }
+      return <span></span>;
     },
   },
   {
@@ -185,6 +199,10 @@ const columns: ColumnDef<Task>[] = [
           )}
         </Button>
       );
+    },
+    cell: ({ getValue }) => {
+      const value = getValue<string | null>();
+      return value ? "Онлайн" : "Оффлайн";
     },
   },
   {

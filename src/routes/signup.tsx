@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import { mutate } from "swr";
 import { useCookies } from "react-cookie";
+import { useMainStore } from "@/providers/store";
 
 export const Route = createFileRoute("/signup")({
   component: RouteComponent,
@@ -11,47 +12,99 @@ function RouteComponent() {
   const navigate = useNavigate({ from: "/signup" });
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [name, setName] = useState("");
+  const [apiError, setApiError] = useState("");
+  const [errors, setErrors] = useState<{
+    name?: string;
+    email?: string;
+    password?: string;
+  }>({});
   const [, setCookie] = useCookies(["auth-token"]);
+  const { setUser } = useMainStore();
+
+  const validate = () => {
+    const newErrors: typeof errors = {};
+    if (!name.trim()) newErrors.name = "Введите имя";
+    else if (name.trim().length < 2) newErrors.name = "Имя слишком короткое";
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email) newErrors.email = "Введите почту";
+    else if (!emailRegex.test(email))
+      newErrors.email = "Некорректный формат почты";
+
+    if (!password) newErrors.password = "Введите пароль";
+    else if (password.length < 4) newErrors.password = "Минимум 4 символов";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    const jsonrpc = {
+    setApiError("");
+    if (!validate()) return;
+
+    const jsonrpcSignUp = {
       jsonrpc: "2.0",
       method: "signup",
-      params: { email, password },
+      params: { email, password, metadata: { name } },
       id: 1,
     };
 
     try {
-      const jwt = await mutate(
+      const data = await mutate(
         "https://hrzero.ru/api/passport/",
         async () => {
           const response = await fetch("https://hrzero.ru/api/passport/", {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(jsonrpc),
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(jsonrpcSignUp),
           });
           const data = await response.json();
-          if (data.error) {
-            setError(data.error.message);
-            throw new Error(data.error.message);
+          if (data.error) throw new Error(data.error.message);
+
+          const profileResponse = await fetch(
+            "https://hrzero.ru/api/passport/",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: data.result,
+              },
+              body: JSON.stringify({
+                jsonrpc: "2.0",
+                method: "my_profile",
+                id: 1,
+              }),
+            },
+          );
+          if (!profileResponse.ok)
+            throw new Error("Не удалось загрузить профиль");
+          const userData = await profileResponse.json();
+          if (userData.error && userData.error.code !== 100) {
+            throw new Error(userData.error.message);
           }
-          return data.result;
+          return { token: data.result, user: userData.result };
         },
         {},
       );
 
-      if (jwt) {
-        setCookie("auth-token", jwt);
+      if (data) {
+        setCookie("auth-token", data.token);
+        setUser(data.user);
         navigate({ to: "/tree" });
       }
-    } catch (error) {
-      console.error("Signup failed:", error);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setApiError(err.message);
+      } else {
+        setApiError("Ошибка регистрации");
+      }
     }
   };
+
+  const inputClass =
+    "w-full px-3 py-2 mt-1 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm";
 
   return (
     <div className="flex items-center justify-center min-h-screen">
@@ -59,7 +112,30 @@ function RouteComponent() {
         <h2 className="text-2xl font-bold text-center text-gray-900">
           Создать новый аккаунт
         </h2>
-        <form className="space-y-6 text-black" onSubmit={handleSubmit}>
+        <form
+          className="space-y-6 text-black"
+          onSubmit={handleSubmit}
+          noValidate
+        >
+          <div>
+            <label
+              htmlFor="name"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Имя
+            </label>
+            <input
+              id="name"
+              type="text"
+              className={`${inputClass} ${errors.name ? "border-red-500" : "border-gray-300"}`}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+            {errors.name && (
+              <p className="text-red-500 text-sm mt-1">{errors.name}</p>
+            )}
+          </div>
+
           <div>
             <label
               htmlFor="email"
@@ -69,15 +145,17 @@ function RouteComponent() {
             </label>
             <input
               id="email"
-              name="email"
               type="email"
               autoComplete="email"
-              required
-              className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className={`${inputClass} ${errors.email ? "border-red-500" : "border-gray-300"}`}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
+            {errors.email && (
+              <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+            )}
           </div>
+
           <div>
             <label
               htmlFor="password"
@@ -87,23 +165,24 @@ function RouteComponent() {
             </label>
             <input
               id="password"
-              name="password"
               type="password"
-              required
-              className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className={`${inputClass} ${errors.password ? "border-red-500" : "border-gray-300"}`}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
+            {errors.password && (
+              <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+            )}
           </div>
-          <p className="text-red-500 text-center">{error}</p>
-          <div>
-            <button
-              type="submit"
-              className="w-full px-4 py-2 hover:cursor-pointer text-sm font-medium text-white bg-[linear-gradient(to_bottom,#3faaeb,#347df4)] border border-transparent rounded-md shadow-sm  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:#347df4"
-            >
-              Зарегистрироваться
-            </button>
-          </div>
+
+          {apiError && <p className="text-red-600 text-center">{apiError}</p>}
+
+          <button
+            type="submit"
+            className="w-full px-4 py-2 text-sm font-medium text-white bg-[linear-gradient(to_bottom,#3faaeb,#347df4)] rounded-md shadow-sm hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:#347df4"
+          >
+            Зарегистрироваться
+          </button>
         </form>
       </div>
     </div>

@@ -248,9 +248,14 @@ function RouteComponent() {
             </h3>
             <p className="mb-2">Описание задачи: {currentTask.description}</p>
             <p className="mb-2">Навык: {currentTask.skill_title}</p>
-            <p className="mb-2">Место: {currentTask.online || "Нету"}</p>
             <p className="mb-2">
-              Срок исполнения: {currentTask.deadline || "Нету"}
+              Место: {currentTask.online ? "Онлайн" : "Оффлайн"}
+            </p>
+            <p className="mb-2">
+              Срок исполнения:{" "}
+              {new Date(currentTask.deadline).toLocaleDateString(
+                new Intl.Locale("ru"),
+              ) || "Нету"}
             </p>
             <p className="mb-2">
               Просмотров: {Math.round(Math.random() * 100) + 1}

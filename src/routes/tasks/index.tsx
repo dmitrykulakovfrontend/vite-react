@@ -26,6 +26,7 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { ArrowDown, ArrowUp, SearchIcon } from "lucide-react";
 import { useState } from "react";
 import useSWR from "swr";
+import { useCookies } from "react-cookie";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -123,7 +124,7 @@ const columns: ColumnDef<Task>[] = [
           className="p-0 rounded-none"
           onClick={() => column.toggleSorting(isSorted === "asc")}
         >
-          Миссия
+          Кампания
           {isSorted === "asc" ? (
             <ArrowUp className="w-4 h-4 ml-2" />
           ) : isSorted === "desc" ? (
@@ -298,7 +299,7 @@ const columns: ColumnDef<Task>[] = [
     },
   },
 ];
-const fetchTasks = async () => {
+const fetchTasks = async (jwt: string) => {
   const jsonrpc = {
     jsonrpc: "2.0",
     method: "get_available_tasks",
@@ -307,9 +308,14 @@ const fetchTasks = async () => {
 
   const response = await fetch("https://hrzero.ru/api/app/", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: jwt
+      ? {
+          "Content-Type": "application/json",
+          Authorization: jwt,
+        }
+      : {
+          "Content-Type": "application/json",
+        },
     body: JSON.stringify(jsonrpc),
   });
   if (!response.ok) {
@@ -322,12 +328,44 @@ const fetchTasks = async () => {
   console.log({ result: tasksData.result });
   return tasksData.result;
 };
+const fetchUserTasks = async (jwt: string) => {
+  if (!jwt) return null;
+  const jsonrpc = {
+    jsonrpc: "2.0",
+    method: "my_tasks",
+    params: {},
+    id: 1,
+  };
+
+  const response = await fetch("https://hrzero.ru/api/app/", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: jwt,
+    },
+    body: JSON.stringify(jsonrpc),
+  });
+  if (!response.ok) {
+    throw new Error("Network response was not ok");
+  }
+  const taskData = await response.json();
+  if (taskData.error) {
+    throw new Error(taskData.error.message);
+  }
+  return taskData.result;
+};
 function Tasks() {
   const [sorting, setSorting] = useState<SortingState>([]);
+  const [cookies] = useCookies(["auth-token"]);
   const [showInfinite, setShowInfinite] = useState(false);
   const navigate = useNavigate({ from: "/tasks" });
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const { data, isLoading } = useSWR("tasks", fetchTasks);
+  const { data, isLoading } = useSWR("tasks", () =>
+    fetchTasks(cookies["auth-token"]),
+  );
+  const { data: userTasks } = useSWR<Task[] | null>("userTasks", () =>
+    fetchUserTasks(cookies["auth-token"]),
+  );
   const table = useReactTable<Task>({
     data: data || [],
     columns,
@@ -345,9 +383,56 @@ function Tasks() {
       pagination: { pageSize: 7, pageIndex: 0 },
     },
   });
+  const userTasksTable = useReactTable<Task>({
+    data: userTasks || [],
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    onSortingChange: setSorting,
+    getSortedRowModel: getSortedRowModel(),
+    onColumnFiltersChange: setColumnFilters,
+    getFilteredRowModel: getFilteredRowModel(),
+    state: {
+      sorting,
+      columnFilters,
+    },
+    initialState: {
+      pagination: { pageSize: 7, pageIndex: 0 },
+    },
+  });
 
-  if (isLoading) return <div>Loading...</div>;
-  if (!data) return <div>Loading...</div>;
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen w-full">
+        <div className="flex flex-col items-center">
+          <svg
+            className="animate-spin h-16 w-16 text-blue-500 mb-4"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            />
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+            />
+          </svg>
+          <span className="text-lg text-blue-500 font-futura-heavy">
+            Загрузка...
+          </span>
+        </div>
+      </div>
+    );
+  }
+  if (!data) return <div>Error</div>;
   interface ChartDataset {
     label: string;
     data: number[];
@@ -409,13 +494,16 @@ function Tasks() {
         </h2>
         <div>
           <h3 className="text-2xl font-futura-heavy mb-4">
-            Статистика по миссиям:
+            Статистика по кампаниям:
           </h3>
           <div className="w-[200px] h-[200px] mx-auto bg-white">
             <Pie data={chartData2} />
           </div>
         </div>
       </div>
+      <h1 className="text-2xl mx-auto w-fit  font-futura-heavy my-4">
+        Доступные задачи:
+      </h1>
       <div className="w-fit mx-auto">
         <div className=" flex items-center justify-between">
           <div className="relative">
@@ -451,7 +539,7 @@ function Tasks() {
             </label>
           </div>
         </div>
-        <Table className="w-fit mx-auto text-black bg-white rounded-tr-md">
+        <Table className="w-fit mx-auto  max-w-7xl text-black bg-white rounded-tr-md">
           <TableHeader>
             {table.getRowModel().rows.length
               ? table.getHeaderGroups().map((headerGroup) => (
@@ -526,6 +614,89 @@ function Tasks() {
           </Button>
         </div>
       </div>
+      {userTasks && userTasks.length > 0 && (
+        <div>
+          <h1 className="text-2xl mx-auto w-fit  font-futura-heavy my-4">
+            Задачи в процессе:
+          </h1>
+          <div className="w-fit mx-auto">
+            <Table className="w-fit mx-auto max-w-7xl text-black bg-white rounded-md">
+              <TableHeader>
+                {userTasksTable.getRowModel().rows.length
+                  ? userTasksTable.getHeaderGroups().map((headerGroup) => (
+                      <TableRow key={headerGroup.id}>
+                        {headerGroup.headers.map((header) => {
+                          return (
+                            <TableHead key={header.id}>
+                              {header.isPlaceholder
+                                ? null
+                                : flexRender(
+                                    header.column.columnDef.header,
+                                    header.getContext(),
+                                  )}
+                            </TableHead>
+                          );
+                        })}
+                      </TableRow>
+                    ))
+                  : null}
+              </TableHeader>
+              <TableBody>
+                {userTasksTable.getRowModel().rows.length ? (
+                  userTasksTable.getRowModel().rows.map((row) => (
+                    <TableRow
+                      key={row.id}
+                      className="hover:cursor-pointer"
+                      onClick={() => {
+                        navigate({
+                          to: `/tasks/${row.original.id}`,
+                        });
+                      }}
+                      data-state={row.getIsSelected() && "selected"}
+                    >
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell key={cell.id} className="border-2">
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext(),
+                          )}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell
+                      colSpan={columns.length}
+                      className="h-24 text-center"
+                    >
+                      Ничего не найдено
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+            <div className="flex items-center justify-center w-full py-4 space-x-2 text-black bg-white rounded-b-md">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => userTasksTable.previousPage()}
+                disabled={!userTasksTable.getCanPreviousPage()}
+              >
+                Предыдущая страница
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => userTasksTable.nextPage()}
+                disabled={!userTasksTable.getCanNextPage()}
+              >
+                Следующая страница
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

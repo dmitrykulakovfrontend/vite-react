@@ -37,6 +37,7 @@ export interface Task {
   skill: Record<string, unknown>;
   skill_title: string;
   skill_id: number;
+  state?: "done" | "taken";
   online: boolean | null;
   deadline: string;
   event_date: string;

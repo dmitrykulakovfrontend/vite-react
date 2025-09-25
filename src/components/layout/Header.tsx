@@ -26,28 +26,69 @@ const Header = ({
     { to: "/forest", label: "Лес" },
   ];
   return (
-    <header className="fixed top-0 left-0 z-50 flex items-center justify-between w-full p-2 bg-[#00285e]  text-white">
-      <Link to="/" className="[&.active]:font-bold shrink-0">
-        <img
-          src={"/logo_white_small.png"}
-          width="150"
-          height="30"
-          alt="Логотип компании"
-        />
-      </Link>
-
-      <button
-        className="p-2 rounded cursor-pointer sm:hidden hover:bg-gray-100"
-        onClick={() => setMenuOpen((prev) => !prev)}
+    <header
+      className={`sticky ${isMenuOpen ? "flex-col items-start" : ""} top-0 left-0 z-50 flex items-center justify-between w-full p-2 bg-[#00285e]  text-white`}
+    >
+      <div
+        className={`max-md:flex max-md:items-center max-md:justify-between max-md:w-full max-md:gap-4`}
       >
-        ☰
-      </button>
+        <Link to="/" className="[&.active]:font-bold shrink-0">
+          <img
+            src={"/logo_white_small.png"}
+            width="150"
+            height="30"
+            alt="Логотип компании"
+          />
+        </Link>
+
+        <button
+          className="p-2 text-4xl rounded hover:cursor-pointer md:hidden"
+          onClick={() => setMenuOpen((prev) => !prev)}
+        >
+          ☰
+        </button>
+      </div>
 
       <ul
-        className={`flex flex-col sm:flex-row gap-2 sm:gap-4 absolute sm:static top-full left-0 w-full sm:w-auto bg-transparent sm:bg-transparent p-2 sm:p-0 transition-all ${
-          isMenuOpen ? "block" : "hidden sm:flex"
+        className={`flex flex-col md:flex-row gap-2 md:gap-4  md:static  w-full md:w-auto  p-2 md:p-0 transition-all ${
+          isMenuOpen ? "block" : "hidden md:flex"
         }`}
       >
+        <li>
+          {user && isMenuOpen ? (
+            <div className="flex items-center gap-2">
+              <img
+                src={user.avatar_url}
+                width={40}
+                height={40}
+                className="rounded-full"
+              />
+              <p>{user.metadata.name}</p>
+              <Link
+                to="/"
+                onClick={logout}
+                className="bg-[linear-gradient(to_bottom,#3faaeb,#347df4)] ml-auto hover:cursor-pointer rounded px-3 py-2 text-white text-sm"
+              >
+                Выйти
+              </Link>
+            </div>
+          ) : isMenuOpen ? (
+            <div className="hidden gap-2 md:flex">
+              <Link
+                to="/login"
+                className="bg-[linear-gradient(to_bottom,#3faaeb,#347df4)] hover:cursor-pointer rounded px-3 py-2 text-white text-sm"
+              >
+                Войти
+              </Link>
+              <Link
+                to="/signup"
+                className="bg-[linear-gradient(to_bottom,#3faaeb,#347df4)] hover:cursor-pointer rounded px-3 py-2 text-white text-sm"
+              >
+                Зарегистрироваться
+              </Link>
+            </div>
+          ) : null}
+        </li>
         {links.map((link) => (
           <li key={link.to}>
             <Link
@@ -55,7 +96,7 @@ const Header = ({
               className="[&.active]:font-bold block py-2 h-full font-futura-heavy hover:opacity-90 hover:cursor-pointer"
               activeProps={{
                 className:
-                  "sm:border-b-4 max-sm:border-l-4 pl-2 sm:pl-0 border-white border-solid",
+                  "md:border-b-4 max-md:border-l-4 pl-2 md:pl-0 border-white border-solid",
               }}
             >
               {link.label}
@@ -63,40 +104,41 @@ const Header = ({
           </li>
         ))}
       </ul>
-
-      {user ? (
-        <div className="flex items-center gap-2">
-          <p>{user.metadata.name}</p>
-          <img
-            src={user.avatar_url}
-            width={40}
-            height={40}
-            className="rounded-full"
-          />
-          <Link
-            to="/"
-            onClick={logout}
-            className="bg-[linear-gradient(to_bottom,#3faaeb,#347df4)] hover:cursor-pointer rounded px-3 py-2 text-white text-sm"
-          >
-            Выйти
-          </Link>
-        </div>
-      ) : (
-        <div className="hidden gap-2 sm:flex">
-          <Link
-            to="/login"
-            className="bg-[linear-gradient(to_bottom,#3faaeb,#347df4)] hover:cursor-pointer rounded px-3 py-2 text-white text-sm"
-          >
-            Войти
-          </Link>
-          <Link
-            to="/signup"
-            className="bg-[linear-gradient(to_bottom,#3faaeb,#347df4)] hover:cursor-pointer rounded px-3 py-2 text-white text-sm"
-          >
-            Зарегистрироваться
-          </Link>
-        </div>
-      )}
+      <div className="max-md:hidden">
+        {user ? (
+          <div className="flex items-center gap-2">
+            <img
+              src={user.avatar_url}
+              width={40}
+              height={40}
+              className="rounded-full"
+            />
+            <p>{user.metadata.name}</p>
+            <Link
+              to="/"
+              onClick={logout}
+              className="bg-[linear-gradient(to_bottom,#3faaeb,#347df4)] hover:cursor-pointer rounded px-3 py-2 text-white text-sm"
+            >
+              Выйти
+            </Link>
+          </div>
+        ) : (
+          <div className="hidden gap-2 md:flex">
+            <Link
+              to="/login"
+              className="bg-[linear-gradient(to_bottom,#3faaeb,#347df4)] hover:cursor-pointer rounded px-3 py-2 text-white text-sm"
+            >
+              Войти
+            </Link>
+            <Link
+              to="/signup"
+              className="bg-[linear-gradient(to_bottom,#3faaeb,#347df4)] hover:cursor-pointer rounded px-3 py-2 text-white text-sm"
+            >
+              Зарегистрироваться
+            </Link>
+          </div>
+        )}
+      </div>
     </header>
   );
 };

@@ -18,7 +18,7 @@ function Tree() {
     container: null as unknown as HTMLDivElement,
     witheredLevel: 0,
     decayProgress: 0,
-    apples: 5,
+    apples: 7,
   });
   const growTree = () => {
     if (treeRef.current && water >= 10) {

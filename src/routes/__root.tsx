@@ -61,6 +61,18 @@ const RootLayout = () => {
       setUser(data);
     }
   }, [data, setUser]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth > 768) {
+        setMenuOpen(false);
+      }
+    };
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  });
   console.log({ user });
 
   const { data: trees } = useSWR<Tree[]>("mock/trees", fakeTrees, {
@@ -79,9 +91,7 @@ const RootLayout = () => {
   return (
     <>
       <Header isMenuOpen={isMenuOpen} setMenuOpen={setMenuOpen} />
-      <div
-        className={`${isMenuOpen ? "pt-72" : "pt-16"} sm:pt-16 text-white h-full`}
-      >
+      <div className={` text-white h-full`}>
         <Outlet />
       </div>
       <TanStackRouterDevtools />

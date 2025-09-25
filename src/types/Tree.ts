@@ -5,6 +5,7 @@ export interface Tree {
   seed: number;
   decayProgress: number; // Add this new property
   witheredLevel: number;
+  apples?: number;
 }
 export type Planet = "Земля" | "Юпитер" | "Марс";
 export interface Forest {

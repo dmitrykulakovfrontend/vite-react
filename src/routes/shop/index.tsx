@@ -10,11 +10,12 @@ function RouteComponent() {
   const products = [
     { id: 1, name: "Футболка с логотипом", price: 25, imageSrc: "" },
     { id: 2, name: "Экскурсия по Алабуге", price: 50, imageSrc: "" },
-    { id: 3, name: "Саженец", price: 5, imageSrc: "/image.png" },
+    { id: 3, name: "Саженец", price: 5, amount: 1, imageSrc: "/image.png" },
     {
       id: 4,
-      name: "Вода для полива дерева",
+      name: "Вода",
       price: 5,
+      amount: 100,
       imageSrc: <DropletIcon className="w-20 h-20 fill-blue-300" />,
     },
   ];
@@ -23,12 +24,14 @@ function RouteComponent() {
       id: 3,
       name: "Саженец",
       price: 5,
+      amount: 1,
       imageSrc: "/image.png",
       date: "21.09.2025",
     },
     {
       id: 4,
-      name: "Вода для полива дерева",
+      name: "Вода",
+      amount: 100,
       price: 5,
       imageSrc: <DropletIcon className="w-20 h-20 fill-blue-300" />,
       date: "21.09.2025",
@@ -66,7 +69,7 @@ function RouteComponent() {
           {products.map((product) => (
             <div
               key={product.id}
-              className="shadow-sm min-w-[200px] p-2 rounded flex flex-col items-center gap-2"
+              className="shadow-sm min-w-[200px] p-2 rounded flex flex-col items-center justify-between gap-2"
             >
               {typeof product.imageSrc === "string" ? (
                 <img
@@ -80,8 +83,11 @@ function RouteComponent() {
                   {product.imageSrc}
                 </div>
               )}
+              <p>
+                {product.name}{" "}
+                {product.amount && <span>x{product.amount}</span>}
+              </p>
 
-              <p>{product.name}</p>
               <p className="flex items-center gap-1">
                 Цена: {product.price}{" "}
                 <Apple className="drop-shadow-md w-5 h-5 fill-red-500" />
@@ -101,7 +107,7 @@ function RouteComponent() {
               {inventory.map((product) => (
                 <div
                   key={product.id}
-                  className="shadow-sm min-w-[200px] p-2 rounded flex flex-col items-center gap-2"
+                  className="shadow-sm min-w-[200px] p-2 rounded flex flex-col items-center justify-between gap-2"
                 >
                   {typeof product.imageSrc === "string" ? (
                     <img
@@ -115,7 +121,11 @@ function RouteComponent() {
                       {product.imageSrc}
                     </div>
                   )}
-                  <p>{product.name}</p>
+
+                  <p>
+                    {product.name}{" "}
+                    {product.amount && <span>x{product.amount}</span>}
+                  </p>
                   <p className="flex flex-col items-center">
                     <span>Дата покупки:</span> {product.date}
                   </p>
@@ -124,7 +134,12 @@ function RouteComponent() {
                     <Apple className="drop-shadow-md w-5 h-5 fill-red-500" />
                   </p>
                   <Button className=" max-w-[200px]  hover:bg-blue-500  bg-blue-primary w-full hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white">
-                    Купить
+                    <Link
+                      to="/tree"
+                      className="[&.active]:font-bold block p-1  rounded"
+                    >
+                      Использовать
+                    </Link>
                   </Button>
                 </div>
               ))}

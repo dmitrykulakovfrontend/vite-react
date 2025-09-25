@@ -11,22 +11,21 @@ import { ForestView, type TreeHandle } from "../components/ForestView";
 
 function Tree() {
   const treeRef = useRef<TreeHandle>(null);
-  const [water, setWater] = useState(1560);
+  const [water, setWater] = useState(200);
   const [options, setOptions] = useState<Tree>({
-    seed: 1337,
-    timesWatered: 1,
+    seed: 12,
+    timesWatered: 0,
     container: null as unknown as HTMLDivElement,
     witheredLevel: 0,
     decayProgress: 0,
+    apples: 5,
   });
   const growTree = () => {
     if (treeRef.current && water >= 10) {
       setOptions((prev) => {
-        treeRef.current!.growOneLevel({
-          ...prev,
-          timesWatered: prev.timesWatered + 1,
-        });
-        return { ...prev, timesWatered: prev.timesWatered + 1 };
+        const newOptions = { ...prev, timesWatered: prev.timesWatered + 1 };
+        treeRef.current?.growOneLevel(prev);
+        return newOptions;
       });
       setWater((prev) => prev - 10);
     }
@@ -109,7 +108,6 @@ function Tree() {
               isMainTree
             />
           </div>
-
           <div>
             <p className="text-xl">
               Текущее количество воды:{" "}
@@ -122,7 +120,7 @@ function Tree() {
               defaultValue={[options.timesWatered]}
               value={[options.timesWatered]}
               min={0}
-              max={156}
+              max={20}
               step={1}
               onValueChange={(value) => {
                 setOptions((prev) => {

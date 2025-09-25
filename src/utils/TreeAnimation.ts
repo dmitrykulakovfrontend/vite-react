@@ -10,6 +10,7 @@ type ModifiedTreeOptions = Tree & {
   treeY: number;
   fruitType: "red" | "orange";
   rng: () => number;
+  leafPositions: { x: number; y: number }[]; // Add this line
 };
 type Colors = typeof colors;
 
@@ -80,12 +81,12 @@ class TreeAnimation {
     if (!ctx) throw new Error("Canvas context not available");
     this.ctx = ctx;
 
-    this.maxTimesWatered = 156;
-    this.maxDepth = 22;
+    this.maxTimesWatered = 20;
+    this.maxDepth = 11;
     this.startingDepth = 1;
-    this.maxLeafSize = 100;
-    this.startingLeafSize = 2;
-    this.maxTreeWidth = 55;
+    this.maxLeafSize = 50;
+    this.startingLeafSize = 7;
+    this.maxTreeWidth = 35;
     this.startingTreeWidth = 3;
 
     this.colors = colors;
@@ -101,9 +102,9 @@ class TreeAnimation {
 
     this.previousX = 0;
     this.previousY = 0;
-    this.rowHeight = 1000;
+    this.rowHeight = 500;
     this.treesPerRow = 500;
-    this.distanceBetween = 1000;
+    this.distanceBetween = 600;
     // this.treeScale = 0.3725;
     this.treeScale = 1;
 
@@ -112,7 +113,7 @@ class TreeAnimation {
     this.viewportTransform = {
       x: 0,
       y: 0,
-      scale: this.isMainTree ? 0.2 : 0.1,
+      scale: this.isMainTree ? 1 : 0.1,
     };
 
     this.render();
@@ -200,6 +201,7 @@ class TreeAnimation {
           treeX: 0, // Tree's world X coordinate
           treeY: 0, // Tree's world Y coordinate (origin)
           rng,
+          leafPositions: [],
           fruitType: this.random(0, 1, rng) > 0.5 ? "red" : "orange",
         };
         this.drawFullTree(internalTree);
@@ -341,6 +343,7 @@ class TreeAnimation {
                 treeTop: Infinity,
                 treeX,
                 treeY,
+                leafPositions: [],
                 rng,
                 fruitType: this.random(0, 1, rng) > 0.5 ? "red" : "orange",
               };
@@ -941,16 +944,16 @@ class TreeAnimation {
       depth >= this.getTreeDepth(tree.timesWatered) - 2 &&
       this.getLeafSize(tree.timesWatered) > 0
     ) {
-      const leavesPerBranch = this.random(1, 4, tree.rng);
+      const leavesPerBranch = this.random(2, 4, tree.rng);
       for (let i = 0; i < leavesPerBranch; i++) {
         const jitterX = this.random(
-          -this.getLeafSize(tree.timesWatered),
-          this.getLeafSize(tree.timesWatered),
+          -this.getLeafSize(tree.timesWatered) / 2,
+          this.getLeafSize(tree.timesWatered) / 2,
           tree.rng,
         );
         const jitterY = this.random(
-          -this.getLeafSize(tree.timesWatered),
-          this.getLeafSize(tree.timesWatered),
+          -this.getLeafSize(tree.timesWatered) / 2,
+          this.getLeafSize(tree.timesWatered) / 2,
           tree.rng,
         );
         this.drawLeaf(endX + jitterX, endY + jitterY, tree);
@@ -998,7 +1001,7 @@ class TreeAnimation {
       }
     }
     if (!didSplit && !didContinue && this.getLeafSize(tree.timesWatered) > 0) {
-      const numLeaves = this.random(1, 4, tree.rng);
+      const numLeaves = this.random(2, 4, tree.rng);
       for (let i = 0; i < numLeaves; i++) {
         // Place leaves near the end of the branch
         const t = this.random(0.7, 1, tree.rng);
@@ -1031,6 +1034,7 @@ class TreeAnimation {
     };
   }
   drawLeaf(x: number, y: number, tree: ModifiedTreeOptions) {
+    tree.leafPositions.push({ x, y });
     this.ctx.beginPath();
     this.ctx.arc(x, y, this.getLeafSize(tree.timesWatered), 0, Math.PI * 2);
 
@@ -1064,6 +1068,8 @@ class TreeAnimation {
   drawFullTree(tree: ModifiedTreeOptions) {
     // Reset tree top
     tree.treeTop = Infinity;
+    tree.leafPositions = [];
+
     if (tree.decayProgress > 0) {
       tree.treeScale = (tree.treeScale || 1) * (1 - tree.decayProgress * 0.1);
     }
@@ -1082,43 +1088,108 @@ class TreeAnimation {
     }
 
     // Draw fruits
-    for (let d = 0; d < tree.branches.length; d++) {
-      for (const branch of tree.branches[d]) {
-        if (branch.depth >= this.maxDepth - 5 && tree.decayProgress < 1) {
-          const dx = branch.endX - branch.startX;
-          const dy = branch.endY - branch.startY;
-          const len = Math.hypot(dx, dy) || 1;
-          const nx = dx / len;
-          const ny = dy / len;
-          const offset = Math.min(
-            3,
-            this.getLeafSize(tree.timesWatered) * 0.35,
-          );
-          const ax = branch.endX + nx * offset;
-          const ay = branch.endY + ny * offset;
+    const applesToDraw = tree.apples ? tree.apples : 0;
+    // First, initialize the array to store leaf positions for this specific tree.
+    // Now, place apples at the recorded leaf positions.
+    // Now, place apples at the recorded leaf positions using a collision-avoidance and nudge system.
+    if (
+      applesToDraw > 0 &&
+      tree.decayProgress < 1 &&
+      tree.leafPositions.length > 0
+    ) {
+      // 1. SETUP
+      const placedApplePositions: { x: number; y: number }[] = [];
+      const fruitRadius = Math.max(
+        1,
+        Math.floor(this.getLeafSize(tree.timesWatered) * 0.2),
+      );
+      const minDistance = fruitRadius * 2;
+      const leafSize = this.getLeafSize(tree.timesWatered);
 
-          const fruitRadius = Math.max(
-            1,
-            Math.floor(this.getLeafSize(tree.timesWatered) * 0.2),
-          );
-          this.ctx.beginPath();
-          this.ctx.arc(ax, ay, fruitRadius, 0, Math.PI * 2);
-          this.ctx.fillStyle = tree.fruitType;
-          this.ctx.fill();
-          this.ctx.closePath();
+      // Create a shuffled copy of all available leaf positions.
+      // Shuffling prevents us from repeatedly trying the same crowded leaves.
+      const availableLeafPositions = [...tree.leafPositions].sort(
+        () => tree.rng() - 0.5,
+      );
 
-          // tiny highlight
-          this.ctx.beginPath();
-          this.ctx.arc(
-            ax - fruitRadius * 0.35,
-            ay - fruitRadius * 0.35,
-            fruitRadius * 0.35,
-            0,
-            Math.PI * 2,
-          );
-          this.ctx.fillStyle = "rgba(255,255,255,0.7)";
-          this.ctx.fill();
-          this.ctx.closePath();
+      // 2. MAIN LOOP: Try to place each apple.
+      for (let i = 0; i < applesToDraw; i++) {
+        let applePlaced = false;
+        const maxAttemptsPerApple = 20;
+        let attempts = 0;
+
+        // Try different leaves until we place this apple or run out of leaves.
+        while (!applePlaced && attempts < maxAttemptsPerApple) {
+          // Get a random available leaf position from the shuffled list
+          const leafCenter =
+            availableLeafPositions[
+              Math.floor(tree.rng() * availableLeafPositions.length)
+            ];
+          let finalPosition: { x: number; y: number } | null = null;
+
+          // Helper function to check if a position collides with already placed apples.
+          const isColliding = (pos: { x: number; y: number }): boolean => {
+            for (const placedPos of placedApplePositions) {
+              if (
+                Math.hypot(pos.x - placedPos.x, pos.y - placedPos.y) <
+                minDistance
+              ) {
+                return true;
+              }
+            }
+            return false;
+          };
+
+          // 3. ATTEMPT 1: Try the exact center of the leaf.
+          if (!isColliding(leafCenter)) {
+            finalPosition = leafCenter;
+          } else {
+            // 4. ATTEMPT 2: Nudge to a nearby spot on the same leaf.
+            const maxNudges = 10;
+            for (let j = 0; j < maxNudges; j++) {
+              // Pick a random position within the leaf's radius.
+              const angle = tree.rng() * Math.PI * 2;
+              const distance = tree.rng() * (leafSize - fruitRadius);
+              const potentialPosition = {
+                x: leafCenter.x + Math.cos(angle) * distance,
+                y: leafCenter.y + Math.sin(angle) * distance,
+              };
+
+              if (!isColliding(potentialPosition)) {
+                finalPosition = potentialPosition;
+                break;
+              }
+            }
+          }
+
+          // 5. DRAW THE APPLE if we found a valid position on this leaf.
+          if (finalPosition) {
+            placedApplePositions.push(finalPosition);
+            // ... (The drawing code is the same as before) ...
+            const ax = finalPosition.x;
+            const ay = finalPosition.y;
+            this.ctx.beginPath();
+            this.ctx.arc(ax, ay, fruitRadius, 0, Math.PI * 2);
+            this.ctx.fillStyle = tree.fruitType;
+            this.ctx.fill();
+            this.ctx.closePath();
+            // tiny highlight
+            this.ctx.beginPath();
+            this.ctx.arc(
+              ax - fruitRadius * 0.35,
+              ay - fruitRadius * 0.35,
+              fruitRadius * 0.35,
+              0,
+              Math.PI * 2,
+            );
+            this.ctx.fillStyle = "rgba(255,255,255,0.7)";
+            this.ctx.fill();
+            this.ctx.closePath();
+
+            applePlaced = true; // Mark this apple as placed.
+          }
+
+          attempts++;
         }
       }
     }

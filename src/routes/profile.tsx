@@ -22,7 +22,7 @@ function Profile() {
 
   return (
     <div className="flex flex-col w-full p-4">
-      <div className="flex justify-center gap-4 mb-6">
+      <div className="flex justify-center gap-4 mb-6 sticky top-16 z-40 pt-4 pb-2">
         {tabs.map(({ id, label }) => (
           <button
             key={id}

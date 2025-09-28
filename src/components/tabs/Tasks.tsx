@@ -24,273 +24,294 @@ import {
   TableCell,
   Table,
 } from "../ui/table";
-const columns: ColumnDef<Task>[] = [
-  {
-    accessorKey: "title",
-    header: ({ column }) => {
-      const isSorted = column.getIsSorted();
-      return (
-        <Button
-          variant="ghost"
-          className="gap-1 rounded-none p-2 w-full flex justify-start"
-          onClick={() => column.toggleSorting(isSorted === "asc")}
-        >
-          Имя задачи
-          {isSorted === "asc" ? (
-            <ArrowUp className="w-4 h-4" />
-          ) : isSorted === "desc" ? (
-            <ArrowDown className="w-4 h-4" />
-          ) : (
-            <div className="w-4 h-4" />
-          )}
-        </Button>
-      );
-    },
-  },
-  {
-    accessorKey: "event_date",
-    header: ({ column }) => {
-      const isSorted = column.getIsSorted();
-      return (
-        <Button
-          variant="ghost"
-          className="gap-1 rounded-none p-2 w-full flex justify-start"
-          onClick={() => column.toggleSorting(isSorted === "asc")}
-        >
-          Дата начала
-          {isSorted === "asc" ? (
-            <ArrowUp className="w-4 h-4" />
-          ) : isSorted === "desc" ? (
-            <ArrowDown className="w-4 h-4" />
-          ) : (
-            <div className="w-4 h-4" />
-          )}
-        </Button>
-      );
-    },
-    cell: ({ getValue }) => {
-      if (getValue()) {
-        const date = new Date(getValue() as string);
-        return <span>{date.toLocaleDateString(new Intl.Locale("ru"))}</span>;
-      }
-      return <span></span>;
-    },
-  },
-  {
-    accessorKey: "deadline",
-    header: ({ column }) => {
-      const isSorted = column.getIsSorted();
-      return (
-        <Button
-          variant="ghost"
-          className="gap-1 rounded-none p-2 w-full flex justify-start"
-          onClick={() => column.toggleSorting(isSorted === "asc")}
-        >
-          Дедлайн
-          {isSorted === "asc" ? (
-            <ArrowUp className="w-4 h-4" />
-          ) : isSorted === "desc" ? (
-            <ArrowDown className="w-4 h-4" />
-          ) : (
-            <div className="w-4 h-4" />
-          )}
-        </Button>
-      );
-    },
-    cell: ({ getValue }) => {
-      if (getValue()) {
-        const date = new Date(getValue() as string);
-        return <span>{date.toLocaleDateString(new Intl.Locale("ru"))}</span>;
-      }
-      return <span></span>;
-    },
-  },
-  {
-    accessorKey: "mission_title",
-    header: ({ column }) => {
-      const isSorted = column.getIsSorted();
-      return (
-        <Button
-          variant="ghost"
-          className="gap-1 rounded-none p-2 w-full flex justify-start"
-          onClick={() => column.toggleSorting(isSorted === "asc")}
-        >
-          Кампания
-          {isSorted === "asc" ? (
-            <ArrowUp className="w-4 h-4" />
-          ) : isSorted === "desc" ? (
-            <ArrowDown className="w-4 h-4" />
-          ) : (
-            <div className="w-4 h-4" />
-          )}
-        </Button>
-      );
-    },
-  },
-  {
-    accessorKey: "goal_title",
-    header: ({ column }) => {
-      const isSorted = column.getIsSorted();
-      return (
-        <Button
-          variant="ghost"
-          className="gap-1 rounded-none p-2 w-full flex justify-start"
-          onClick={() => column.toggleSorting(isSorted === "asc")}
-        >
-          Цель
-          {isSorted === "asc" ? (
-            <ArrowUp className="w-4 h-4" />
-          ) : isSorted === "desc" ? (
-            <ArrowDown className="w-4 h-4" />
-          ) : (
-            <div className="w-4 h-4" />
-          )}
-        </Button>
-      );
-    },
-  },
-  {
-    accessorKey: "skill_title",
-    header: ({ column }) => {
-      const isSorted = column.getIsSorted();
-      return (
-        <Button
-          variant="ghost"
-          className="gap-1 rounded-none p-2 w-full flex justify-start"
-          onClick={() => column.toggleSorting(isSorted === "asc")}
-        >
-          Навык
-          {isSorted === "asc" ? (
-            <ArrowUp className="w-4 h-4" />
-          ) : isSorted === "desc" ? (
-            <ArrowDown className="w-4 h-4" />
-          ) : (
-            <div className="w-4 h-4" />
-          )}
-        </Button>
-      );
-    },
-  },
-  {
-    accessorKey: "online",
-    header: ({ column }) => {
-      const isSorted = column.getIsSorted();
-      return (
-        <Button
-          variant="ghost"
-          className="gap-1 rounded-none p-2 w-full flex justify-start"
-          onClick={() => column.toggleSorting(isSorted === "asc")}
-        >
-          Место
-          {isSorted === "asc" ? (
-            <ArrowUp className="w-4 h-4" />
-          ) : isSorted === "desc" ? (
-            <ArrowDown className="w-4 h-4" />
-          ) : (
-            <div className="w-4 h-4" />
-          )}
-        </Button>
-      );
-    },
-    cell: ({ getValue }) => {
-      const value = getValue<string | null>();
-      return value ? "Онлайн" : "Оффлайн";
-    },
-  },
-  {
-    accessorKey: "description",
-    header: ({ column }) => {
-      const isSorted = column.getIsSorted();
-      return (
-        <Button
-          variant="ghost"
-          className="gap-1 rounded-none p-2 w-full flex justify-start"
-          onClick={() => column.toggleSorting(isSorted === "asc")}
-        >
-          Описание
-          {isSorted === "asc" ? (
-            <ArrowUp className="w-4 h-4" />
-          ) : isSorted === "desc" ? (
-            <ArrowDown className="w-4 h-4" />
-          ) : (
-            <div className="w-4 h-4" />
-          )}
-        </Button>
-      );
-    },
-  },
-  {
-    accessorKey: "water_reward",
-    header: ({ column }) => {
-      const isSorted = column.getIsSorted();
-      return (
-        <Button
-          variant="ghost"
-          className="gap-1 rounded-none p-2 w-full flex justify-start"
-          onClick={() => column.toggleSorting(isSorted === "asc")}
-        >
-          Воды
-          {isSorted === "asc" ? (
-            <ArrowUp className="w-4 h-4" />
-          ) : isSorted === "desc" ? (
-            <ArrowDown className="w-4 h-4" />
-          ) : (
-            <div className="w-4 h-4" />
-          )}
-        </Button>
-      );
-    },
-  },
-  {
-    accessorKey: "apple_reward",
-    header: ({ column }) => {
-      const isSorted = column.getIsSorted();
-      return (
-        <Button
-          variant="ghost"
-          className="gap-1 rounded-none p-2 w-full flex justify-start"
-          onClick={() => column.toggleSorting(isSorted === "asc")}
-        >
-          Яблок
-          {isSorted === "asc" ? (
-            <ArrowUp className="w-4 h-4" />
-          ) : isSorted === "desc" ? (
-            <ArrowDown className="w-4 h-4" />
-          ) : (
-            <div className="w-4 h-4" />
-          )}
-        </Button>
-      );
-    },
-  },
-  {
-    accessorKey: "user_limit",
-    header: ({ column }) => {
-      const isSorted = column.getIsSorted();
-      return (
-        <Button
-          variant="ghost"
-          className="gap-1 rounded-none p-2 w-full flex justify-start"
-          onClick={() => column.toggleSorting(isSorted === "asc")}
-        >
-          Максимум участников
-          {isSorted === "asc" ? (
-            <ArrowUp className="w-4 h-4" />
-          ) : isSorted === "desc" ? (
-            <ArrowDown className="w-4 h-4" />
-          ) : (
-            <div className="w-4 h-4" />
-          )}
-        </Button>
-      );
-    },
-    filterFn: (row, id, value) => {
-      if (!value) return true;
-      return row.getValue(id) === null;
-    },
-  },
-];
+
 function TasksTab() {
+  const columns: ColumnDef<Task>[] = [
+    {
+      accessorKey: "title",
+      header: ({ column }) => {
+        const isSorted = column.getIsSorted();
+        return (
+          <Button
+            variant="ghost"
+            className="gap-1 rounded-none p-2 w-full flex justify-start"
+            onClick={() => column.toggleSorting(isSorted === "asc")}
+          >
+            Имя задачи
+            {isSorted === "asc" ? (
+              <ArrowUp className="w-4 h-4" />
+            ) : isSorted === "desc" ? (
+              <ArrowDown className="w-4 h-4" />
+            ) : (
+              <div className="w-4 h-4" />
+            )}
+          </Button>
+        );
+      },
+    },
+    {
+      accessorKey: "event_date",
+      header: ({ column }) => {
+        const isSorted = column.getIsSorted();
+        return (
+          <Button
+            variant="ghost"
+            className="gap-1 rounded-none p-2 w-full flex justify-start"
+            onClick={() => column.toggleSorting(isSorted === "asc")}
+          >
+            Дата начала
+            {isSorted === "asc" ? (
+              <ArrowUp className="w-4 h-4" />
+            ) : isSorted === "desc" ? (
+              <ArrowDown className="w-4 h-4" />
+            ) : (
+              <div className="w-4 h-4" />
+            )}
+          </Button>
+        );
+      },
+      cell: ({ getValue }) => {
+        if (getValue()) {
+          const date = new Date(getValue() as string);
+          return <span>{date.toLocaleDateString(new Intl.Locale("ru"))}</span>;
+        }
+        return <span></span>;
+      },
+    },
+    {
+      accessorKey: "deadline",
+      header: ({ column }) => {
+        const isSorted = column.getIsSorted();
+        return (
+          <Button
+            variant="ghost"
+            className="gap-1 rounded-none p-2 w-full flex justify-start"
+            onClick={() => column.toggleSorting(isSorted === "asc")}
+          >
+            Дедлайн
+            {isSorted === "asc" ? (
+              <ArrowUp className="w-4 h-4" />
+            ) : isSorted === "desc" ? (
+              <ArrowDown className="w-4 h-4" />
+            ) : (
+              <div className="w-4 h-4" />
+            )}
+          </Button>
+        );
+      },
+      cell: ({ getValue }) => {
+        if (getValue()) {
+          const date = new Date(getValue() as string);
+          return <span>{date.toLocaleDateString(new Intl.Locale("ru"))}</span>;
+        }
+        return <span></span>;
+      },
+    },
+    {
+      accessorKey: "mission_title",
+      header: ({ column }) => {
+        const isSorted = column.getIsSorted();
+        return (
+          <Button
+            variant="ghost"
+            className="gap-1 rounded-none p-2 w-full flex justify-start"
+            onClick={() => column.toggleSorting(isSorted === "asc")}
+          >
+            Кампания
+            {isSorted === "asc" ? (
+              <ArrowUp className="w-4 h-4" />
+            ) : isSorted === "desc" ? (
+              <ArrowDown className="w-4 h-4" />
+            ) : (
+              <div className="w-4 h-4" />
+            )}
+          </Button>
+        );
+      },
+    },
+    {
+      accessorKey: "goal_title",
+      header: ({ column }) => {
+        const isSorted = column.getIsSorted();
+        return (
+          <Button
+            variant="ghost"
+            className="gap-1 rounded-none p-2 w-full flex justify-start"
+            onClick={() => column.toggleSorting(isSorted === "asc")}
+          >
+            Цель
+            {isSorted === "asc" ? (
+              <ArrowUp className="w-4 h-4" />
+            ) : isSorted === "desc" ? (
+              <ArrowDown className="w-4 h-4" />
+            ) : (
+              <div className="w-4 h-4" />
+            )}
+          </Button>
+        );
+      },
+    },
+    {
+      accessorKey: "skill_title",
+      header: ({ column }) => {
+        const isSorted = column.getIsSorted();
+        return (
+          <Button
+            variant="ghost"
+            className="gap-1 rounded-none p-2 w-full flex justify-start"
+            onClick={() => column.toggleSorting(isSorted === "asc")}
+          >
+            Навык
+            {isSorted === "asc" ? (
+              <ArrowUp className="w-4 h-4" />
+            ) : isSorted === "desc" ? (
+              <ArrowDown className="w-4 h-4" />
+            ) : (
+              <div className="w-4 h-4" />
+            )}
+          </Button>
+        );
+      },
+    },
+    {
+      accessorKey: "online",
+      header: ({ column }) => {
+        const isSorted = column.getIsSorted();
+        return (
+          <Button
+            variant="ghost"
+            className="gap-1 rounded-none p-2 w-full flex justify-start"
+            onClick={() => column.toggleSorting(isSorted === "asc")}
+          >
+            Место
+            {isSorted === "asc" ? (
+              <ArrowUp className="w-4 h-4" />
+            ) : isSorted === "desc" ? (
+              <ArrowDown className="w-4 h-4" />
+            ) : (
+              <div className="w-4 h-4" />
+            )}
+          </Button>
+        );
+      },
+      cell: ({ getValue }) => {
+        const value = getValue<string | null>();
+        return value ? "Онлайн" : "Оффлайн";
+      },
+    },
+    {
+      accessorKey: "description",
+      header: ({ column }) => {
+        const isSorted = column.getIsSorted();
+        return (
+          <Button
+            variant="ghost"
+            className="gap-1 rounded-none p-2 w-full flex justify-start"
+            onClick={() => column.toggleSorting(isSorted === "asc")}
+          >
+            Описание
+            {isSorted === "asc" ? (
+              <ArrowUp className="w-4 h-4" />
+            ) : isSorted === "desc" ? (
+              <ArrowDown className="w-4 h-4" />
+            ) : (
+              <div className="w-4 h-4" />
+            )}
+          </Button>
+        );
+      },
+    },
+    {
+      accessorKey: "water_reward",
+      header: ({ column }) => {
+        const isSorted = column.getIsSorted();
+        return (
+          <Button
+            variant="ghost"
+            className="gap-1 rounded-none p-2 w-full flex justify-start"
+            onClick={() => column.toggleSorting(isSorted === "asc")}
+          >
+            Воды
+            {isSorted === "asc" ? (
+              <ArrowUp className="w-4 h-4" />
+            ) : isSorted === "desc" ? (
+              <ArrowDown className="w-4 h-4" />
+            ) : (
+              <div className="w-4 h-4" />
+            )}
+          </Button>
+        );
+      },
+    },
+    {
+      accessorKey: "apple_reward",
+      header: ({ column }) => {
+        const isSorted = column.getIsSorted();
+        return (
+          <Button
+            variant="ghost"
+            className="gap-1 rounded-none p-2 w-full flex justify-start"
+            onClick={() => column.toggleSorting(isSorted === "asc")}
+          >
+            Яблок
+            {isSorted === "asc" ? (
+              <ArrowUp className="w-4 h-4" />
+            ) : isSorted === "desc" ? (
+              <ArrowDown className="w-4 h-4" />
+            ) : (
+              <div className="w-4 h-4" />
+            )}
+          </Button>
+        );
+      },
+    },
+    {
+      accessorKey: "user_limit",
+      header: ({ column }) => {
+        const isSorted = column.getIsSorted();
+        return (
+          <Button
+            variant="ghost"
+            className="gap-1 rounded-none p-2 w-full flex justify-start"
+            onClick={() => column.toggleSorting(isSorted === "asc")}
+          >
+            Максимум участников
+            {isSorted === "asc" ? (
+              <ArrowUp className="w-4 h-4" />
+            ) : isSorted === "desc" ? (
+              <ArrowDown className="w-4 h-4" />
+            ) : (
+              <div className="w-4 h-4" />
+            )}
+          </Button>
+        );
+      },
+      filterFn: (row, id, value) => {
+        if (!value) return true;
+        return row.getValue(id) === null;
+      },
+    },
+
+    {
+      accessorKey: "actions",
+      header: () => {
+        return <span></span>;
+      },
+      cell: ({ row }) => {
+        return (
+          <span
+            onClick={(e) => {
+              e.stopPropagation();
+              cancelTask(row.original.id);
+            }}
+            className="cursor-pointer text-red-500 hover:underline"
+          >
+            Отказаться
+          </span>
+        );
+      },
+    },
+  ];
   const fetchUserTasks = async (jwt: string) => {
     if (!jwt) return null;
     const jsonrpc = {
@@ -342,6 +363,33 @@ function TasksTab() {
       pagination: { pageSize: 7, pageIndex: 0 },
     },
   });
+  function cancelTask(id: number) {
+    console.log(id);
+    if (!cookies["auth-token"]) return null;
+    const jsonrpc = {
+      jsonrpc: "2.0",
+      method: "my_tasks",
+      params: {},
+      id: 1,
+    };
+
+    const response = await fetch("https://hrzero.ru/api/app/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: jwt,
+      },
+      body: JSON.stringify(jsonrpc),
+    });
+    if (!response.ok) {
+      throw new Error("Network response was not ok");
+    }
+    const taskData = await response.json();
+    if (taskData.error) {
+      throw new Error(taskData.error.message);
+    }
+    return taskData.result;
+  }
   return (
     <div className="p-4  bg-white rounded shadow-md text-black w-fit mx-auto max-[1300px]:w-full max-[1300px]:mx-0">
       <div className="">

@@ -4,6 +4,7 @@ import { Button } from "../ui/button";
 import { useCookies } from "react-cookie";
 import { useEffect, useRef, useState } from "react";
 import type { Tree, UserTree } from "@/types/Tree";
+import { Link } from "@tanstack/react-router";
 function generateSeedFromString(str: string): number {
   let hash = 0;
   if (str.length === 0) {
@@ -144,9 +145,9 @@ function TreeTab() {
         <p className="text-red-500 mt-2 max-w-2xs text-center">{error}</p>
       )}
       {!isLoading && data ? (
-        <div className="flex items-start justify-center gap-4">
+        <div className="flex items-start justify-center gap-4 max-sm:flex-col">
           <div>
-            <div className="w-[300px] h-[300px]">
+            <div className="w-[200px] h-[200px]">
               <ForestView
                 ref={treeRef}
                 trees={[MapTreeData(data)]}
@@ -157,7 +158,7 @@ function TreeTab() {
             </div>
             <Button
               onClick={waterTree}
-              className=" max-w-[200px]  hover:bg-blue-500  bg-blue-primary w-fit hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white mt-4"
+              className=" w-full  hover:bg-blue-500  bg-blue-primary hover:cursor-pointer font-futura-heavy rounded-md p-2 text-white mt-2"
             >
               Полить
             </Button>
@@ -228,6 +229,11 @@ function TreeTab() {
           </Button>
         </div>
       )}
+      <Button className="max-sm:w-full sm:max-w-[150px] hover:bg-blue-500  bg-blue-primary w-full hover:cursor-pointer font-futura-heavy rounded-md p-2 text-white ml-auto">
+        <Link to="/forest" className="[&.active]:font-bold block p-1  rounded">
+          Посетить лес
+        </Link>
+      </Button>
     </div>
   );
 }

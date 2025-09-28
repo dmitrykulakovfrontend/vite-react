@@ -35,13 +35,19 @@ import {
   type SortingState,
 } from "@tanstack/react-table";
 import useSWR from "swr";
-import type { User } from "@/types/User";
 import { useCookies } from "react-cookie";
 
 export const Route = createFileRoute("/forest")({
   component: Index,
 });
-const columns: ColumnDef<User & { name: string }>[] = [
+type LeaderboardUser = {
+  name: string;
+  avatar_url: string;
+  tree_age: string;
+  activity: string;
+  started_at: string;
+};
+const columns: ColumnDef<LeaderboardUser>[] = [
   {
     id: "rank",
     header: "Ранг",
@@ -144,7 +150,7 @@ function Index() {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const { data } = useSWR("users", () => fetchUsers(cookies["auth-token"]));
   console.log({ data });
-  const table = useReactTable<User & { name: string }>({
+  const table = useReactTable<LeaderboardUser>({
     data: data || [],
     columns,
     getCoreRowModel: getCoreRowModel(),

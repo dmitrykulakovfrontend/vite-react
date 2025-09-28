@@ -41,8 +41,8 @@ function RouteComponent() {
     <div className="p-4">
       <div className="bg-white w-fit mx-auto text-black p-4 rounded-md shadow">
         <div>
-          <div className="flex items-center gap-8 justify-between max-sm:flex-col max-sm:items-start">
-            <div className="max-w-3xs">
+          <div className="flex items-center gap-8 justify-between max-sm:flex-col ">
+            <div className="max-w-3xs max-sm:text-center">
               <h1 className="text-2xl font-futura-heavy mb-2">Магазин</h1>
               <p className="mb-2">
                 Здесь вы можете приобрести различные товары за яблоки.
@@ -65,7 +65,7 @@ function RouteComponent() {
             </div>
           </div>
         </div>
-        <div className="flex flex-wrap gap-8 my-4">
+        <div className="flex flex-wrap gap-8 my-4 max-sm:justify-center">
           {products.map((product) => (
             <div
               key={product.id}
@@ -103,7 +103,7 @@ function RouteComponent() {
             <h2 className="text-2xl font-futura-heavy">
               Инвентарь (уже купленные предметы)
             </h2>
-            <div className="flex flex-wrap gap-8 mb-4">
+            <div className="flex flex-wrap gap-8 mb-4 max-sm:justify-center">
               {inventory.map((product) => (
                 <div
                   key={product.id}

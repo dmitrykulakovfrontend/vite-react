@@ -371,7 +371,16 @@ class TreeAnimation {
       // END: ================== FOREST DRAWING LOGIC (EXISTING) ==================
     }
   }
-
+  private lerpColor(
+    color1: { r: number; g: number; b: number },
+    color2: { r: number; g: number; b: number },
+    amount: number,
+  ): string {
+    const r = Math.round(this.lerp(color1.r, color2.r, amount));
+    const g = Math.round(this.lerp(color1.g, color2.g, amount));
+    const b = Math.round(this.lerp(color1.b, color2.b, amount));
+    return `rgb(${r}, ${g}, ${b})`;
+  }
   growthStage(
     start: number,
     goal: number,
@@ -1052,18 +1061,32 @@ class TreeAnimation {
     this.ctx.fill();
     this.ctx.closePath();
   }
-  getTrunkColor(tree: Tree) {
-    const stage = Math.floor(tree.decayProgress || 0);
-    switch (stage) {
-      case 0:
-        return this.colors.trunk;
-      case 1:
-        return this.colors.witheredTrunk;
-      case 2:
-        return this.colors.dyingTrunk;
-      default:
-        return this.colors.trunk;
+  getTrunkColor(tree: Tree): string {
+    const decay = tree.decayProgress || 0;
+    const colorsRgb = {
+      trunk: this.hexToRgb(this.colors.trunk),
+      witheredTrunk: this.hexToRgb(this.colors.witheredTrunk),
+      dyingTrunk: this.hexToRgb(this.colors.dyingTrunk),
+    };
+
+    if (decay <= 0) {
+      return this.colors.trunk;
     }
+    // Transition from healthy (0) to withered (1)
+    if (decay < 1) {
+      return this.lerpColor(colorsRgb.trunk, colorsRgb.witheredTrunk, decay);
+    }
+    // Transition from withered (1) to dying (2)
+    if (decay < 2) {
+      // The 'amount' for lerping should be in the 0-1 range, so we subtract 1
+      return this.lerpColor(
+        colorsRgb.witheredTrunk,
+        colorsRgb.dyingTrunk,
+        decay - 1,
+      );
+    }
+    // Fully decayed
+    return this.colors.dyingTrunk;
   }
   drawFullTree(tree: ModifiedTreeOptions) {
     // Reset tree top

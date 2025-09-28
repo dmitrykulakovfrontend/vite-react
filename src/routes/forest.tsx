@@ -172,7 +172,7 @@ function Index() {
       treeRef.current.update(trees, false, user ? trees[5250] : null);
     }
   }, [trees]);
-  console.log(1);
+  console.log({ data });
   const [isSimulationActive, setSimulationActive] = useState(false);
 
   useEffect(() => {
@@ -331,7 +331,7 @@ function Index() {
               </div>
             )}
             <Button
-              className=" max-w-[200px] max-lg:max-w-[150px] hover:bg-blue-500  bg-blue-primary w-full hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white"
+              className="w-fit border-0 hover:bg-blue-500  bg-blue-primary  hover:cursor-pointer font-futura-heavy rounded-full p-4 text-white! justify-center"
               onClick={() => setTableVisible((v) => !v)}
             >
               Лидеры
@@ -344,7 +344,7 @@ function Index() {
               }
             }}
           >
-            <SelectTrigger className="w-[180px] border-0 hover:bg-blue-500  bg-blue-primary  hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white! ">
+            <SelectTrigger className="w-fit border-0 hover:bg-blue-500  bg-blue-primary  hover:cursor-pointer font-futura-heavy rounded-full p-4 text-white! justify-center">
               <SelectValue placeholder={planetsArray[0]} />
             </SelectTrigger>
             <SelectContent className="bg-blue-primary text-white">
@@ -391,7 +391,7 @@ function Index() {
               onClick={() => setSimulationActive((prev) => !prev)}
             >
               <Link
-                to="/tree"
+                to="/profile"
                 className="[&.active]:font-bold block p-1  rounded"
               >
                 {user ? "Полить дерево" : "Посади своё дерево"}

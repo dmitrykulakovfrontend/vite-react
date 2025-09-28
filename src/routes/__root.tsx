@@ -41,9 +41,7 @@ const fetchUser = async (authToken: string) => {
 
 const RootLayout = () => {
   const [isMenuOpen, setMenuOpen] = useState(false);
-  const setTrees = useMainStore((s) => s.setTrees);
-  const setUser = useMainStore((s) => s.setUser);
-  const user = useMainStore((s) => s.user);
+  const { setTrees, setUser, user } = useMainStore();
   const [cookies] = useCookies(["auth-token"]);
   // Use SWR to fetch user data
   const { data, error, isLoading } = useSWR(
@@ -57,10 +55,15 @@ const RootLayout = () => {
   );
 
   useEffect(() => {
-    if (data) {
+    if (isLoading) {
+      setUser("loading");
+    } else if (!isLoading && data !== undefined) {
       setUser(data);
+    } else if (!isLoading && data === undefined) {
+      setUser(null);
     }
-  }, [data, setUser]);
+  }, [data, setUser, isLoading]);
+  console.log(isLoading);
 
   useEffect(() => {
     const handleResize = () => {

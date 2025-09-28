@@ -135,7 +135,7 @@ function RouteComponent() {
                   </p>
                   <Button className=" max-w-[200px]  hover:bg-blue-500  bg-blue-primary w-full hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white">
                     <Link
-                      to="/tree"
+                      to="/profile"
                       className="[&.active]:font-bold block p-1  rounded"
                     >
                       Использовать

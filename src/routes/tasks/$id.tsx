@@ -295,12 +295,36 @@ function RouteComponent() {
                 >
                   Пометить как выполненную
                 </Button>
+              ) : currentUserTask?.state === "rejected" ? (
+                <Button
+                  disabled
+                  variant={"destructive"}
+                  className=" max-w-[200px] max-lg:max-w-[150px] hover:bg-blue-500  bg-blue-primary hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white min-w-[100px]"
+                >
+                  Отказано
+                </Button>
+              ) : currentUserTask?.state === "refused" ? (
+                <Button
+                  disabled
+                  variant={"destructive"}
+                  className=" max-w-[200px] max-lg:max-w-[150px] hover:bg-blue-500  bg-blue-primary hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white min-w-[100px]"
+                >
+                  Уже отказывались, взять снова?
+                </Button>
+              ) : currentUserTask?.state === "success" ? (
+                <Button
+                  disabled
+                  variant={"destructive"}
+                  className=" max-w-[200px] max-lg:max-w-[150px] hover:bg-blue-500  bg-blue-primary hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white min-w-[100px]"
+                >
+                  Выполнено
+                </Button>
               ) : (
                 <Button
                   onClick={takeTask}
                   className=" max-w-[200px] max-lg:max-w-[150px] hover:bg-blue-500  bg-blue-primary hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white min-w-[100px]"
                 >
-                  Взять
+                  Взять задачу
                 </Button>
               )}
             </div>

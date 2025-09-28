@@ -1,10 +1,11 @@
+import type { User } from "./User";
+
 export interface Tree {
   container: HTMLDivElement;
   timesWatered: number;
   treeScale?: number;
   seed: number;
   decayProgress: number; // Add this new property
-  witheredLevel: number;
   apples?: number;
 }
 export type Planet = "Земля" | "Юпитер" | "Марс";
@@ -25,3 +26,17 @@ export interface Branch {
   lineWidth: number;
   depth: number;
 }
+
+export type UserTree = {
+  planted_at: string;
+  vitality_percent: number;
+  last_watered_at: string;
+  is_active: boolean;
+  age: number;
+  water_after: number;
+  water: number;
+  apples: number;
+  total_apples: number;
+  user: User;
+  days_since_watering: number;
+};

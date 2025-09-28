@@ -9,8 +9,8 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as TreeRouteImport } from './routes/tree'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ForestRouteImport } from './routes/forest'
 import { Route as IndexRouteImport } from './routes/index'
@@ -18,14 +18,14 @@ import { Route as TasksIndexRouteImport } from './routes/tasks/index'
 import { Route as ShopIndexRouteImport } from './routes/shop/index'
 import { Route as TasksIdRouteImport } from './routes/tasks/$id'
 
-const TreeRoute = TreeRouteImport.update({
-  id: '/tree',
-  path: '/tree',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -63,8 +63,8 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/forest': typeof ForestRoute
   '/login': typeof LoginRoute
+  '/profile': typeof ProfileRoute
   '/signup': typeof SignupRoute
-  '/tree': typeof TreeRoute
   '/tasks/$id': typeof TasksIdRoute
   '/shop': typeof ShopIndexRoute
   '/tasks': typeof TasksIndexRoute
@@ -73,8 +73,8 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/forest': typeof ForestRoute
   '/login': typeof LoginRoute
+  '/profile': typeof ProfileRoute
   '/signup': typeof SignupRoute
-  '/tree': typeof TreeRoute
   '/tasks/$id': typeof TasksIdRoute
   '/shop': typeof ShopIndexRoute
   '/tasks': typeof TasksIndexRoute
@@ -84,8 +84,8 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/forest': typeof ForestRoute
   '/login': typeof LoginRoute
+  '/profile': typeof ProfileRoute
   '/signup': typeof SignupRoute
-  '/tree': typeof TreeRoute
   '/tasks/$id': typeof TasksIdRoute
   '/shop/': typeof ShopIndexRoute
   '/tasks/': typeof TasksIndexRoute
@@ -96,8 +96,8 @@ export interface FileRouteTypes {
     | '/'
     | '/forest'
     | '/login'
+    | '/profile'
     | '/signup'
-    | '/tree'
     | '/tasks/$id'
     | '/shop'
     | '/tasks'
@@ -106,8 +106,8 @@ export interface FileRouteTypes {
     | '/'
     | '/forest'
     | '/login'
+    | '/profile'
     | '/signup'
-    | '/tree'
     | '/tasks/$id'
     | '/shop'
     | '/tasks'
@@ -116,8 +116,8 @@ export interface FileRouteTypes {
     | '/'
     | '/forest'
     | '/login'
+    | '/profile'
     | '/signup'
-    | '/tree'
     | '/tasks/$id'
     | '/shop/'
     | '/tasks/'
@@ -127,8 +127,8 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ForestRoute: typeof ForestRoute
   LoginRoute: typeof LoginRoute
+  ProfileRoute: typeof ProfileRoute
   SignupRoute: typeof SignupRoute
-  TreeRoute: typeof TreeRoute
   TasksIdRoute: typeof TasksIdRoute
   ShopIndexRoute: typeof ShopIndexRoute
   TasksIndexRoute: typeof TasksIndexRoute
@@ -136,18 +136,18 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/tree': {
-      id: '/tree'
-      path: '/tree'
-      fullPath: '/tree'
-      preLoaderRoute: typeof TreeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/signup': {
       id: '/signup'
       path: '/signup'
       fullPath: '/signup'
       preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -199,8 +199,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ForestRoute: ForestRoute,
   LoginRoute: LoginRoute,
+  ProfileRoute: ProfileRoute,
   SignupRoute: SignupRoute,
-  TreeRoute: TreeRoute,
   TasksIdRoute: TasksIdRoute,
   ShopIndexRoute: ShopIndexRoute,
   TasksIndexRoute: TasksIndexRoute,

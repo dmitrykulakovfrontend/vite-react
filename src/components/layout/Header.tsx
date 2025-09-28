@@ -21,10 +21,12 @@ const Header = ({
   const links = [
     { to: "/", label: "Главная" },
     { to: "/tasks", label: "Задачи" },
-    { to: "/tree", label: "Профиль" },
     { to: "/shop", label: "Магазин" },
     { to: "/forest", label: "Лес" },
   ];
+  if (user) {
+    links.push({ to: "/Profile", label: "Профиль" });
+  }
   return (
     <header
       className={`sticky ${isMenuOpen ? "flex-col items-start" : ""} top-0 left-0 z-50 flex items-center justify-between w-full p-2 bg-[#00285e]  text-white`}
@@ -55,7 +57,7 @@ const Header = ({
         }`}
       >
         <li>
-          {user && isMenuOpen ? (
+          {user !== "loading" && user && isMenuOpen ? (
             <div className="flex items-center gap-2">
               <img
                 src={user.avatar_url}
@@ -93,6 +95,7 @@ const Header = ({
           <li key={link.to}>
             <Link
               to={link.to}
+              onClick={() => setMenuOpen(false)}
               className="[&.active]:font-bold block py-2 h-full font-futura-heavy hover:opacity-90 hover:cursor-pointer"
               activeProps={{
                 className:
@@ -105,7 +108,7 @@ const Header = ({
         ))}
       </ul>
       <div className="max-md:hidden">
-        {user ? (
+        {user !== "loading" && user ? (
           <div className="flex items-center gap-2">
             <img
               src={user.avatar_url}

@@ -11,7 +11,6 @@ export async function fakeTrees(): Promise<Tree[]> {
             return {
               seed: Math.random() * 100000,
               container: null as unknown as HTMLDivElement,
-              witheredLevel: Math.round(Math.random() * 2),
               decayProgress: Math.pow(Math.random(), 12) * 2,
               timesWatered: size,
               apples: Math.round(size / 2) + Math.round(Math.random() * 2),

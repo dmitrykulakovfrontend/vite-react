@@ -18,7 +18,7 @@ export type TreeHandle = {
 export const ForestView = forwardRef<
   TreeHandle,
   Forest & { className?: string }
->(({ className, ...props }, ref) => {
+>(({ className = "", ...props }, ref) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const treeRef = useRef<TreeAnimation | null>(null);
 

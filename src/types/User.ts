@@ -7,6 +7,7 @@ export type User = {
   email: string;
   password_hash: string;
   avatar_url: string;
+  roles: string[] | null;
   banned?: boolean;
   metadata: { name: string; [key: string]: unknown };
 };

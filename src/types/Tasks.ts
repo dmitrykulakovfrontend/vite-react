@@ -37,9 +37,16 @@ export interface Task {
   skill: Record<string, unknown>;
   skill_title: string;
   skill_id: number;
-  state?: "done" | "in-progress";
+  state?: "done" | "in-progress" | "success" | "rejected" | "refused";
   online: boolean | null;
   deadline: string;
   event_date: string;
   apple_reward: number | null;
+}
+
+export interface TaskRating {
+  completed_tasks_count: number;
+  goal_title: string;
+  last_task_updated_at: string;
+  user_rank: number;
 }

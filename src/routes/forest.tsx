@@ -187,7 +187,7 @@ function Index() {
   }, [isSimulationActive]);
 
   return (
-    <div className="flex items-center max-lg:flex-col max-lg:mt-8 w-full h-full gap-4 justify-evenly ">
+    <div className="flex items-center w-full h-full gap-4 justify-evenly ">
       <div className="w-full h-full bg-gray-100 relative">
         <div className="absolute top-0 left-0 p-4 z-10 w-full flex justify-between ">
           <div>
@@ -211,67 +211,100 @@ function Index() {
                     />
                   </div>
                 </div>
-                <Table className="w-fit mx-auto min-w-xs text-black bg-white rounded-tr-md">
-                  <TableHeader>
-                    {table.getRowModel().rows.length
-                      ? table.getHeaderGroups().map((headerGroup) => (
-                          <TableRow key={headerGroup.id}>
-                            {headerGroup.headers.map((header) => {
-                              return (
-                                <TableHead key={header.id}>
-                                  {header.isPlaceholder
-                                    ? null
-                                    : flexRender(
-                                        header.column.columnDef.header,
-                                        header.getContext(),
-                                      )}
-                                </TableHead>
-                              );
-                            })}
-                          </TableRow>
-                        ))
-                      : null}
-                  </TableHeader>
-                  <TableBody>
-                    {table.getRowModel().rows.length ? (
-                      table.getRowModel().rows.map((row) => (
-                        <TableRow
-                          key={row.id}
-                          className="hover:cursor-pointer h-12"
-                          data-state={row.getIsSelected() && "selected"}
-                        >
-                          {row.getVisibleCells().map((cell) => (
-                            <TableCell key={cell.id}>
-                              {flexRender(
-                                cell.column.columnDef.cell,
-                                cell.getContext(),
-                              )}
-                            </TableCell>
+                <div className="hidden md:block">
+                  <Table className="w-fit mx-auto min-w-xs text-black bg-white rounded-tr-md">
+                    <TableHeader>
+                      {table.getHeaderGroups().map((headerGroup) => (
+                        <TableRow key={headerGroup.id}>
+                          {headerGroup.headers.map((header) => (
+                            <TableHead key={header.id}>
+                              {header.isPlaceholder
+                                ? null
+                                : flexRender(
+                                    header.column.columnDef.header,
+                                    header.getContext(),
+                                  )}
+                            </TableHead>
                           ))}
                         </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell
-                          colSpan={columns.length}
-                          className="h-24 text-center"
-                        >
-                          Ничего не найдено
-                        </TableCell>
-                      </TableRow>
-                    )}
-                    {Array.from({
-                      length:
-                        table.getState().pagination.pageSize -
-                        table.getRowModel().rows.length,
-                    }).map((_, i) => (
-                      <TableRow key={`filler-${i}`} className="h-12">
-                        <TableCell colSpan={columns.length} />
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-                <div className="flex items-center justify-center w-full py-4 space-x-2 text-black bg-white rounded-b-md">
+                      ))}
+                    </TableHeader>
+                    <TableBody>
+                      {table.getRowModel().rows.length ? (
+                        table.getRowModel().rows.map((row) => (
+                          <TableRow
+                            key={row.id}
+                            className="hover:cursor-pointer h-12"
+                          >
+                            {row.getVisibleCells().map((cell) => (
+                              <TableCell key={cell.id}>
+                                {flexRender(
+                                  cell.column.columnDef.cell,
+                                  cell.getContext(),
+                                )}
+                              </TableCell>
+                            ))}
+                          </TableRow>
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell
+                            colSpan={columns.length}
+                            className="h-24 text-center"
+                          >
+                            Ничего не найдено
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                {/* CARDS: visible on small screens */}
+                <div className="grid md:hidden overflow-y-scroll max-h-[400px]">
+                  {table.getRowModel().rows.length ? (
+                    table.getRowModel().rows.map((row) => (
+                      <div
+                        key={row.id}
+                        className="p-4 bg-white text-black shadow border"
+                      >
+                        <div className="flex items-center gap-2 mb-2">
+                          <img
+                            src={row.original.avatar_url}
+                            alt={row.original.name}
+                            width={40}
+                            height={40}
+                            className="rounded-full"
+                          />
+                          <div className="font-bold">{row.original.name}</div>
+                        </div>
+                        <div className="text-sm">
+                          <p>
+                            <span className="font-medium">Ранг:</span>{" "}
+                            {row.index + 1}
+                          </p>
+                          <p>
+                            <span className="font-medium">Начало:</span>{" "}
+                            {new Date(
+                              row.original.started_at,
+                            ).toLocaleDateString("ru")}
+                          </p>
+                          <p>
+                            <span className="font-medium">Размер:</span>{" "}
+                            {row.original.tree_age}
+                          </p>
+                          <p>
+                            <span className="font-medium">Активность:</span>{" "}
+                            {row.original.activity}
+                          </p>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-center text-black">Ничего не найдено</p>
+                  )}
+                </div>
+                <div className="flex items-center justify-center w-full p-2 space-x-2 text-black bg-white rounded-b-md">
                   <Button
                     variant="outline"
                     size="sm"
@@ -295,9 +328,7 @@ function Index() {
               className=" max-w-[200px] max-lg:max-w-[150px] hover:bg-blue-500  bg-blue-primary w-full hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white"
               onClick={() => setTableVisible((v) => !v)}
             >
-              {isTableVisible
-                ? "Скрыть таблицу лидеров"
-                : "Показать таблицу лидеров"}
+              Лидеры
             </Button>
           </div>
           <Select

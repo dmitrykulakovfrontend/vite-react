@@ -235,7 +235,7 @@ function RouteComponent() {
   return (
     <div className="p-4 ">
       <div className="bg-white w-fit mx-auto rounded p-4">
-        <div className=" text-black flex items-start gap-4">
+        <div className=" text-black flex items-start gap-4 max-md:flex-col">
           <div>
             <h1 className="text-2xl font-bold   font-futura-heavy ">
               Кампания: {currentTask.mission_title}
@@ -263,51 +263,56 @@ function RouteComponent() {
             <p className="mb-2">
               Исполнителей: {Math.round(Math.random() * 50)}
             </p>
-            <Button className=" max-w-[200px] max-lg:max-w-[150px] hover:bg-blue-500  bg-blue-primary hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white min-w-[100px]">
-              <Link
-                to="/tasks"
-                className="[&.active]:font-bold block p-1  rounded"
-              >
-                Назад
-              </Link>
-            </Button>
+            <div className="flex gap-4 max-md:justify-center">
+              <Button className=" max-w-[200px] max-lg:max-w-[150px] hover:bg-blue-500  bg-blue-primary hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white min-w-[100px]">
+                <Link
+                  to="/tasks"
+                  className="[&.active]:font-bold block p-1  rounded"
+                >
+                  Назад
+                </Link>
+              </Button>
+              {!user ? (
+                <Button
+                  disabled
+                  variant={"destructive"}
+                  className=" max-w-[200px] max-lg:max-w-[150px] hover:bg-blue-500  bg-blue-primary hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white min-w-[100px]"
+                >
+                  Требуется аккаунт
+                </Button>
+              ) : currentUserTask?.state === "done" ? (
+                <Button
+                  disabled
+                  variant={"destructive"}
+                  className=" max-w-[200px] max-lg:max-w-[150px] hover:bg-blue-500  bg-blue-primary hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white min-w-[100px]"
+                >
+                  На модерации
+                </Button>
+              ) : currentUserTask?.state === "in-progress" ? (
+                <Button
+                  onClick={completeTask}
+                  className=" max-w-[200px] max-lg:max-w-[150px] hover:bg-blue-500  bg-blue-primary hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white min-w-[100px]"
+                >
+                  Пометить как выполненную
+                </Button>
+              ) : (
+                <Button
+                  onClick={takeTask}
+                  className=" max-w-[200px] max-lg:max-w-[150px] hover:bg-blue-500  bg-blue-primary hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white min-w-[100px]"
+                >
+                  Взять
+                </Button>
+              )}
+            </div>
           </div>
-          <div>
-            <div className=" mx-auto bg-white">
-              <div className=" mx-auto w-fit flex gap-2   text-white ">
-                {!user ? (
-                  <Button
-                    disabled
-                    variant={"destructive"}
-                    className=" max-w-[200px] max-lg:max-w-[150px] hover:bg-blue-500  bg-blue-primary w-full hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white min-w-[100px]"
-                  >
-                    Требуется аккаунт
-                  </Button>
-                ) : currentUserTask?.state === "done" ? (
-                  <Button
-                    disabled
-                    variant={"destructive"}
-                    className=" max-w-[200px] max-lg:max-w-[150px] hover:bg-blue-500  bg-blue-primary w-full hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white min-w-[100px]"
-                  >
-                    На модерации
-                  </Button>
-                ) : currentUserTask?.state === "in-progress" ? (
-                  <Button
-                    onClick={completeTask}
-                    className=" max-w-[200px] max-lg:max-w-[150px] hover:bg-blue-500  bg-blue-primary w-full hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white min-w-[100px]"
-                  >
-                    Пометить как выполненную
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={takeTask}
-                    className=" max-w-[200px] max-lg:max-w-[150px] hover:bg-blue-500  bg-blue-primary w-full hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white min-w-[100px]"
-                  >
-                    Взять
-                  </Button>
-                )}
-              </div>
-              <Pie className="w-[300px] h-[300px]" data={data} />
+          <div className="mx-auto w-fit">
+            <div className="mx-auto w-fit">
+              <Pie
+                width={250}
+                height={250}
+                data={data}
+                className="mx-auto w-fit"
+              />
             </div>
           </div>
         </div>

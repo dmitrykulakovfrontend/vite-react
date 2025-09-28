@@ -364,7 +364,7 @@ class TreeAnimation {
       this.ctx.font = "bold 48px FuturaPTHeavy,sans-serif";
       this.ctx.textAlign = "center";
       this.ctx.textBaseline = "top";
-      const padding = 30;
+      const padding = 60;
       if (this.planet) {
         this.ctx.fillText(this.planet, this.canvas.width / 2, padding);
       }

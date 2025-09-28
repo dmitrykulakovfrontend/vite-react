@@ -41,7 +41,7 @@ function RouteComponent() {
     <div className="p-4">
       <div className="bg-white w-fit mx-auto text-black p-4 rounded-md shadow">
         <div>
-          <div className="flex items-center gap-8 justify-between">
+          <div className="flex items-center gap-8 justify-between max-sm:flex-col max-sm:items-start">
             <div className="max-w-3xs">
               <h1 className="text-2xl font-futura-heavy mb-2">Магазин</h1>
               <p className="mb-2">

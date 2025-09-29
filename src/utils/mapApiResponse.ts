@@ -19,12 +19,12 @@ import type { UserTree, Tree } from "@/types/Tree";
 // }
 
 function MapTreeData(data: UserTree): Tree {
-  console.log(data);
+  // console.log(data);
   const daysSinceWatered = data.days_since_watering;
 
   const gracePeriodDays = 7;
   // You can still adjust this value to change how fast trees wither.
-  const decayRatePerDay = 0.2;
+  const decayRatePerDay = 0.05;
 
   let decayProgress = 0;
 
@@ -36,6 +36,13 @@ function MapTreeData(data: UserTree): Tree {
 
   // Cap the decay at the maximum value of 2.
   const finalDecayProgress = Math.min(decayProgress, 2);
+  console.log({
+    seed: data.id,
+    container: null as unknown as HTMLDivElement,
+    decayProgress: finalDecayProgress,
+    timesWatered: data.vitality_percent / 5,
+    apples: data.apples,
+  });
   return {
     seed: data.id,
     container: null as unknown as HTMLDivElement,

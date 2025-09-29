@@ -1,6 +1,7 @@
 import { useMainStore } from "@/providers/store";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useCookies } from "react-cookie";
+import { Button } from "../ui/button";
 
 const Header = ({
   isMenuOpen,
@@ -99,25 +100,35 @@ const Header = ({
             </div>
           ) : null}
         </li>
-        {links.map((link) => (
-          <li key={link.to}>
-            <Link
-              to={link.to}
-              onClick={
-                link.to === "/admin"
-                  ? () => (window.location.href = "https://hrzero.ru/admin/")
-                  : () => setMenuOpen(false)
-              }
-              className="[&.active]:font-bold block py-2 h-full font-futura-heavy hover:opacity-90 hover:cursor-pointer"
-              activeProps={{
-                className:
-                  "md:border-b-4 max-md:border-l-4 pl-2 md:pl-0 border-white border-solid",
-              }}
-            >
-              {link.label}
-            </Link>
-          </li>
-        ))}
+        {links.map((link) => {
+          if (link.to === "/admin") {
+            return (
+              <li key={link.to}>
+                <Button
+                  onClick={() => (window.location.href = "/admin")}
+                  className="block py-2 h-full bg-transparent text-white font-futura-heavy hover:opacity-90 hover:cursor-pointer text-base m-0 px-0"
+                >
+                  {link.label}
+                </Button>
+              </li>
+            );
+          }
+          return (
+            <li key={link.to}>
+              <Link
+                to={link.to}
+                onClick={() => setMenuOpen(false)}
+                className="[&.active]:font-bold block py-2 h-full font-futura-heavy hover:opacity-90 hover:cursor-pointer"
+                activeProps={{
+                  className:
+                    "md:border-b-4 max-md:border-l-4 pl-2 md:pl-0 border-white border-solid",
+                }}
+              >
+                {link.label}
+              </Link>
+            </li>
+          );
+        })}
       </ul>
       <div className="max-md:hidden">
         {user !== "loading" && user ? (

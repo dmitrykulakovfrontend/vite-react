@@ -6,7 +6,7 @@ export async function fakeTrees(): Promise<Tree[]> {
     setTimeout(
       () =>
         resolve(
-          new Array(30000).fill(1).map(() => {
+          new Array(3000).fill(1).map(() => {
             const size = Math.round(Math.random() * 16) + 4;
             return {
               seed: Math.random() * 100000,

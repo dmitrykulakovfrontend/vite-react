@@ -39,4 +39,5 @@ export type UserTree = {
   total_apples: number;
   user: User;
   days_since_watering: number;
+  id: number;
 };

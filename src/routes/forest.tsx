@@ -11,8 +11,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 
 import { useMainStore } from "@/providers/store";
-import type { Planet } from "@/types/Tree";
-import { Pause, Play, SearchIcon } from "lucide-react";
+import type { Planet, UserTree } from "@/types/Tree";
+import { SearchIcon } from "lucide-react";
 import { planetsArray } from "@/utils/mock";
 import { Input } from "@/components/ui/input";
 import {
@@ -36,6 +36,7 @@ import {
 } from "@tanstack/react-table";
 import useSWR from "swr";
 import { useCookies } from "react-cookie";
+import MapTreeData from "@/utils/mapApiResponse";
 
 export const Route = createFileRoute("/forest")({
   component: Index,
@@ -138,8 +139,58 @@ const fetchUsers = async (jwt: string) => {
   console.log({ result: tasksData.result });
   return tasksData.result;
 };
+const fetchUsersTree = async (jwt: string) => {
+  const jsonrpc = {
+    jsonrpc: "2.0",
+    method: "get_all_trees",
+    params: {},
+    id: 1,
+  };
+  const response = await fetch("https://hrzero.ru/api/app/", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: jwt,
+    },
+    body: JSON.stringify(jsonrpc),
+  });
+  if (!response.ok) {
+    throw new Error("Network response was not ok");
+  }
+  const tasksData = await response.json();
+  if (tasksData.error) {
+    throw new Error(tasksData.error.message);
+  }
+  return tasksData.result;
+};
+const fetchUserTree = async (jwt: string) => {
+  if (!jwt) return null;
+  const jsonrpc = {
+    jsonrpc: "2.0",
+    method: "get_my_tree",
+    params: {},
+    id: 1,
+  };
+
+  const response = await fetch("https://hrzero.ru/api/app/", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: jwt,
+    },
+    body: JSON.stringify(jsonrpc),
+  });
+  if (!response.ok) {
+    throw new Error("Network response was not ok");
+  }
+  const data = await response.json();
+  if (data.error) {
+    throw new Error(data.error.message);
+  }
+  return data.result;
+};
 function Index() {
-  const trees = useMainStore((state) => state.trees);
+  // const trees = useMainStore((state) => state.trees);
   const user = useMainStore((state) => state.user);
   const [isTableVisible, setTableVisible] = useState(true);
   const treeRef = useRef<TreeHandle>(null);
@@ -149,7 +200,13 @@ function Index() {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const { data } = useSWR("users", () => fetchUsers(cookies["auth-token"]));
-  console.log({ data });
+  const { data: usersTree } = useSWR("usersTree", () =>
+    fetchUsersTree(cookies["auth-token"]),
+  );
+  const { data: userTree } = useSWR<UserTree | null>("userTree", () =>
+    fetchUserTree(cookies["auth-token"]),
+  );
+  console.log({ usersTree });
   const table = useReactTable<LeaderboardUser>({
     data: data || [],
     columns,
@@ -168,29 +225,33 @@ function Index() {
     },
   });
   useEffect(() => {
-    if (trees.length > 1 && treeRef.current) {
-      treeRef.current.update(trees, false, user ? trees[5250] : null);
+    if (usersTree && usersTree.length > 1 && treeRef.current) {
+      treeRef.current.update(
+        usersTree.map(MapTreeData),
+        false,
+        userTree ? MapTreeData(userTree) : null,
+      );
     }
-  }, [trees]);
+  }, [usersTree, userTree]);
   console.log({ data });
-  const [isSimulationActive, setSimulationActive] = useState(false);
+  // const [isSimulationActive, setSimulationActive] = useState(false);
 
-  useEffect(() => {
-    let intervalId = undefined;
-    if (isSimulationActive) {
-      intervalId = setInterval(() => {
-        if (treeRef.current) {
-          treeRef.current.simulateGrow();
-        }
-      }, 1000); // update simulation every 2 seconds
-    }
+  // useEffect(() => {
+  //   let intervalId = undefined;
+  //   if (isSimulationActive) {
+  //     intervalId = setInterval(() => {
+  //       if (treeRef.current) {
+  //         treeRef.current.simulateGrow();
+  //       }
+  //     }, 1000); // update simulation every 2 seconds
+  //   }
 
-    return () => {
-      if (intervalId) {
-        clearInterval(intervalId);
-      }
-    };
-  }, [isSimulationActive]);
+  //   return () => {
+  //     if (intervalId) {
+  //       clearInterval(intervalId);
+  //     }
+  //   };
+  // }, [isSimulationActive]);
 
   return (
     <div className="flex items-center w-full h-full gap-4 justify-evenly ">
@@ -363,15 +424,15 @@ function Index() {
         <ForestView
           ref={treeRef}
           {...{
-            trees,
+            trees: usersTree ? usersTree.map(MapTreeData) : [],
+            currentUserTree: userTree ? MapTreeData(userTree) : undefined,
             isLoading: true,
-            simulation: isSimulationActive,
           }}
           className=""
         />
         <div className="flex absolute justify-center items-center flex-wrap  gap-2 bottom-4 w-full">
           <div className="relative">
-            <button
+            {/* <button
               className="absolute -left-12 bottom-1/2 translate-y-1/2"
               onClick={() => setSimulationActive((prev) => !prev)}
               title={
@@ -385,11 +446,8 @@ function Index() {
               ) : (
                 <Play className="w-full h-full  bg-blue-primary hover:bg-blue-500 rounded-full p-1 hover:cursor-pointer" />
               )}
-            </button>
-            <Button
-              className=" max-w-[200px] max-lg:max-w-[150px] hover:bg-blue-500  bg-blue-primary w-full hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white"
-              onClick={() => setSimulationActive((prev) => !prev)}
-            >
+            </button> */}
+            <Button className=" max-w-[200px] max-lg:max-w-[150px] hover:bg-blue-500  bg-blue-primary w-full hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white">
               <Link
                 to="/profile"
                 className="[&.active]:font-bold block p-1  rounded"

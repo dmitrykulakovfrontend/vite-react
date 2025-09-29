@@ -16,6 +16,13 @@ type Colors = typeof colors;
 
 const colors = {
   sky: "#00C0F0",
+  // ENHANCEMENT: Add new colors for the dynamic background
+  skyTop: "#00C0F0",
+  skyBottom: "#87CEFA",
+  grassTop: "#3CB371",
+  grassBottom: "#228B22",
+  sun: "#FFDD00",
+  cloud: "rgba(255, 255, 255, 0.9)",
   leaf: "#30B700",
   planets: {
     Земля: "#009A17",
@@ -63,6 +70,16 @@ class TreeAnimation {
   startingLeafSize: number;
   maxTreeWidth: number;
   startingTreeWidth: number;
+  // ENHANCEMENT: Add properties for clouds
+  clouds: { x: number; y: number; radius: number }[];
+  cloudOffset: number;
+  grassBlades: {
+    x: number;
+    y: number;
+    height: number;
+    sway: number;
+    color: string;
+  }[];
 
   constructor(options: Forest & { container: HTMLDivElement }) {
     this.trees = options.trees;
@@ -108,6 +125,15 @@ class TreeAnimation {
     // this.treeScale = 0.3725;
     this.treeScale = 1;
 
+    // ENHANCEMENT: Initialize scenery properties
+    this.clouds = [];
+    this.cloudOffset = 0;
+    this.grassBlades = []; // ADD THIS LINE
+    if (this.isMainTree) {
+      this.initializeScenery();
+      this.initializeGrass(); // ADD THIS LINE
+    }
+
     this.hasCentered = false;
     this.addEventListeners();
     this.viewportTransform = {
@@ -115,8 +141,50 @@ class TreeAnimation {
       y: 0,
       scale: this.isMainTree ? 1 : 0.1,
     };
+    if (this.isMainTree) {
+      this.animate();
+    } else {
+      this.render();
+    }
+  }
+  // ENHANCEMENT: New method to generate clouds
+  private initializeScenery() {
+    this.clouds = [];
+    const numClouds = 7;
+    for (let i = 0; i < numClouds; i++) {
+      this.clouds.push({
+        x: Math.random() * this.stageWidth * 1.5, // Spread them out
+        y: Math.random() * (this.stageHeight / 4) + 60, // Place in the top part of the sky
+        radius: Math.random() * 40 + 25, // Varying sizes
+      });
+    }
+  }
 
-    this.render();
+  // ENHANCEMENT: New method to draw grass blades for texture
+  private drawGrassBlades() {
+    this.ctx.save();
+    this.ctx.lineWidth = 2;
+
+    for (const blade of this.grassBlades) {
+      this.ctx.strokeStyle = blade.color;
+      this.ctx.beginPath();
+      this.ctx.moveTo(blade.x, blade.y);
+      this.ctx.quadraticCurveTo(
+        blade.x + blade.sway,
+        blade.y - blade.height / 2,
+        blade.x + blade.sway / 2,
+        blade.y - blade.height,
+      );
+      this.ctx.stroke();
+    }
+    this.ctx.restore();
+  }
+  private animate() {
+    // Only run the animation loop for the main tree view
+    if (this.isMainTree) {
+      this.render();
+      requestAnimationFrame(this.animate.bind(this));
+    }
   }
   render() {
     this.ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -158,20 +226,82 @@ class TreeAnimation {
     }
 
     if (this.isMainTree) {
-      // const horizonY = (this.canvas.height / 2) * this.viewportTransform.scale;
+      // START: ================== NEW DYNAMIC BACKGROUND ==================
+      const horizonY = this.canvas.height / 2;
 
-      // fill sky
-      this.ctx.fillStyle = this.colors.sky;
-      this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+      // 1. Sky Gradient
+      const skyGradient = this.ctx.createLinearGradient(0, 0, 0, horizonY);
+      skyGradient.addColorStop(0, this.colors.skyTop);
+      skyGradient.addColorStop(1, this.colors.skyBottom);
+      this.ctx.fillStyle = skyGradient;
+      this.ctx.fillRect(0, 0, this.canvas.width, horizonY);
 
-      // fill grass
-      this.ctx.fillStyle = this.colors.planets[this.planet];
-      this.ctx.fillRect(
+      // 2. Sun
+      const sunX = this.canvas.width * 0.8;
+      const sunY = this.canvas.height * 0.15;
+      const sunRadius = Math.min(this.canvas.width, this.canvas.height) * 0.08;
+      this.ctx.save();
+      this.ctx.fillStyle = this.colors.sun;
+      this.ctx.shadowColor = this.colors.sun;
+      this.ctx.shadowBlur = 40;
+      this.ctx.beginPath();
+      this.ctx.arc(sunX, sunY, sunRadius, 0, Math.PI * 2);
+      this.ctx.fill();
+      this.ctx.restore();
+
+      // 3. Clouds (animated)
+      this.cloudOffset += 0.1; // Animation speed
+      this.ctx.fillStyle = this.colors.cloud;
+      this.clouds.forEach((cloud) => {
+        const cloudBaseX = cloud.x - this.cloudOffset;
+        // Makes clouds wrap around the screen seamlessly
+        const wrappedX =
+          (((cloudBaseX % (this.stageWidth + 200)) + (this.stageWidth + 200)) %
+            (this.stageWidth + 200)) -
+          100;
+
+        this.ctx.beginPath();
+        // Draw a cloud using several overlapping circles for a fluffy look
+        this.ctx.arc(wrappedX, cloud.y, cloud.radius, 0, Math.PI * 2);
+        this.ctx.arc(
+          wrappedX + cloud.radius * 0.7,
+          cloud.y + 10,
+          cloud.radius * 0.7,
+          0,
+          Math.PI * 2,
+        );
+        this.ctx.arc(
+          wrappedX - cloud.radius * 0.8,
+          cloud.y + 5,
+          cloud.radius * 0.6,
+          0,
+          Math.PI * 2,
+        );
+        this.ctx.arc(
+          wrappedX + cloud.radius * 0.2,
+          cloud.y - 10,
+          cloud.radius * 0.5,
+          0,
+          Math.PI * 2,
+        );
+        this.ctx.fill();
+      });
+
+      // 4. Grass Gradient
+      const grassGradient = this.ctx.createLinearGradient(
         0,
-        this.canvas.height / 2,
-        this.canvas.width,
-        this.canvas.height / 2,
+        horizonY,
+        0,
+        this.canvas.height,
       );
+      grassGradient.addColorStop(0, this.colors.grassTop);
+      grassGradient.addColorStop(1, this.colors.grassBottom);
+      this.ctx.fillStyle = grassGradient;
+      this.ctx.fillRect(0, horizonY, this.canvas.width, this.canvas.height / 2);
+
+      // 5. Grass Texture
+      this.drawGrassBlades();
+      // END: ================== NEW DYNAMIC BACKGROUND ==================
 
       // START: ================== SINGLE TREE DRAWING LOGIC ==================
       if (this.trees && this.trees.length > 0) {
@@ -813,6 +943,12 @@ class TreeAnimation {
     this.canvas.width = this.stageWidth;
     this.canvas.height = this.stageHeight;
 
+    // ENHANCEMENT: Re-initialize scenery on resize for responsiveness
+    if (this.isMainTree) {
+      this.initializeScenery();
+      this.initializeGrass(); // ADD THIS LINE
+    }
+
     // automatically adjust scale
     // this.treeScale = Math.min(this.stageWidth, this.stageHeight) / 800;
 
@@ -823,7 +959,24 @@ class TreeAnimation {
   clearCanvas() {
     this.ctx.clearRect(0, 0, this.stageWidth, this.stageHeight);
   }
+  private initializeGrass() {
+    this.grassBlades = [];
+    const horizonY = this.canvas.height / 2;
+    const bladeCount = 400;
 
+    for (let i = 0; i < bladeCount; i++) {
+      const x = Math.random() * this.canvas.width;
+      const y =
+        horizonY + Math.pow(Math.random(), 2) * (this.canvas.height / 2);
+      // MODIFIED: Reduced height multiplier from 35 to 20 and base height from 10 to 5.
+      const height = ((y - horizonY) / (this.canvas.height / 2)) * 20 + 5;
+      const sway = Math.random() * 10 - 5;
+      const greenValue =
+        120 - Math.floor(((y - horizonY) / (this.canvas.height / 2)) * 60);
+      const color = `rgba(0, ${greenValue}, 10, 0.7)`;
+      this.grassBlades.push({ x, y, height, sway, color });
+    }
+  }
   growOneLevel(tree: Tree) {
     const t = this.trees?.find((tr) => tr.seed === tree.seed);
     if (t) {

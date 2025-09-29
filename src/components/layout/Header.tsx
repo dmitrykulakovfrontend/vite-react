@@ -103,7 +103,11 @@ const Header = ({
           <li key={link.to}>
             <Link
               to={link.to}
-              onClick={() => setMenuOpen(false)}
+              onClick={
+                link.to === "/admin"
+                  ? () => (window.location.href = "https://hrzero.ru/admin/")
+                  : () => setMenuOpen(false)
+              }
               className="[&.active]:font-bold block py-2 h-full font-futura-heavy hover:opacity-90 hover:cursor-pointer"
               activeProps={{
                 className:

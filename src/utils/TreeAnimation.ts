@@ -431,7 +431,7 @@ class TreeAnimation {
 
         // Infinite drawing loop
         if (this.trees && this.trees.length > 0) {
-          const numRows = Math.ceil(this.trees.length / this.treesPerRow);
+          // const numRows = Math.ceil(this.trees.length / this.treesPerRow);
           const viewLeft =
             -this.viewportTransform.x / this.viewportTransform.scale;
           const viewTop =
@@ -449,16 +449,27 @@ class TreeAnimation {
 
           for (let row = startRow; row < endRow; row++) {
             for (let col = startCol; col < endCol; col++) {
-              const wrappedRow = ((row % numRows) + numRows) % numRows;
-              const wrappedCol =
-                ((col % this.treesPerRow) + this.treesPerRow) %
-                this.treesPerRow;
-              const treeIndex = wrappedRow * this.treesPerRow + wrappedCol;
+              // const wrappedRow = ((row % numRows) + numRows) % numRows; // Remove
+              // const wrappedCol = // Remove
+              //   ((col % this.treesPerRow) + this.treesPerRow) %
+              //   this.treesPerRow;
+              // const treeIndex = wrappedRow * this.treesPerRow + wrappedCol; // Remove
 
-              if (treeIndex >= this.trees.length) continue;
+              // --- START MODIFICATION ---
+              // Calculate the absolute index within the infinite grid
+              const absoluteIndex = row * this.treesPerRow + col;
+
+              // Calculate the wrapped tree index by taking the absolute index modulo
+              // the total number of trees. This will make the forest tile perfectly
+              // without holes by repeating the tree list.
+              const treeIndex =
+                ((absoluteIndex % this.trees.length) + this.trees.length) %
+                this.trees.length;
+
+              // if (treeIndex >= this.trees.length) continue; // NO LONGER NEEDED
 
               const tree = this.trees[treeIndex];
-              const absoluteIndex = row * this.treesPerRow + col;
+              // const absoluteIndex = row * this.treesPerRow + col;
               const frequency = 0.2;
               const treeX =
                 col * this.distanceBetween +
@@ -478,6 +489,12 @@ class TreeAnimation {
                 fruitType: this.random(0, 1, rng) > 0.5 ? "red" : "orange",
               };
               this.drawFullTree(internalTree);
+              // draw tree seed
+              // this.ctx.fillStyle = "white";
+              // this.ctx.font = "bold 64px Arial, sans-serif";
+              // this.ctx.textAlign = "center";
+              // this.ctx.textBaseline = "middle";
+              // this.ctx.fillText(tree.seed.toString(), treeX, treeY);
             }
           }
         }

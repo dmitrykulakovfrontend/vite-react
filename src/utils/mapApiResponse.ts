@@ -36,13 +36,13 @@ function MapTreeData(data: UserTree): Tree {
 
   // Cap the decay at the maximum value of 2.
   const finalDecayProgress = Math.min(decayProgress, 2);
-  console.log({
-    seed: data.id,
-    container: null as unknown as HTMLDivElement,
-    decayProgress: finalDecayProgress,
-    timesWatered: data.vitality_percent / 5,
-    apples: data.apples,
-  });
+  // console.log({
+  //   seed: data.id,
+  //   container: null as unknown as HTMLDivElement,
+  //   decayProgress: finalDecayProgress,
+  //   timesWatered: data.vitality_percent / 5,
+  //   apples: data.apples,
+  // });
   return {
     seed: data.id,
     container: null as unknown as HTMLDivElement,

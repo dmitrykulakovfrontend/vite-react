@@ -8,7 +8,6 @@ type ModifiedTreeOptions = Tree & {
   treeTop: number;
   treeX: number;
   treeY: number;
-  fruitType: "red" | "orange";
   rng: () => number;
   leafPositions: { x: number; y: number }[]; // Add this line
 };
@@ -332,7 +331,6 @@ class TreeAnimation {
           treeY: 0, // Tree's world Y coordinate (origin)
           rng,
           leafPositions: [],
-          fruitType: this.random(0, 1, rng) > 0.5 ? "red" : "orange",
         };
         this.drawFullTree(internalTree);
       }
@@ -486,9 +484,11 @@ class TreeAnimation {
                 treeY,
                 leafPositions: [],
                 rng,
-                fruitType: this.random(0, 1, rng) > 0.5 ? "red" : "orange",
               };
               this.drawFullTree(internalTree);
+
+              // console.log(this.random(0, 2, rng));
+              // --- END MODIFICATION ---
               // draw tree seed
               // this.ctx.fillStyle = "white";
               // this.ctx.font = "bold 64px Arial, sans-serif";
@@ -1282,6 +1282,7 @@ class TreeAnimation {
 
     // Draw fruits
     const applesToDraw = tree.apples ? tree.apples : 0;
+    const fruitType = this.random(0, 1, tree.rng) < 0.5 ? "red" : "orange";
     // First, initialize the array to store leaf positions for this specific tree.
     // Now, place apples at the recorded leaf positions.
     // Now, place apples at the recorded leaf positions using a collision-avoidance and nudge system.
@@ -1363,7 +1364,7 @@ class TreeAnimation {
             const ay = finalPosition.y;
             this.ctx.beginPath();
             this.ctx.arc(ax, ay, fruitRadius, 0, Math.PI * 2);
-            this.ctx.fillStyle = tree.fruitType;
+            this.ctx.fillStyle = fruitType;
             this.ctx.fill();
             this.ctx.closePath();
             // tiny highlight
@@ -1375,7 +1376,7 @@ class TreeAnimation {
               0,
               Math.PI * 2,
             );
-            this.ctx.fillStyle = tree.fruitType;
+            this.ctx.fillStyle = "rgba(255,255,255,0.7)";
             this.ctx.fill();
             this.ctx.closePath();
 

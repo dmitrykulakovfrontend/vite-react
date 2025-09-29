@@ -14,7 +14,7 @@ import {
 import { ArrowDown, ArrowUp } from "lucide-react";
 import { useState } from "react";
 import { useCookies } from "react-cookie";
-import useSWR from "swr";
+import useSWR, { mutate } from "swr";
 import { Button } from "../ui/button";
 import {
   TableHeader,
@@ -293,11 +293,35 @@ function TasksTab() {
     },
 
     {
+      accessorKey: "state",
+      header: () => {
+        return <span>Статус</span>;
+      },
+      cell: ({ row }) => {
+        const state = row.original.state;
+        if (!state) {
+          return <span></span>;
+        }
+        const stateMap: Record<typeof state, string> = {
+          done: "На модерации",
+          "in-progress": "Выполняется",
+          refused: "Отказались",
+          rejected: "Отклонено",
+          success: "Выполнено",
+        };
+        return <span> {stateMap[state]}</span>;
+      },
+    },
+
+    {
       accessorKey: "actions",
       header: () => {
         return <span></span>;
       },
       cell: ({ row }) => {
+        if (row.original.state === "refused") {
+          return null;
+        }
         return (
           <span
             onClick={(e) => {
@@ -363,13 +387,14 @@ function TasksTab() {
       pagination: { pageSize: 7, pageIndex: 0 },
     },
   });
-  function cancelTask(id: number) {
-    console.log(id);
+  async function cancelTask(id: number) {
     if (!cookies["auth-token"]) return null;
     const jsonrpc = {
       jsonrpc: "2.0",
-      method: "my_tasks",
-      params: {},
+      method: "mark_task_as_refused",
+      params: {
+        task_id: id,
+      },
       id: 1,
     };
 
@@ -377,7 +402,7 @@ function TasksTab() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: jwt,
+        Authorization: cookies["auth-token"],
       },
       body: JSON.stringify(jsonrpc),
     });
@@ -388,13 +413,14 @@ function TasksTab() {
     if (taskData.error) {
       throw new Error(taskData.error.message);
     }
+    await mutate("userTasks");
     return taskData.result;
   }
   return (
     <div className="p-4  bg-white rounded shadow-md text-black w-fit mx-auto max-[1300px]:w-full max-[1300px]:mx-0">
       <div className="">
         <h1 className="text-2xl mx-auto w-fit  font-futura-heavy my-4">
-          Задачи в процессе:
+          Задачи:
         </h1>
         <div className="w-fit mx-auto max-w-full overflow-x-auto">
           <Table className="w-fit mx-auto max-[500px]:rounded-tr-md  max-w-7xl text-black bg-white">

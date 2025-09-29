@@ -92,7 +92,7 @@ function RouteComponent() {
       if (data) {
         setCookie("auth-token", data.token);
         setUser(data.user);
-        navigate({ to: "/tree" });
+        navigate({ to: "/profile" });
       }
     } catch (err: unknown) {
       if (err instanceof Error) {

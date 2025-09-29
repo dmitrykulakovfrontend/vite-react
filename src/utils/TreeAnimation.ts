@@ -1358,7 +1358,7 @@ class TreeAnimation {
               0,
               Math.PI * 2,
             );
-            this.ctx.fillStyle = "rgba(255,255,255,0.7)";
+            this.ctx.fillStyle = tree.fruitType;
             this.ctx.fill();
             this.ctx.closePath();
 

@@ -21,23 +21,24 @@ function Profile() {
   ];
 
   return (
-    <div className="flex flex-col w-full p-4 h-full">
-      <div className="flex justify-center gap-4 mb-6 sticky top-16 z-40 pt-4 pb-2 ">
+    <div className="flex flex-col w-full h-full">
+      <div className="flex justify-center w-full gap-4 bg-white sticky top-14 z-40  ">
         {tabs.map(({ id, label }) => (
           <button
             key={id}
             onClick={() => setActiveTab(id)}
-            className={`w-fit border-0 hover:bg-blue-500   hover:cursor-pointer font-futura-heavy rounded-full px-4 py-2 text-white! justify-center ${
-              activeTab === id ? "bg-blue-500" : "bg-blue-primary"
+            className={`w-fit border-0 text-black hover:cursor-pointer hover:text-blue-light font-futura-heavy p-4 justify-center ${
+              activeTab === id
+                ? " text-blue-light border-b-6 border-blue-light"
+                : ""
             }`}
           >
             {label}
           </button>
         ))}
       </div>
-
       {/* --- Tabs content --- */}
-      <div className="h-full">
+      <div className="h-full bg-white px-8">
         {activeTab === "profile" && <ProfileTab />}
         {activeTab === "tree" && <TreeTab />}
         {activeTab === "tasks" && <TasksTab />}

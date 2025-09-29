@@ -119,7 +119,7 @@ function ProfileTab() {
   }
   if (user === "loading") return <Loading />;
   return (
-    <div className="p-4 w-full flex flex-col justify-start items-center rounded-4xl h-full bg-white text-black ">
+    <div className=" w-full flex flex-col justify-start items-center h-full  text-black ">
       <div className="flex gap-4 max-sm:flex-col   max-sm:items-center max-sm:justify-center ">
         <div>
           <img

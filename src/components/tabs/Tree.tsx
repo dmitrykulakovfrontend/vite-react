@@ -84,6 +84,8 @@ function TreeTab() {
   useEffect(() => {
     if (treeRef.current && data) {
       treeRef.current.update([MapTreeData(data)], isLoading, MapTreeData(data));
+    } else {
+      treeRef.current?.update([], isLoading, null);
     }
   }, [data, isLoading]);
   async function plantTree() {
@@ -140,7 +142,7 @@ function TreeTab() {
   }
 
   return (
-    <div className="p-4 w-fit flex-col items-center mx-auto bg-white rounded shadow-md text-black flex gap-4">
+    <div className="p-4  bg-white rounded-4xl h-full text-black w-full flex flex-col justify-start items-center gap-4">
       {error && (
         <p className="text-red-500 mt-2 max-w-2xs text-center">{error}</p>
       )}
@@ -229,7 +231,7 @@ function TreeTab() {
           </Button>
         </div>
       )}
-      <Button className="max-sm:w-full sm:max-w-[150px] hover:bg-blue-500  bg-blue-primary w-full hover:cursor-pointer font-futura-heavy rounded-md p-2 text-white ml-auto">
+      <Button className="max-sm:w-full sm:max-w-[150px] hover:bg-blue-500  bg-blue-primary w-fit hover:cursor-pointer font-futura-heavy rounded-md p-2 text-white mx-auto">
         <Link to="/forest" className="[&.active]:font-bold block p-1  rounded">
           Посетить лес
         </Link>

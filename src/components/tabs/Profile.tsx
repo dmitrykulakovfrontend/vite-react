@@ -16,7 +16,7 @@ import {
   type ColumnFiltersState,
   type SortingState,
 } from "@tanstack/react-table";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -83,13 +83,18 @@ function ProfileTab() {
   const { user } = useMainStore();
   const navigate = useNavigate();
   const [cookies] = useCookies(["auth-token"]);
+  const [tableData, setTableData] = useState<TaskRating[]>([]);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const { data, isLoading } = useSWR<TaskRating[] | null>("userRating", () =>
+  const { data, isLoading } = useSWR<TaskRating[]>("userRating", () =>
     fetchUserRating(cookies["auth-token"]),
   );
+  useEffect(() => {
+    if (data) setTableData(data);
+  }, [data, isLoading]);
+
   const table = useReactTable<TaskRating>({
-    data: data || [],
+    data: tableData,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -105,15 +110,17 @@ function ProfileTab() {
       pagination: { pageSize: 7, pageIndex: 0 },
     },
   });
-  console.log({ data });
+
+  // console.log({ data });
+  console.log({ tableData });
   if (!user) {
     navigate({ to: "/" });
     return null;
   }
   if (user === "loading") return <Loading />;
   return (
-    <div className="p-4 w-fit mx-auto bg-white rounded shadow-md text-black ">
-      <div className="flex gap-4 max-sm:flex-col max-sm:items-center max-sm:justify-center ">
+    <div className="p-4 w-full flex flex-col justify-start items-center rounded-4xl h-full bg-white text-black ">
+      <div className="flex gap-4 max-sm:flex-col   max-sm:items-center max-sm:justify-center ">
         <div>
           <img
             src={user.avatar_url}

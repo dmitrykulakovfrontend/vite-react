@@ -294,8 +294,24 @@ function TasksTab() {
 
     {
       accessorKey: "state",
-      header: () => {
-        return <span>Статус</span>;
+      header: ({ column }) => {
+        const isSorted = column.getIsSorted();
+        return (
+          <Button
+            variant="ghost"
+            className="gap-1 rounded-none p-2 w-full flex justify-start"
+            onClick={() => column.toggleSorting(isSorted === "asc")}
+          >
+            Статус
+            {isSorted === "asc" ? (
+              <ArrowUp className="w-4 h-4" />
+            ) : isSorted === "desc" ? (
+              <ArrowDown className="w-4 h-4" />
+            ) : (
+              <div className="w-4 h-4" />
+            )}
+          </Button>
+        );
       },
       cell: ({ row }) => {
         const state = row.original.state;
@@ -319,7 +335,11 @@ function TasksTab() {
         return <span></span>;
       },
       cell: ({ row }) => {
-        if (row.original.state === "refused") {
+        if (
+          row.original.state === "refused" ||
+          row.original.state === "success" ||
+          !row.original.state
+        ) {
           return null;
         }
         return (
@@ -417,7 +437,7 @@ function TasksTab() {
     return taskData.result;
   }
   return (
-    <div className="p-4  bg-white rounded shadow-md text-black w-fit mx-auto max-[1300px]:w-full max-[1300px]:mx-0">
+    <div className="p-4  bg-white rounded-4xl h-full text-black w-full ">
       <div className="">
         <h1 className="text-2xl mx-auto w-fit  font-futura-heavy my-4">
           Задачи:

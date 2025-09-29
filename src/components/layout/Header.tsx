@@ -27,6 +27,14 @@ const Header = ({
   if (user) {
     links.push({ to: "/Profile", label: "Профиль" });
   }
+  if (
+    user &&
+    user !== "loading" &&
+    user.scopes &&
+    user.scopes.includes("app.admin.view")
+  ) {
+    links.push({ to: "/admin", label: "Админка" });
+  }
   return (
     <header
       className={`sticky ${isMenuOpen ? "flex-col items-start" : ""} top-0 left-0 z-50 flex items-center justify-between w-full p-2 bg-[#00285e]  text-white`}

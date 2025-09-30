@@ -233,7 +233,7 @@ function RouteComponent() {
   const currentTask = task![0];
   const currentUserTask = userTasks?.find((t) => t.id === currentTask.id);
   return (
-    <div className="p-4 ">
+    <div className="p-4  bg-white w-full h-full">
       <div className="bg-white w-fit mx-auto rounded p-4">
         <div className=" text-black flex items-start gap-4 max-md:flex-col">
           <div>

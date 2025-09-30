@@ -410,7 +410,7 @@ function Tasks() {
   // );
 
   return (
-    <div className="p-4">
+    <div className="p-4 bg-white w-full h-full">
       {/* <div className="bg-white rounded mb-6 text-black flex flex-col w-fit p-6 mx-auto items-center justify-between">
         <h2 className="text-2xl font-futura-heavy mb-4">
           Количество задач: {data?.length || "Загрузка..."}
@@ -424,7 +424,7 @@ function Tasks() {
           </div>
         </div>
       </div> */}
-      <h1 className="text-2xl mx-auto w-fit  font-futura-heavy my-4">
+      <h1 className="text-2xl mx-auto w-fit  font-futura-heavy my-4 text-black">
         Доступные задачи:
       </h1>
       <div className=" lg:w-fit lg:mx-auto max-lg:max-w-full max-lg:overflow-x-auto">
@@ -439,10 +439,10 @@ function Tasks() {
               onChange={(event) =>
                 table.getColumn("title")?.setFilterValue(event.target.value)
               }
-              className="max-w-sm pl-6  border-b border-t-0 text-black bg-white rounded-none max-[500px]:rounded-t-none rounded-t-md max-[500px]:shadow-none "
+              className="max-w-sm pl-6  border-b border-t-0 text-black bg-white rounded-none max-[500px]:rounded-t-none rounded-t-md shadow-none border-none"
             />
           </div>
-          <div className="flex gap-2 max-md:flex-col  border-b max-[500px]:rounded-t-md  max-[500px]:min-w-[240px] bg-white max-md:h-fit h-9 px-3 py-1 rounded-t-md text-black  items-start  justify-center">
+          <div className="flex gap-2 max-md:flex-col  border-b max-[500px]:rounded-t-md  max-[500px]:min-w-[240px] bg-white max-md:h-fit h-9 px-3 py-1 rounded-t-md text-black  items-start border-none justify-center">
             <label className="flex items-center gap-2  mb-2">
               <Input
                 type="checkbox"
@@ -458,7 +458,7 @@ function Tasks() {
             </label>
           </div>
         </div>
-        <Table className="w-fit mx-auto max-[500px]:rounded-tr-md  max-w-7xl text-black bg-white">
+        <Table className="w-fit border-2 mx-auto max-[500px]:rounded-tr-md  max-w-7xl text-black bg-white">
           <TableHeader>
             {table.getRowModel().rows.length
               ? table.getHeaderGroups().map((headerGroup) => (

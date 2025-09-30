@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Apple, DropletIcon } from "lucide-react";
 
 export const Route = createFileRoute("/shop/")({
   component: RouteComponent,
@@ -8,15 +7,31 @@ export const Route = createFileRoute("/shop/")({
 
 function RouteComponent() {
   const products = [
-    { id: 1, name: "Футболка с логотипом", price: 25, imageSrc: "" },
-    { id: 2, name: "Экскурсия по Алабуге", price: 50, imageSrc: "" },
-    { id: 3, name: "Саженец", price: 5, amount: 1, imageSrc: "/image.png" },
+    {
+      id: 1,
+      name: "Футболка с логотипом",
+      price: 25,
+      imageSrc: "merch1.png",
+    },
+    {
+      id: 2,
+      name: "Фирменный убор Алабуги",
+      price: 50,
+      imageSrc: "merch2.png",
+    },
+    {
+      id: 3,
+      name: "Саженец",
+      price: 5,
+      amount: 1,
+      imageSrc: "/image.png",
+    },
     {
       id: 4,
       name: "Вода",
       price: 5,
       amount: 100,
-      imageSrc: <DropletIcon className="w-20 h-20 fill-blue-300" />,
+      imageSrc: "Water.png",
     },
   ];
   const inventory = [
@@ -33,13 +48,13 @@ function RouteComponent() {
       name: "Вода",
       amount: 100,
       price: 5,
-      imageSrc: <DropletIcon className="w-20 h-20 fill-blue-300" />,
+      imageSrc: "Water.png",
       date: "21.09.2025",
     },
   ];
   return (
-    <div className="p-4">
-      <div className="bg-white w-fit mx-auto text-black p-4 rounded-md shadow">
+    <div className="p-4 w-full h-full bg-white">
+      <div className="bg-white w-fit mx-auto text-black p-4 rounded-md">
         <div>
           <div className="flex items-center gap-8 justify-between max-sm:flex-col ">
             <div className="max-w-3xs max-sm:text-center">
@@ -52,7 +67,12 @@ function RouteComponent() {
             <div className="flex flex-col items-center gap-2">
               <p className="flex items-center gap-1">
                 У вас: 10
-                <Apple className="drop-shadow-md w-5 h-5 fill-red-500" />
+                <img
+                  src="apple.png"
+                  className="drop-shadow-md"
+                  width={20}
+                  height={20}
+                />
               </p>
               <Button className=" max-w-[200px]  hover:bg-blue-500  bg-blue-primary w-full hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white">
                 <Link
@@ -74,12 +94,12 @@ function RouteComponent() {
               {typeof product.imageSrc === "string" ? (
                 <img
                   src={product.imageSrc}
-                  className="border-2 w-[100px] h-[100px] inset-shadow-sm bg-gray-300 rounded-full"
+                  className={` w-[100px] h-[100px] `}
                   width={100}
                   height={100}
                 />
               ) : (
-                <div className="border-2 flex justify-center items-center w-[100px] h-[100px] inset-shadow-sm bg-gray-300 rounded-full">
+                <div className={` w-[100px] h-[100px] `}>
                   {product.imageSrc}
                 </div>
               )}
@@ -90,7 +110,12 @@ function RouteComponent() {
 
               <p className="flex items-center gap-1">
                 Цена: {product.price}{" "}
-                <Apple className="drop-shadow-md w-5 h-5 fill-red-500" />
+                <img
+                  src="apple.png"
+                  className="drop-shadow-md"
+                  width={20}
+                  height={20}
+                />
               </p>
               <Button className=" max-w-[200px]  hover:bg-blue-500  bg-blue-primary w-full hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white">
                 Купить
@@ -112,12 +137,12 @@ function RouteComponent() {
                   {typeof product.imageSrc === "string" ? (
                     <img
                       src={product.imageSrc}
-                      className="border-2 w-[100px] h-[100px] inset-shadow-sm bg-gray-300 rounded-full"
+                      className={` w-[100px] h-[100px] `}
                       width={100}
                       height={100}
                     />
                   ) : (
-                    <div className="border-2 flex justify-center items-center w-[100px] h-[100px] inset-shadow-sm bg-gray-300 rounded-full">
+                    <div className={` w-[100px] h-[100px]`}>
                       {product.imageSrc}
                     </div>
                   )}
@@ -131,7 +156,12 @@ function RouteComponent() {
                   </p>
                   <p className="flex items-center gap-1">
                     Цена: {product.price}{" "}
-                    <Apple className="drop-shadow-md w-5 h-5 fill-red-500" />
+                    <img
+                      src="apple.png"
+                      className="drop-shadow-md"
+                      width={20}
+                      height={20}
+                    />
                   </p>
                   <Button className=" max-w-[200px]  hover:bg-blue-500  bg-blue-primary w-full hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white">
                     <Link

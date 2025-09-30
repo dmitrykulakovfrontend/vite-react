@@ -10,22 +10,17 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SignupRouteImport } from './routes/signup'
-import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ForestRouteImport } from './routes/forest'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TasksIndexRouteImport } from './routes/tasks/index'
 import { Route as ShopIndexRouteImport } from './routes/shop/index'
 import { Route as TasksIdRouteImport } from './routes/tasks/$id'
+import { Route as ProfileIdRouteImport } from './routes/profile/$id'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProfileRoute = ProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -58,13 +53,18 @@ const TasksIdRoute = TasksIdRouteImport.update({
   path: '/tasks/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProfileIdRoute = ProfileIdRouteImport.update({
+  id: '/profile/$id',
+  path: '/profile/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/forest': typeof ForestRoute
   '/login': typeof LoginRoute
-  '/profile': typeof ProfileRoute
   '/signup': typeof SignupRoute
+  '/profile/$id': typeof ProfileIdRoute
   '/tasks/$id': typeof TasksIdRoute
   '/shop': typeof ShopIndexRoute
   '/tasks': typeof TasksIndexRoute
@@ -73,8 +73,8 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/forest': typeof ForestRoute
   '/login': typeof LoginRoute
-  '/profile': typeof ProfileRoute
   '/signup': typeof SignupRoute
+  '/profile/$id': typeof ProfileIdRoute
   '/tasks/$id': typeof TasksIdRoute
   '/shop': typeof ShopIndexRoute
   '/tasks': typeof TasksIndexRoute
@@ -84,8 +84,8 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/forest': typeof ForestRoute
   '/login': typeof LoginRoute
-  '/profile': typeof ProfileRoute
   '/signup': typeof SignupRoute
+  '/profile/$id': typeof ProfileIdRoute
   '/tasks/$id': typeof TasksIdRoute
   '/shop/': typeof ShopIndexRoute
   '/tasks/': typeof TasksIndexRoute
@@ -96,8 +96,8 @@ export interface FileRouteTypes {
     | '/'
     | '/forest'
     | '/login'
-    | '/profile'
     | '/signup'
+    | '/profile/$id'
     | '/tasks/$id'
     | '/shop'
     | '/tasks'
@@ -106,8 +106,8 @@ export interface FileRouteTypes {
     | '/'
     | '/forest'
     | '/login'
-    | '/profile'
     | '/signup'
+    | '/profile/$id'
     | '/tasks/$id'
     | '/shop'
     | '/tasks'
@@ -116,8 +116,8 @@ export interface FileRouteTypes {
     | '/'
     | '/forest'
     | '/login'
-    | '/profile'
     | '/signup'
+    | '/profile/$id'
     | '/tasks/$id'
     | '/shop/'
     | '/tasks/'
@@ -127,8 +127,8 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ForestRoute: typeof ForestRoute
   LoginRoute: typeof LoginRoute
-  ProfileRoute: typeof ProfileRoute
   SignupRoute: typeof SignupRoute
+  ProfileIdRoute: typeof ProfileIdRoute
   TasksIdRoute: typeof TasksIdRoute
   ShopIndexRoute: typeof ShopIndexRoute
   TasksIndexRoute: typeof TasksIndexRoute
@@ -141,13 +141,6 @@ declare module '@tanstack/react-router' {
       path: '/signup'
       fullPath: '/signup'
       preLoaderRoute: typeof SignupRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/profile': {
-      id: '/profile'
-      path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof ProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -192,6 +185,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TasksIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/profile/$id': {
+      id: '/profile/$id'
+      path: '/profile/$id'
+      fullPath: '/profile/$id'
+      preLoaderRoute: typeof ProfileIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -199,8 +199,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ForestRoute: ForestRoute,
   LoginRoute: LoginRoute,
-  ProfileRoute: ProfileRoute,
   SignupRoute: SignupRoute,
+  ProfileIdRoute: ProfileIdRoute,
   TasksIdRoute: TasksIdRoute,
   ShopIndexRoute: ShopIndexRoute,
   TasksIndexRoute: TasksIndexRoute,

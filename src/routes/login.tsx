@@ -16,7 +16,11 @@ function RouteComponent() {
   const [error, setError] = useState("");
   const [cookies, setCookie] = useCookies(["auth-token"]);
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = async (
+    e: FormEvent,
+    email: string,
+    password: string,
+  ) => {
     e.preventDefault();
     const jsonrpc = {
       jsonrpc: "2.0",
@@ -67,7 +71,10 @@ function RouteComponent() {
         <h2 className="text-2xl font-bold text-center text-gray-900">
           Войти в аккаунт
         </h2>
-        <form className="space-y-6" onSubmit={handleSubmit}>
+        <form
+          className="space-y-6"
+          onSubmit={(e) => handleSubmit(e, email, password)}
+        >
           <div>
             <label
               htmlFor="email"
@@ -104,12 +111,34 @@ function RouteComponent() {
             />
           </div>
           <p className="text-red-500 text-center">{error}</p>
-          <div>
+          <div className="flex items-center justify-center flex-col gap-2">
             <button
               type="submit"
               className="w-full px-4 py-2 hover:cursor-pointer text-sm font-medium text-white bg-[linear-gradient(to_bottom,#3faaeb,#347df4)] border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
               Войти
+            </button>
+            <button
+              type="submit"
+              onClick={(e) => {
+                setEmail("candidate@alabuga.ru");
+                setPassword("candidate");
+                handleSubmit(e, "candidate@alabuga.ru", "candidate");
+              }}
+              className="w-full px-4 py-2 hover:cursor-pointer text-sm font-medium text-white bg-[linear-gradient(to_bottom,#3faaeb,#347df4)] border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              ДЕМО: Войти как Кандидат
+            </button>
+            <button
+              type="submit"
+              onClick={(e) => {
+                setEmail("hr@alabuga.ru");
+                setPassword("testtesttest");
+                handleSubmit(e, "hr@alabuga.ru", "testtesttest");
+              }}
+              className="w-full px-4 py-2 hover:cursor-pointer text-sm font-medium text-white bg-[linear-gradient(to_bottom,#3faaeb,#347df4)] border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              ДЕМО: Войти как HR
             </button>
           </div>
         </form>

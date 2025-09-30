@@ -1,4 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
+
+export const Route = createFileRoute("/profile/$id")({
+  component: Profile,
+});
+
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { useState } from "react";
 import ProfileTab from "@/components/tabs/Profile";
@@ -6,9 +11,6 @@ import TasksTab from "@/components/tabs/Tasks";
 import TreeTab from "@/components/tabs/Tree";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
-export const Route = createFileRoute("/profile")({
-  component: Profile,
-});
 
 function Profile() {
   const [activeTab, setActiveTab] = useState<"profile" | "tree" | "tasks">(

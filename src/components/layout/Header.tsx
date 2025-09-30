@@ -25,8 +25,8 @@ const Header = ({
     { to: "/shop", label: "Магазин" },
     { to: "/forest", label: "Лес" },
   ];
-  if (user) {
-    links.push({ to: "/Profile", label: "Профиль" });
+  if (user && user !== "loading") {
+    links.push({ to: "/profile/" + user.id, label: "Профиль" });
   }
   if (
     user &&

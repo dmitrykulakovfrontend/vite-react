@@ -1,10 +1,7 @@
-import { useMainStore } from "@/providers/store";
 import { Link, useNavigate } from "@tanstack/react-router";
 import Loading from "../Loading";
 import { Button } from "../ui/button";
 import type { TaskRating } from "@/types/Tasks";
-import { useCookies } from "react-cookie";
-import useSWR from "swr";
 import {
   flexRender,
   getCoreRowModel,
@@ -25,32 +22,9 @@ import {
   TableHeader,
   TableRow,
 } from "../ui/table";
-const fetchUserRating = async (jwt: string) => {
-  if (!jwt) return null;
-  const jsonrpc = {
-    jsonrpc: "2.0",
-    method: "my_rating",
-    params: {},
-    id: 1,
-  };
+import type { User } from "@/types/User";
+import { useMainStore } from "@/providers/store";
 
-  const response = await fetch("https://hrzero.ru/api/app/", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: jwt,
-    },
-    body: JSON.stringify(jsonrpc),
-  });
-  if (!response.ok) {
-    throw new Error("Network response was not ok");
-  }
-  const taskData = await response.json();
-  if (taskData.error) {
-    throw new Error(taskData.error.message);
-  }
-  return taskData.result;
-};
 const columns: ColumnDef<TaskRating>[] = [
   {
     accessorKey: "goal_title",
@@ -79,19 +53,26 @@ const columns: ColumnDef<TaskRating>[] = [
     },
   },
 ];
-function ProfileTab() {
-  const { user } = useMainStore();
+type ProfileTabProps = {
+  user: User | undefined | null;
+  isUserLoading: boolean;
+  isRatingLoading: boolean;
+  rating: TaskRating[] | undefined;
+};
+function ProfileTab({
+  user,
+  isUserLoading,
+  isRatingLoading,
+  rating,
+}: ProfileTabProps) {
   const navigate = useNavigate();
-  const [cookies] = useCookies(["auth-token"]);
   const [tableData, setTableData] = useState<TaskRating[]>([]);
   const [sorting, setSorting] = useState<SortingState>([]);
+  const { user: currentUser } = useMainStore();
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const { data, isLoading } = useSWR<TaskRating[]>("userRating", () =>
-    fetchUserRating(cookies["auth-token"]),
-  );
   useEffect(() => {
-    if (data) setTableData(data);
-  }, [data, isLoading]);
+    if (rating) setTableData(rating);
+  }, [rating, isRatingLoading]);
 
   const table = useReactTable<TaskRating>({
     data: tableData,
@@ -112,12 +93,12 @@ function ProfileTab() {
   });
 
   // console.log({ data });
-  console.log({ tableData });
+  console.log({ inside: user });
+  if (isUserLoading) return <Loading />;
   if (!user) {
     navigate({ to: "/" });
     return null;
   }
-  if (user === "loading") return <Loading />;
   return (
     <div className=" w-full flex flex-col justify-start items-center h-full  text-black ">
       <div className="flex gap-4 max-sm:flex-col   max-sm:items-center max-sm:justify-center ">
@@ -151,37 +132,41 @@ function ProfileTab() {
             </Button>
           </div>
         </div>
-        <div className="flex flex-col justify-between items-end gap-2">
-          <div className="flex flex-col gap-2">
-            <Button className=" max-w-[200px]  hover:bg-blue-500  bg-red-500 w-fit hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white">
-              <Link
-                to="/shop"
-                className="[&.active]:font-bold block p-1  rounded"
-              >
-                Удалить аккаунт
-              </Link>
-            </Button>
-            <Button className=" max-w-[200px]  hover:bg-blue-500  bg-blue-primary w-fit hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white">
-              <Link
-                to="/shop"
-                className="[&.active]:font-bold block p-1  rounded"
-              >
-                Изменить пароль
-              </Link>
-            </Button>
-          </div>
-          <Button className="max-sm:hidden max-w-[200px]  hover:bg-blue-500  bg-blue-primary hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white w-fit">
-            <Link
-              to="/shop"
-              className="[&.active]:font-bold block p-1  rounded"
-            >
-              Магазин
-            </Link>
-          </Button>
-        </div>
+        {currentUser !== "loading" &&
+          currentUser &&
+          currentUser.id === user.id && (
+            <div className="flex flex-col justify-between items-end gap-2">
+              <div className="flex flex-col gap-2">
+                <Button className=" max-w-[200px]  hover:bg-blue-500  bg-red-500 w-fit hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white">
+                  <Link
+                    to="/shop"
+                    className="[&.active]:font-bold block p-1  rounded"
+                  >
+                    Удалить аккаунт
+                  </Link>
+                </Button>
+                <Button className=" max-w-[200px]  hover:bg-blue-500  bg-blue-primary w-fit hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white">
+                  <Link
+                    to="/shop"
+                    className="[&.active]:font-bold block p-1  rounded"
+                  >
+                    Изменить пароль
+                  </Link>
+                </Button>
+              </div>
+              <Button className="max-sm:hidden max-w-[200px]  hover:bg-blue-500  bg-blue-primary hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white w-fit">
+                <Link
+                  to="/shop"
+                  className="[&.active]:font-bold block p-1  rounded"
+                >
+                  Магазин
+                </Link>
+              </Button>
+            </div>
+          )}
       </div>
 
-      {!isLoading ? (
+      {!isRatingLoading ? (
         <div className="mt-8">
           <h1 className="text-2xl mx-auto w-fit  font-futura-heavy my-2">
             Рейтинг
@@ -258,8 +243,8 @@ function ProfileTab() {
             </div>
           </div>
           <div className="space-y-4 md:hidden">
-            {data?.length ? (
-              data.map((row) => (
+            {rating && rating.length ? (
+              rating.map((row) => (
                 <div
                   key={row.goal_title}
                   className="rounded-md border p-4 bg-white shadow"

@@ -13,8 +13,7 @@ import {
 } from "@tanstack/react-table";
 import { ArrowDown, ArrowUp } from "lucide-react";
 import { useState } from "react";
-import { useCookies } from "react-cookie";
-import useSWR, { mutate } from "swr";
+import { mutate } from "swr";
 import { Button } from "../ui/button";
 import {
   TableHeader,
@@ -24,8 +23,15 @@ import {
   TableCell,
   Table,
 } from "../ui/table";
-
-function TasksTab() {
+import { useCookies } from "react-cookie";
+import { useMainStore } from "@/providers/store";
+function TasksTab({
+  tasks,
+}: {
+  tasks: Task[] | undefined | null;
+  isTasksLoading: boolean;
+  userId: string;
+}) {
   const columns: ColumnDef<Task>[] = [
     {
       accessorKey: "title",
@@ -338,7 +344,8 @@ function TasksTab() {
         if (
           row.original.state === "refused" ||
           row.original.state === "success" ||
-          !row.original.state
+          !row.original.state ||
+          user
         ) {
           return null;
         }
@@ -356,42 +363,16 @@ function TasksTab() {
       },
     },
   ];
-  const fetchUserTasks = async (jwt: string) => {
-    if (!jwt) return null;
-    const jsonrpc = {
-      jsonrpc: "2.0",
-      method: "my_tasks",
-      params: {},
-      id: 1,
-    };
 
-    const response = await fetch("https://hrzero.ru/api/app/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: jwt,
-      },
-      body: JSON.stringify(jsonrpc),
-    });
-    if (!response.ok) {
-      throw new Error("Network response was not ok");
-    }
-    const taskData = await response.json();
-    if (taskData.error) {
-      throw new Error(taskData.error.message);
-    }
-    return taskData.result;
-  };
-
-  const [cookies] = useCookies(["auth-token"]);
   const [sorting, setSorting] = useState<SortingState>([]);
+  const [cookies] = useCookies(["auth-token"]);
+  const { user } = useMainStore();
+
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const navigate = useNavigate({ from: "/tasks" });
-  const { data } = useSWR<Task[] | null>("userTasks", () =>
-    fetchUserTasks(cookies["auth-token"]),
-  );
+
   const userTasksTable = useReactTable<Task>({
-    data: data || [],
+    data: tasks || [],
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),

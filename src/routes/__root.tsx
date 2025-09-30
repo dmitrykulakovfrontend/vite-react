@@ -45,7 +45,7 @@ const RootLayout = () => {
   const [cookies] = useCookies(["auth-token"]);
   // Use SWR to fetch user data
   const { data, error, isLoading } = useSWR(
-    "user",
+    "currentUser",
     () => userFetcher(cookies["auth-token"]),
     {
       // revalidateOnMount: false,
@@ -63,7 +63,6 @@ const RootLayout = () => {
       setUser(null);
     }
   }, [data, setUser, isLoading]);
-  console.log(isLoading);
 
   useEffect(() => {
     const handleResize = () => {

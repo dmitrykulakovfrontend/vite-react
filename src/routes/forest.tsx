@@ -7,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 
 import { useMainStore } from "@/providers/store";
@@ -47,6 +47,7 @@ type LeaderboardUser = {
   tree_age: string;
   activity: string;
   started_at: string;
+  id: number;
 };
 const columns: ColumnDef<LeaderboardUser>[] = [
   {
@@ -194,6 +195,7 @@ function Index() {
   const user = useMainStore((state) => state.user);
   const [isTableVisible, setTableVisible] = useState(true);
   const treeRef = useRef<TreeHandle>(null);
+  const navigate = useNavigate({ from: "/forest" });
 
   const [cookies] = useCookies(["auth-token"]);
 
@@ -299,6 +301,11 @@ function Index() {
                         <TableRow
                           key={row.id}
                           className="hover:cursor-pointer h-8"
+                          onClick={() => {
+                            navigate({
+                              to: `/profile/${row.original.id}`,
+                            });
+                          }}
                         >
                           {row.getVisibleCells().map((cell) => (
                             <TableCell key={cell.id} className="px-2 py-1">
@@ -438,7 +445,7 @@ function Index() {
             </button> */}
             <Button className=" max-w-[200px] max-lg:max-w-[150px] hover:bg-blue-500  bg-blue-primary w-full hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white">
               <Link
-                to="/profile"
+                to={user && user !== "loading" ? "/profile" + user.id : "/shop"}
                 className="[&.active]:font-bold block p-1  rounded"
               >
                 {user ? "Полить дерево" : "Посади своё дерево"}

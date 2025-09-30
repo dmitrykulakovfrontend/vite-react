@@ -291,7 +291,7 @@ function RouteComponent() {
               ) : currentUserTask?.state === "in-progress" ? (
                 <Button
                   onClick={completeTask}
-                  className=" max-w-[200px] max-lg:max-w-[150px] hover:bg-blue-500  bg-blue-primary hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white min-w-[100px]"
+                  className="  hover:bg-blue-500  bg-blue-primary hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white min-w-[100px]"
                 >
                   Пометить как выполненную
                 </Button>
@@ -329,7 +329,7 @@ function RouteComponent() {
               )}
             </div>
           </div>
-          <div className="mx-auto w-fit">
+          {/* <div className="mx-auto w-fit">
             <div className="mx-auto w-fit">
               <Pie
                 width={250}
@@ -338,7 +338,7 @@ function RouteComponent() {
                 className="mx-auto w-fit"
               />
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>

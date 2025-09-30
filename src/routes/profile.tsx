@@ -38,7 +38,7 @@ function Profile() {
         ))}
       </div>
       {/* --- Tabs content --- */}
-      <div className="h-full bg-white px-8">
+      <div className="h-full bg-white px-8 min-h-[700px]">
         {activeTab === "profile" && <ProfileTab />}
         {activeTab === "tree" && <TreeTab />}
         {activeTab === "tasks" && <TasksTab />}

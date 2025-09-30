@@ -254,9 +254,9 @@ function Index() {
   // }, [isSimulationActive]);
 
   return (
-    <div className="flex items-center w-full h-full gap-4 justify-evenly ">
+    <div className="flex items-center w-full h-full gap-4 justify-evenly  min-h-[700px]">
       <div className="w-full h-full bg-gray-100 relative">
-        <div className="absolute top-0 left-0 p-4 z-10 w-full flex justify-between ">
+        <div className="absolute top-0 left-0 p-4 z-10 w-full flex justify-between">
           <div>
             {isTableVisible && (
               <div className="w-fit mx-auto absolute top-16 left-4">
@@ -279,50 +279,37 @@ function Index() {
                   </div>
                 </div>
                 <div className="hidden md:block">
-                  <Table className="w-fit mx-auto min-w-xs text-black bg-white rounded-tr-md">
+                  <Table className="w-fit mx-auto min-w-xs text-black bg-white rounded-tr-md text-sm">
                     <TableHeader>
                       {table.getHeaderGroups().map((headerGroup) => (
-                        <TableRow key={headerGroup.id}>
+                        <TableRow key={headerGroup.id} className="h-8">
                           {headerGroup.headers.map((header) => (
-                            <TableHead key={header.id}>
-                              {header.isPlaceholder
-                                ? null
-                                : flexRender(
-                                    header.column.columnDef.header,
-                                    header.getContext(),
-                                  )}
+                            <TableHead key={header.id} className="px-2 py-1">
+                              {flexRender(
+                                header.column.columnDef.header,
+                                header.getContext(),
+                              )}
                             </TableHead>
                           ))}
                         </TableRow>
                       ))}
                     </TableHeader>
                     <TableBody>
-                      {table.getRowModel().rows.length ? (
-                        table.getRowModel().rows.map((row) => (
-                          <TableRow
-                            key={row.id}
-                            className="hover:cursor-pointer h-12"
-                          >
-                            {row.getVisibleCells().map((cell) => (
-                              <TableCell key={cell.id}>
-                                {flexRender(
-                                  cell.column.columnDef.cell,
-                                  cell.getContext(),
-                                )}
-                              </TableCell>
-                            ))}
-                          </TableRow>
-                        ))
-                      ) : (
-                        <TableRow>
-                          <TableCell
-                            colSpan={columns.length}
-                            className="h-24 text-center"
-                          >
-                            Ничего не найдено
-                          </TableCell>
+                      {table.getRowModel().rows.map((row) => (
+                        <TableRow
+                          key={row.id}
+                          className="hover:cursor-pointer h-8"
+                        >
+                          {row.getVisibleCells().map((cell) => (
+                            <TableCell key={cell.id} className="px-2 py-1">
+                              {flexRender(
+                                cell.column.columnDef.cell,
+                                cell.getContext(),
+                              )}
+                            </TableCell>
+                          ))}
                         </TableRow>
-                      )}
+                      ))}
                     </TableBody>
                   </Table>
                 </div>
@@ -333,19 +320,21 @@ function Index() {
                     table.getRowModel().rows.map((row) => (
                       <div
                         key={row.id}
-                        className="p-4 bg-white text-black shadow border"
+                        className="p-2 bg-white text-black shadow border rounded text-sm"
                       >
-                        <div className="flex items-center gap-2 mb-2">
+                        <div className="flex items-center gap-1 mb-1">
                           <img
                             src={row.original.avatar_url}
                             alt={row.original.name}
-                            width={40}
-                            height={40}
+                            width={32}
+                            height={32}
                             className="rounded-full"
                           />
-                          <div className="font-bold">{row.original.name}</div>
+                          <div className="font-semibold text-xs">
+                            {row.original.name}
+                          </div>
                         </div>
-                        <div className="text-sm">
+                        <div className="space-y-0.5">
                           <p>
                             <span className="font-medium">Ранг:</span>{" "}
                             {row.index + 1}

@@ -238,10 +238,10 @@ function RouteComponent() {
         <div className=" text-black flex items-start gap-4 max-md:flex-col">
           <div>
             <h1 className="text-2xl font-bold   font-futura-heavy ">
-              Кампания: {currentTask.mission_title}
+              Миссия: {currentTask.mission_title}
             </h1>
             <h2 className="text-xl font-bold ">
-              Цель: {currentTask.goal_title}
+              Кампания: {currentTask.goal_title}
             </h2>
             <h3 className="text-lg font-bold ">
               Название задачи: {currentTask.title}

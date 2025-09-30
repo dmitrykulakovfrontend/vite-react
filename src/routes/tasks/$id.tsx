@@ -2,37 +2,37 @@ import { Button } from "@/components/ui/button";
 import { useMainStore } from "@/providers/store";
 import type { Task } from "@/types/Tasks";
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
-import { Pie } from "react-chartjs-2";
+// import { Pie } from "react-chartjs-2";
 import { useCookies } from "react-cookie";
 import useSWR, { mutate } from "swr";
 
 export const Route = createFileRoute("/tasks/$id")({
   component: RouteComponent,
 });
-const data = {
-  labels: ["Выполнено", "Отказов", "На проверке", "Принято", "Доработка"],
-  datasets: [
-    {
-      label: "Исполнители",
-      data: [12, 19, 3, 5, 2],
-      backgroundColor: [
-        "rgba(255, 99, 132, 0.2)",
-        "rgba(54, 162, 235, 0.2)",
-        "rgba(255, 206, 86, 0.2)",
-        "rgba(75, 192, 192, 0.2)",
-        "rgba(153, 102, 255, 0.2)",
-      ],
-      borderColor: [
-        "rgba(255, 99, 132, 1)",
-        "rgba(54, 162, 235, 1)",
-        "rgba(255, 206, 86, 1)",
-        "rgba(75, 192, 192, 1)",
-        "rgba(153, 102, 255, 1)",
-      ],
-      borderWidth: 1,
-    },
-  ],
-};
+// const data = {
+//   labels: ["Выполнено", "Отказов", "На проверке", "Принято", "Доработка"],
+//   datasets: [
+//     {
+//       label: "Исполнители",
+//       data: [12, 19, 3, 5, 2],
+//       backgroundColor: [
+//         "rgba(255, 99, 132, 0.2)",
+//         "rgba(54, 162, 235, 0.2)",
+//         "rgba(255, 206, 86, 0.2)",
+//         "rgba(75, 192, 192, 0.2)",
+//         "rgba(153, 102, 255, 0.2)",
+//       ],
+//       borderColor: [
+//         "rgba(255, 99, 132, 1)",
+//         "rgba(54, 162, 235, 1)",
+//         "rgba(255, 206, 86, 1)",
+//         "rgba(75, 192, 192, 1)",
+//         "rgba(153, 102, 255, 1)",
+//       ],
+//       borderWidth: 1,
+//     },
+//   ],
+// };
 const fetchTask = async (id: string) => {
   const jsonrpc = {
     jsonrpc: "2.0",

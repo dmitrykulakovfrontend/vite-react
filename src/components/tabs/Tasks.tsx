@@ -24,12 +24,13 @@ import {
   Table,
 } from "../ui/table";
 import { useCookies } from "react-cookie";
-import { useMainStore } from "@/providers/store";
 function TasksTab({
   tasks,
+  isCurrentUserPage,
 }: {
   tasks: Task[] | undefined | null;
   isTasksLoading: boolean;
+  isCurrentUserPage: boolean;
   userId: string;
 }) {
   const columns: ColumnDef<Task>[] = [
@@ -345,7 +346,7 @@ function TasksTab({
           row.original.state === "refused" ||
           row.original.state === "success" ||
           !row.original.state ||
-          user
+          isCurrentUserPage
         ) {
           return null;
         }
@@ -366,7 +367,6 @@ function TasksTab({
 
   const [sorting, setSorting] = useState<SortingState>([]);
   const [cookies] = useCookies(["auth-token"]);
-  const { user } = useMainStore();
 
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const navigate = useNavigate({ from: "/tasks" });

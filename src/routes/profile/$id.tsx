@@ -12,8 +12,8 @@ import TreeTab from "@/components/tabs/Tree";
 import useSWR from "swr";
 import type { User } from "@/types/User";
 import type { Task, TaskRating } from "@/types/Tasks";
-import { useCookies } from "react-cookie";
 import type { UserTree } from "@/types/Tree";
+import { useMainStore } from "@/providers/store";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 const fetchUser = async (id: string) => {
@@ -40,7 +40,7 @@ const fetchUser = async (id: string) => {
   }
   return taskData.result;
 };
-const fetchUserTasks = async (jwt: string, id: string) => {
+const fetchUserTasks = async (id: string) => {
   const jsonrpc = {
     jsonrpc: "2.0",
     method: "my_tasks",
@@ -52,7 +52,6 @@ const fetchUserTasks = async (jwt: string, id: string) => {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: jwt,
     },
     body: JSON.stringify(jsonrpc),
   });
@@ -65,7 +64,7 @@ const fetchUserTasks = async (jwt: string, id: string) => {
   }
   return taskData.result;
 };
-const fetchUserTree = async (jwt: string, id: string) => {
+const fetchUserTree = async (id: string) => {
   const jsonrpc = {
     jsonrpc: "2.0",
     method: "get_my_tree",
@@ -77,7 +76,6 @@ const fetchUserTree = async (jwt: string, id: string) => {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: jwt,
     },
     body: JSON.stringify(jsonrpc),
   });
@@ -90,7 +88,7 @@ const fetchUserTree = async (jwt: string, id: string) => {
   }
   return data.result;
 };
-const fetchUserRating = async (jwt: string, id: string) => {
+const fetchUserRating = async (id: string) => {
   const jsonrpc = {
     jsonrpc: "2.0",
     method: "my_rating",
@@ -102,7 +100,6 @@ const fetchUserRating = async (jwt: string, id: string) => {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: jwt,
     },
     body: JSON.stringify(jsonrpc),
   });
@@ -119,7 +116,6 @@ function Profile() {
   const [activeTab, setActiveTab] = useState<"profile" | "tree" | "tasks">(
     "profile",
   );
-  const [cookies] = useCookies(["auth-token"]);
 
   const { id } = useParams({ from: "/profile/$id" });
   const { data: user, isLoading: isUserLoading } = useSWR<User | null>(
@@ -128,22 +124,28 @@ function Profile() {
   );
   const { data: userTasks, isLoading: isTasksLoading } = useSWR<Task[] | null>(
     "userTasks" + id,
-    () => fetchUserTasks(cookies["auth-token"], id),
+    () => fetchUserTasks(id),
   );
   const { data: userTree, isLoading: isTreeLoading } = useSWR<UserTree | null>(
     "userTree" + id,
-    () => fetchUserTree(cookies["auth-token"], id),
+    () => fetchUserTree(id),
   );
   const { data: userRating, isLoading: isRatingLoading } = useSWR<TaskRating[]>(
     "userRating" + id,
-    () => fetchUserRating(cookies["auth-token"], id),
+    () => fetchUserRating(id),
   );
   const tabs = [
     { id: "profile" as const, label: "Аккаунт" },
     { id: "tree" as const, label: "Дерево" },
     { id: "tasks" as const, label: "Задачи" },
   ];
-  console.log({ user, userRating });
+  const { user: currentUser } = useMainStore();
+  const isCurrentUserPage =
+    typeof currentUser === "object" &&
+    currentUser !== null &&
+    "id" in currentUser
+      ? String(currentUser.id) === id
+      : false;
   return (
     <div className="flex flex-col w-full h-full">
       <div className="flex justify-center w-full gap-4 bg-white sticky top-14 z-40  ">
@@ -162,23 +164,29 @@ function Profile() {
         ))}
       </div>
       {/* --- Tabs content --- */}
-      <div className="h-full bg-white px-8 min-h-[700px]">
+      <div className="h-full bg-white pt-4 px-8 min-h-[700px]">
         {activeTab === "profile" && (
           <ProfileTab
             user={user}
             isUserLoading={isUserLoading}
             isRatingLoading={isRatingLoading}
             rating={userRating}
+            isCurrentUserPage={isCurrentUserPage}
           />
         )}
         {activeTab === "tree" && (
-          <TreeTab tree={userTree} isTreeLoading={isTreeLoading} />
+          <TreeTab
+            tree={userTree}
+            isTreeLoading={isTreeLoading}
+            isCurrentUserPage={isCurrentUserPage}
+          />
         )}
         {activeTab === "tasks" && (
           <TasksTab
             tasks={userTasks}
             isTasksLoading={isTasksLoading}
             userId={id}
+            isCurrentUserPage={isCurrentUserPage}
           />
         )}
       </div>

@@ -23,7 +23,6 @@ import {
   TableRow,
 } from "../ui/table";
 import type { User } from "@/types/User";
-import { useMainStore } from "@/providers/store";
 
 const columns: ColumnDef<TaskRating>[] = [
   {
@@ -57,6 +56,7 @@ type ProfileTabProps = {
   user: User | undefined | null;
   isUserLoading: boolean;
   isRatingLoading: boolean;
+  isCurrentUserPage: boolean;
   rating: TaskRating[] | undefined;
 };
 function ProfileTab({
@@ -64,11 +64,11 @@ function ProfileTab({
   isUserLoading,
   isRatingLoading,
   rating,
+  isCurrentUserPage,
 }: ProfileTabProps) {
   const navigate = useNavigate();
   const [tableData, setTableData] = useState<TaskRating[]>([]);
   const [sorting, setSorting] = useState<SortingState>([]);
-  const { user: currentUser } = useMainStore();
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   useEffect(() => {
     if (rating) setTableData(rating);
@@ -92,8 +92,6 @@ function ProfileTab({
     },
   });
 
-  // console.log({ data });
-  console.log({ inside: user });
   if (isUserLoading) return <Loading />;
   if (!user) {
     navigate({ to: "/" });
@@ -132,38 +130,36 @@ function ProfileTab({
             </Button>
           </div>
         </div>
-        {currentUser !== "loading" &&
-          currentUser &&
-          currentUser.id === user.id && (
-            <div className="flex flex-col justify-between items-end gap-2">
-              <div className="flex flex-col gap-2">
-                <Button className=" max-w-[200px]  hover:bg-blue-500  bg-red-500 w-fit hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white">
-                  <Link
-                    to="/shop"
-                    className="[&.active]:font-bold block p-1  rounded"
-                  >
-                    Удалить аккаунт
-                  </Link>
-                </Button>
-                <Button className=" max-w-[200px]  hover:bg-blue-500  bg-blue-primary w-fit hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white">
-                  <Link
-                    to="/shop"
-                    className="[&.active]:font-bold block p-1  rounded"
-                  >
-                    Изменить пароль
-                  </Link>
-                </Button>
-              </div>
-              <Button className="max-sm:hidden max-w-[200px]  hover:bg-blue-500  bg-blue-primary hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white w-fit">
+        {isCurrentUserPage && (
+          <div className="flex flex-col justify-between items-end gap-2">
+            <div className="flex flex-col gap-2">
+              <Button className=" max-w-[200px]  hover:bg-blue-500  bg-red-500 w-fit hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white">
                 <Link
                   to="/shop"
                   className="[&.active]:font-bold block p-1  rounded"
                 >
-                  Магазин
+                  Удалить аккаунт
+                </Link>
+              </Button>
+              <Button className=" max-w-[200px]  hover:bg-blue-500  bg-blue-primary w-fit hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white">
+                <Link
+                  to="/shop"
+                  className="[&.active]:font-bold block p-1  rounded"
+                >
+                  Изменить пароль
                 </Link>
               </Button>
             </div>
-          )}
+            <Button className="max-sm:hidden max-w-[200px]  hover:bg-blue-500  bg-blue-primary hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white w-fit">
+              <Link
+                to="/shop"
+                className="[&.active]:font-bold block p-1  rounded"
+              >
+                Магазин
+              </Link>
+            </Button>
+          </div>
+        )}
       </div>
 
       {!isRatingLoading ? (

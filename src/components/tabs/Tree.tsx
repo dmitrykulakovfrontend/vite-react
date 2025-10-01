@@ -56,12 +56,12 @@ function TreeTab({
       console.log(data.result);
     }
   }
-  async function waterTree() {
+  async function waterTree(skip_checks: boolean = false) {
     if (!cookies["auth-token"]) return null;
     const jsonrpc = {
       jsonrpc: "2.0",
       method: "water_tree",
-      params: {},
+      params: { skip_checks },
       id: 1,
     };
 
@@ -82,14 +82,45 @@ function TreeTab({
       console.log(data.result);
     }
   }
+  async function addResources() {
+    if (!cookies["auth-token"]) return null;
+    const jsonrpc = {
+      jsonrpc: "2.0",
+      method: "add_resources",
+      params: {
+        apples: 5,
+        water: 10,
+      },
+      id: 0,
+    };
 
+    const response = await fetch("https://hrzero.ru/api/app/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: cookies["auth-token"],
+      },
+      body: JSON.stringify(jsonrpc),
+    });
+    const data = await response.json();
+    if (data.error) {
+      setError(data.error.message);
+    }
+    if (treeRef.current && data.result) {
+      await mutate("userTree" + tree?.user.id);
+      console.log(data.result);
+    }
+  }
   if (isTreeLoading) return <Loading />;
 
   return (
     <div className="p-4  bg-white rounded-4xl h-full text-black w-full flex flex-col justify-start items-center gap-4">
       <div className="w-fit max-sm:flex max-sm:flex-col max-sm:items-center max-sm:justify-center">
+        {" "}
         {error && (
-          <p className="text-red-500 mt-2 max-w-2xs text-center">{error}</p>
+          <p className="text-red-500 mt-2 max-w-2xs text-center w-fit mx-auto">
+            {error}
+          </p>
         )}
         {tree ? (
           <div className="flex items-start justify-center gap-4 max-sm:flex-col max-sm:items-center">
@@ -103,22 +134,32 @@ function TreeTab({
                   isMainTree
                 />
               </div>
-              {isCurrentUserPage && tree && (
-                <Button
-                  onClick={waterTree}
-                  className=" max-w-[200px] max-lg:max-w-[150px] hover:bg-blue-500  bg-blue-primary w-full hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white mt-2 "
-                >
-                  Полить
-                </Button>
-              )}
-              {isCurrentUserPage && tree && (
-                <Button
-                  onClick={waterTree}
-                  className="max-w-[200px] max-lg:max-w-[150px] whitespace-normal break-words hover:bg-blue-500 bg-blue-primary w-full hover:cursor-pointer font-futura-heavy p-2 h-fit rounded-sm text-white mt-2"
-                >
-                  ДЕМО: Пропустить 7 дней и получить 10л. воды для полива
-                </Button>
-              )}
+              <div className="flex justify-center gap-2 flex-col">
+                {isCurrentUserPage && tree && (
+                  <Button
+                    onClick={() => waterTree()}
+                    className=" max-w-[200px] max-lg:max-w-[150px] hover:bg-blue-500  bg-blue-primary w-full hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white mt-2 "
+                  >
+                    Полить
+                  </Button>
+                )}
+                {isCurrentUserPage && tree && (
+                  <Button
+                    onClick={() => waterTree(true)}
+                    className="max-w-[200px] max-lg:max-w-[150px] whitespace-normal break-words hover:bg-blue-500 bg-blue-primary w-full hover:cursor-pointer font-futura-heavy p-2 h-fit rounded-sm text-white mt-2"
+                  >
+                    ДЕМО: Пропустить требования и полить
+                  </Button>
+                )}
+                {isCurrentUserPage && tree && (
+                  <Button
+                    onClick={addResources}
+                    className="max-w-[200px] max-lg:max-w-[150px] whitespace-normal break-words hover:bg-blue-500 bg-blue-primary w-full hover:cursor-pointer font-futura-heavy p-2 h-fit rounded-sm text-white mt-2"
+                  >
+                    ДЕМО: Добавить 10 воды и 5 яблок
+                  </Button>
+                )}
+              </div>
             </div>
             <div className="flex flex-col gap-4">
               {tree && (
@@ -216,7 +257,7 @@ function TreeTab({
               </div>
               {isCurrentUserPage && tree && (
                 <Button
-                  onClick={waterTree}
+                  onClick={() => waterTree()}
                   className=" max-w-[200px] max-lg:max-w-[150px] hover:bg-blue-500  bg-blue-primary w-full hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white mt-2"
                 >
                   Полить

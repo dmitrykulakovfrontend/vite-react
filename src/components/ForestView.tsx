@@ -64,6 +64,14 @@ export const ForestView = forwardRef<
         treeRef.current.currentUserTree = currentUserTree;
         treeRef.current.hasCentered = false;
         treeRef.current.render();
+        if (treeRef.current.isMainTree) {
+          treeRef.current.viewportTransform.scale =
+            1 -
+            treeRef.current.getTreeDepth(
+              treeRef.current.trees[0]?.timesWatered || 0,
+            ) /
+              15;
+        }
       }
     },
   }));

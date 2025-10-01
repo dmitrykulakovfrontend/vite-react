@@ -53,7 +53,7 @@ function RouteComponent() {
     },
   ];
   return (
-    <div className="p-4 w-full h-full bg-white">
+    <div className="p-4 w-full min-h-full bg-white">
       <div className="bg-white w-fit mx-auto text-black p-4 rounded-md">
         <div>
           <div className="flex items-center gap-8 justify-between max-sm:flex-col ">

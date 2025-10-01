@@ -69,6 +69,21 @@ function Index() {
           prevIndex === planetsArray.length - 1 ? 0 : prevIndex + 1;
         if (treeRef.current) {
           treeRef.current.updatePlanet(planetsArray[newPlanet]);
+          setTimeout(() => {
+            if (treeRef.current) {
+              treeRef.current.render();
+            }
+          }, 500);
+          setTimeout(() => {
+            if (treeRef.current) {
+              treeRef.current.render();
+            }
+          }, 1000);
+          setTimeout(() => {
+            if (treeRef.current) {
+              treeRef.current.render();
+            }
+          }, 1500);
         }
         return newPlanet;
       });

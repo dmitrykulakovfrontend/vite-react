@@ -200,12 +200,13 @@ function Index() {
   const [cookies] = useCookies(["auth-token"]);
 
   const [sorting, setSorting] = useState<SortingState>([]);
+  const userId = user !== "loading" ? user?.id : "";
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const { data } = useSWR("users", () => fetchUsers(cookies["auth-token"]));
   const { data: usersTree } = useSWR("usersTree", () =>
     fetchUsersTree(cookies["auth-token"]),
   );
-  const { data: userTree } = useSWR<UserTree | null>("userTree", () =>
+  const { data: userTree } = useSWR<UserTree | null>("userTree" + userId, () =>
     fetchUserTree(cookies["auth-token"]),
   );
   console.log({ usersTree });
@@ -234,8 +235,7 @@ function Index() {
         userTree ? MapTreeData(userTree) : null,
       );
     }
-  }, [usersTree, userTree]);
-  console.log({ data });
+  }, [usersTree, userTree, user]);
   // const [isSimulationActive, setSimulationActive] = useState(false);
 
   // useEffect(() => {

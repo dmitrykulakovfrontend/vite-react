@@ -52,7 +52,7 @@ function TreeTab({
       setError(data.error.message);
     }
     if (treeRef.current && data.result) {
-      await mutate("userTree");
+      await mutate("userTree" + tree?.user.id);
       console.log(data.result);
     }
   }
@@ -78,7 +78,7 @@ function TreeTab({
       setError(data.error.message);
     }
     if (treeRef.current && data.result) {
-      await mutate("userTree");
+      await mutate("userTree" + tree?.user.id);
       console.log(data.result);
     }
   }
@@ -87,13 +87,13 @@ function TreeTab({
 
   return (
     <div className="p-4  bg-white rounded-4xl h-full text-black w-full flex flex-col justify-start items-center gap-4">
-      <div className="w-fit">
+      <div className="w-fit max-sm:flex max-sm:flex-col max-sm:items-center max-sm:justify-center">
         {error && (
           <p className="text-red-500 mt-2 max-w-2xs text-center">{error}</p>
         )}
         {tree ? (
-          <div className="flex items-start justify-center gap-4 max-sm:flex-col">
-            <div>
+          <div className="flex items-start justify-center gap-4 max-sm:flex-col max-sm:items-center">
+            <div className="max-sm:flex max-sm:flex-col max-sm:items-center max-sm:justify-center">
               <div className="w-[200px] h-[200px]">
                 <ForestView
                   ref={treeRef}
@@ -106,9 +106,17 @@ function TreeTab({
               {isCurrentUserPage && tree && (
                 <Button
                   onClick={waterTree}
-                  className=" max-w-[200px] max-lg:max-w-[150px] hover:bg-blue-500  bg-blue-primary w-full hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white mt-2"
+                  className=" max-w-[200px] max-lg:max-w-[150px] hover:bg-blue-500  bg-blue-primary w-full hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white mt-2 "
                 >
                   Полить
+                </Button>
+              )}
+              {isCurrentUserPage && tree && (
+                <Button
+                  onClick={waterTree}
+                  className="max-w-[200px] max-lg:max-w-[150px] whitespace-normal break-words hover:bg-blue-500 bg-blue-primary w-full hover:cursor-pointer font-futura-heavy p-2 h-fit rounded-sm text-white mt-2"
+                >
+                  ДЕМО: Пропустить 7 дней и получить 10л. воды для полива
                 </Button>
               )}
             </div>

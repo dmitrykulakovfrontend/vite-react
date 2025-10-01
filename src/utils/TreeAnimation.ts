@@ -138,7 +138,9 @@ class TreeAnimation {
     this.viewportTransform = {
       x: 0,
       y: 0,
-      scale: this.isMainTree ? 1 : 0.1,
+      scale: this.isMainTree
+        ? 1 - this.getTreeDepth(this.trees[0]?.timesWatered || 0) / 15
+        : 0.1,
     };
     if (this.isMainTree) {
       this.animate();
@@ -697,23 +699,12 @@ class TreeAnimation {
     ctx.save();
     ctx.setTransform(scale, 0, 0, scale, viewX, viewY);
 
-    // Common drawing logic for the highlight pin
-    ctx.save();
-    ctx.setTransform(scale, 0, 0, scale, viewX, viewY);
-
-    const pinBaseX = treeWorldX;
-    const pinBaseY = treeWorldY;
-
     // Draw the "Ваше дерево" text
-    ctx.font = `bold ${4 * this.getTreeDepth(tree.timesWatered)}px Arial, sans-serif`;
+    ctx.font = `bold ${12 / this.viewportTransform.scale}px Arial, sans-serif`;
     ctx.fillStyle = "white";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(
-      "Ваше дерево",
-      pinBaseX - 40,
-      pinBaseY - 4 * this.getTreeDepth(tree.timesWatered),
-    );
+    ctx.fillText("Ваше дерево", treeWorldX - 20, treeWorldY + 40);
 
     ctx.restore();
   }

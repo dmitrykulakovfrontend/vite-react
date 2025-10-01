@@ -168,7 +168,7 @@ const columns: ColumnDef<Task>[] = [
           className="gap-1 rounded-none p-2 w-full flex justify-start"
           onClick={() => column.toggleSorting(isSorted === "asc")}
         >
-          Навык
+          Ранг
           {isSorted === "asc" ? (
             <ArrowUp className="w-4 h-4" />
           ) : isSorted === "desc" ? (

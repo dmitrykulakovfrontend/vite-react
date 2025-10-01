@@ -98,7 +98,7 @@ function ProfileTab({
     return null;
   }
   return (
-    <div className=" w-full flex flex-col justify-start items-center h-full  text-black ">
+    <div className=" w-full flex flex-col justify-start items-center   text-black ">
       <div className="flex gap-4 max-sm:flex-col   max-sm:items-center max-sm:justify-center ">
         <div>
           <img
@@ -194,7 +194,6 @@ function ProfileTab({
                   table.getRowModel().rows.map((row) => (
                     <TableRow
                       key={row.id}
-                      className="hover:cursor-pointer"
                       data-state={row.getIsSelected() && "selected"}
                     >
                       {row.getVisibleCells().map((cell) => (
@@ -238,7 +237,7 @@ function ProfileTab({
               </Button>
             </div>
           </div>
-          <div className="space-y-4 md:hidden">
+          <div className="space-y-4 md:hidden overflow-y-scroll">
             {rating && rating.length ? (
               rating.map((row) => (
                 <div

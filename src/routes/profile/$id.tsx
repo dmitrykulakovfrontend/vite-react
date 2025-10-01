@@ -147,7 +147,7 @@ function Profile() {
       ? String(currentUser.id) === id
       : false;
   return (
-    <div className="flex flex-col w-full h-full">
+    <div className="flex flex-col w-full ">
       <div className="flex justify-center w-full gap-4 bg-white sticky top-14 z-40  ">
         {tabs.map(({ id, label }) => (
           <button
@@ -164,7 +164,7 @@ function Profile() {
         ))}
       </div>
       {/* --- Tabs content --- */}
-      <div className="h-full bg-white pt-4 px-8 min-h-[700px]">
+      <div className=" bg-white pt-4 px-8 min-h-[1000px]">
         {activeTab === "profile" && (
           <ProfileTab
             user={user}

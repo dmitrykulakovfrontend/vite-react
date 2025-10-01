@@ -62,6 +62,7 @@ export const ForestView = forwardRef<
         treeRef.current.trees = trees;
         treeRef.current.isLoading = isLoading;
         treeRef.current.currentUserTree = currentUserTree;
+        treeRef.current.hasCentered = false;
         treeRef.current.render();
       }
     },

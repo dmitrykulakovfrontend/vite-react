@@ -247,7 +247,7 @@ function RouteComponent() {
               Название задачи: {currentTask.title}
             </h3>
             <p className="mb-2">Описание задачи: {currentTask.description}</p>
-            <p className="mb-2">Навык: {currentTask.skill_title}</p>
+            <p className="mb-2">Ранг: {currentTask.skill_title}</p>
             <p className="mb-2">
               Место: {currentTask.online ? "Онлайн" : "Оффлайн"}
             </p>

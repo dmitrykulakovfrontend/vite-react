@@ -169,6 +169,7 @@ function RouteComponent() {
 
       if (data) {
         await mutate("userTasks");
+        await mutate("userNotificationsCount");
       }
     } catch (error) {
       console.error("Login failed:", error);

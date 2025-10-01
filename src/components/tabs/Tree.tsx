@@ -53,6 +53,7 @@ function TreeTab({
     }
     if (treeRef.current && data.result) {
       await mutate("userTree" + tree?.user.id);
+      await mutate("userNotificationsCount");
       console.log(data.result);
     }
   }

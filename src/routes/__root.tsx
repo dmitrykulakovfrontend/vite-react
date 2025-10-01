@@ -43,26 +43,25 @@ const RootLayout = () => {
   const [isMenuOpen, setMenuOpen] = useState(false);
   const { setTrees, setUser, user } = useMainStore();
   const [cookies] = useCookies(["auth-token"]);
-  // Use SWR to fetch user data
-  const { data, error, isLoading } = useSWR(
-    "currentUser",
-    () => userFetcher(cookies["auth-token"]),
-    {
-      // revalidateOnMount: false,
-      revalidateOnFocus: false,
-      // revalidateOnReconnect: false,
-    },
-  );
+  const {
+    data: currentUser,
+    error: currentUserError,
+    isLoading: currentUserIsLoading,
+  } = useSWR("currentUser", () => userFetcher(cookies["auth-token"]), {
+    // revalidateOnMount: false,
+    revalidateOnFocus: false,
+    // revalidateOnReconnect: false,
+  });
 
   useEffect(() => {
-    if (isLoading) {
+    if (currentUserIsLoading) {
       setUser("loading");
-    } else if (!isLoading && data !== undefined) {
-      setUser(data);
-    } else if (!isLoading && data === undefined) {
+    } else if (!currentUserIsLoading && currentUser !== undefined) {
+      setUser(currentUser);
+    } else if (!currentUserIsLoading && currentUser === undefined) {
       setUser(null);
     }
-  }, [data, setUser, isLoading]);
+  }, [currentUser, setUser, currentUserIsLoading]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -88,8 +87,8 @@ const RootLayout = () => {
   }, [trees, setTrees]);
 
   // Handle loading and error states for user data
-  if (error) console.log(error);
-  if (isLoading) return <div>Loading...</div>;
+  if (currentUserError) console.log(currentUserError);
+  if (currentUserIsLoading) return <div>Loading...</div>;
   return (
     <>
       <Header isMenuOpen={isMenuOpen} setMenuOpen={setMenuOpen} />

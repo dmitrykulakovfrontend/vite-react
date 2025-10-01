@@ -19,7 +19,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import useSWR from "swr";
+import useSWR, { mutate } from "swr";
 import Loading from "../Loading";
 import type { UserNotification } from "@/types/User";
 
@@ -112,6 +112,7 @@ const Header = ({
     if (data.error) {
       throw new Error(data.error.message);
     }
+    await mutate("userNotificationsCount");
     return data.result;
   }
   const [notifications, setNotifications] = useState<UserNotification[] | null>(

@@ -254,9 +254,11 @@ function RouteComponent() {
             </p>
             <p className="mb-2">
               Срок исполнения:{" "}
-              {new Date(currentTask.deadline).toLocaleDateString(
-                new Intl.Locale("ru"),
-              ) || "Нету"}
+              {currentTask.deadline
+                ? new Date(currentTask.deadline).toLocaleDateString(
+                    new Intl.Locale("ru"),
+                  )
+                : "Нету"}
             </p>
             <p className="mb-2">
               Просмотров: {Math.round(Math.random() * 100) + 1}

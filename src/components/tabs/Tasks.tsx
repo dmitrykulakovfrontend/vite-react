@@ -195,11 +195,11 @@ function TasksTab({
       },
       {
         accessorKey: "mission_title",
-        header: "Кампания",
+        header: "Миссия",
       },
       {
         accessorKey: "goal_title",
-        header: "Цель",
+        header: "Кампания",
       },
       {
         accessorKey: "state",

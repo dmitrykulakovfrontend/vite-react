@@ -132,8 +132,30 @@ function ProfileTab({
             src={user.avatar_url}
             width={100}
             height={100}
-            className="rounded-full mb-4"
+            className="rounded-full aspect-square mb-4"
           />
+          {isCurrentUserPage && (
+            <div className="flex flex-col justify-between items-end gap-2">
+              <div className="flex flex-col gap-2">
+                <Button className=" max-w-[200px]  hover:bg-blue-500  bg-red-500 w-fit hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white">
+                  <Link
+                    to="/shop"
+                    className="[&.active]:font-bold block p-1  rounded"
+                  >
+                    Удалить аккаунт
+                  </Link>
+                </Button>
+                <Button className=" max-w-[200px]  hover:bg-blue-500  bg-blue-primary w-fit hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white">
+                  <Link
+                    to="/shop"
+                    className="[&.active]:font-bold block p-1  rounded"
+                  >
+                    Изменить пароль
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
         <div className="max-sm:w-full ">
           <h2 className="text-2xl font-bold mb-2">
@@ -157,36 +179,6 @@ function ProfileTab({
             </Button>
           </div>
         </div>
-        {isCurrentUserPage && (
-          <div className="flex flex-col justify-between items-end gap-2">
-            <div className="flex flex-col gap-2">
-              <Button className=" max-w-[200px]  hover:bg-blue-500  bg-red-500 w-fit hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white">
-                <Link
-                  to="/shop"
-                  className="[&.active]:font-bold block p-1  rounded"
-                >
-                  Удалить аккаунт
-                </Link>
-              </Button>
-              <Button className=" max-w-[200px]  hover:bg-blue-500  bg-blue-primary w-fit hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white">
-                <Link
-                  to="/shop"
-                  className="[&.active]:font-bold block p-1  rounded"
-                >
-                  Изменить пароль
-                </Link>
-              </Button>
-            </div>
-            <Button className="max-sm:hidden max-w-[200px]  hover:bg-blue-500  bg-blue-primary hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white w-fit">
-              <Link
-                to="/shop"
-                className="[&.active]:font-bold block p-1  rounded"
-              >
-                Магазин
-              </Link>
-            </Button>
-          </div>
-        )}
       </div>
 
       {/* Rating Section */}

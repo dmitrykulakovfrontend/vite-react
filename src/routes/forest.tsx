@@ -47,6 +47,7 @@ type LeaderboardUser = {
   tree_age: string;
   activity: string;
   started_at: string;
+  vitality_percent: number;
   id: number;
 };
 const columns: ColumnDef<LeaderboardUser>[] = [
@@ -98,7 +99,7 @@ const columns: ColumnDef<LeaderboardUser>[] = [
     header: () => {
       return (
         <Button variant="ghost" className="p-0 rounded-none">
-          Размер
+          Дни
         </Button>
       );
     },
@@ -113,6 +114,16 @@ const columns: ColumnDef<LeaderboardUser>[] = [
       );
     },
   },
+  {
+    accessorKey: "vitality_percent",
+    header: () => {
+      return (
+        <Button variant="ghost" className="p-0 rounded-none">
+          Сила дерева
+        </Button>
+      );
+    },
+  },
 ];
 const fetchUsers = async (jwt: string) => {
   const jsonrpc = {
@@ -121,7 +132,6 @@ const fetchUsers = async (jwt: string) => {
     params: {},
     id: 1,
   };
-  // return [];
   const response = await fetch("https://hrzero.ru/api/app/", {
     method: "POST",
     headers: {
@@ -359,6 +369,10 @@ function Index() {
                           <p>
                             <span className="font-medium">Активность:</span>{" "}
                             {row.original.activity}
+                          </p>
+                          <p>
+                            <span className="font-medium">Сила дерева:</span>{" "}
+                            {row.original.vitality_percent}
                           </p>
                         </div>
                       </div>

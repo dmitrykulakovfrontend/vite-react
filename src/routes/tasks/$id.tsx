@@ -245,10 +245,7 @@ function RouteComponent() {
               </Link>
             </h1>
             <h2 className="text-xl font-bold ">
-              <Link
-                to={"/campaign/" + currentTask.goal_id}
-                className="underline"
-              >
+              <Link to={"/campaign/" + currentTask.goal_id}>
                 Кампания:{" "}
                 <span className="underline">{currentTask.goal_title}</span>
               </Link>

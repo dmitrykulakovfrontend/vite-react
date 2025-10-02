@@ -412,7 +412,6 @@ class TreeAnimation {
           }
         }
 
-        // Apply transform
         this.ctx.setTransform(
           this.viewportTransform.scale,
           0,
@@ -448,7 +447,6 @@ class TreeAnimation {
               //   this.treesPerRow;
               // const treeIndex = wrappedRow * this.treesPerRow + wrappedCol; // Remove
 
-              // --- START MODIFICATION ---
               // Calculate the absolute index within the infinite grid
               const absoluteIndex = row * this.treesPerRow + col;
 
@@ -483,7 +481,7 @@ class TreeAnimation {
               this.drawFullTree(internalTree);
 
               // console.log(this.random(0, 2, rng));
-              // --- END MODIFICATION ---
+
               // draw tree seed
               // this.ctx.fillStyle = "white";
               // this.ctx.font = "bold 64px Arial, sans-serif";
@@ -501,7 +499,7 @@ class TreeAnimation {
         this.drawHighlight(closestUserTreePosition, this.currentUserTree);
       }
       // Draw planet name on top of everything
-      this.ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform
+      this.ctx.setTransform(1, 0, 0, 1, 0, 0);
       this.ctx.fillStyle = "white";
       this.ctx.font = "bold 48px FuturaPTHeavy,sans-serif";
       this.ctx.textAlign = "center";
@@ -527,7 +525,7 @@ class TreeAnimation {
     start: number,
     goal: number,
     watered: number,
-    total = this.maxTimesWatered, // watering once a week during 3 years
+    total = this.maxTimesWatered,
   ) {
     if (watered <= 0) return start;
     if (watered >= total) return goal;
@@ -692,7 +690,7 @@ class TreeAnimation {
     ctx.save();
     ctx.setTransform(scale, 0, 0, scale, viewX, viewY);
 
-    // Draw the "Ваше дерево" text
+    // Draw "Ваше дерево" text
     ctx.font = `bold ${12 / this.viewportTransform.scale}px Arial, sans-serif`;
     ctx.fillStyle = "white";
     ctx.textAlign = "center";
@@ -783,7 +781,7 @@ class TreeAnimation {
 
     let mouseX, mouseY;
 
-    // FIX: If it's the main tree, center the zoom on the tree's base.
+    // If it's the main tree, center the zoom on the tree's base.
     // Otherwise, zoom towards the mouse pointer.
     if (this.isMainTree) {
       mouseX = this.stageWidth / 2;
@@ -896,7 +894,7 @@ class TreeAnimation {
           if (lastDist !== null) {
             let zoomCenterX, zoomCenterY;
 
-            // FIX: If it's the main tree, center the zoom on the tree's base.
+            // If it's the main tree, center the zoom on the tree's base.
             // Otherwise, zoom towards the fingers.
             if (this.isMainTree) {
               zoomCenterX = this.stageWidth / 2;
@@ -944,10 +942,9 @@ class TreeAnimation {
     this.canvas.width = this.stageWidth;
     this.canvas.height = this.stageHeight;
 
-    // ENHANCEMENT: Re-initialize scenery on resize for responsiveness
     if (this.isMainTree) {
       this.initializeScenery();
-      this.initializeGrass(); // ADD THIS LINE
+      this.initializeGrass();
     }
 
     // automatically adjust scale
@@ -969,7 +966,6 @@ class TreeAnimation {
       const x = Math.random() * this.canvas.width;
       const y =
         horizonY + Math.pow(Math.random(), 2) * (this.canvas.height / 2);
-      // MODIFIED: Reduced height multiplier from 35 to 20 and base height from 10 to 5.
       const height = ((y - horizonY) / (this.canvas.height / 2)) * 20 + 5;
       const sway = Math.random() * 10 - 5;
       const greenValue =
@@ -1260,15 +1256,11 @@ class TreeAnimation {
       0,
       tree,
     );
-    if (this.isMainTree) {
-      // This console log is safe to keep or remove
-    }
 
     // Draw fruits
     const applesToDraw = tree.apples ? tree.apples : 0;
     const fruitType = this.random(0, 1, tree.rng) < 0.5 ? "red" : "orange";
     // First, initialize the array to store leaf positions for this specific tree.
-    // Now, place apples at the recorded leaf positions.
     // Now, place apples at the recorded leaf positions using a collision-avoidance and nudge system.
     if (
       applesToDraw > 0 &&

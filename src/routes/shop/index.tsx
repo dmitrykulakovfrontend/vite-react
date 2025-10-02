@@ -166,7 +166,9 @@ function RouteComponent() {
                   />
                 </p>
                 {error.productId === product.id && (
-                  <p className="text-red-500">{error.message}</p>
+                  <p className="text-red-500 max-w-[140px] text-center text-sm">
+                    {error.message}
+                  </p>
                 )}
                 {!user ? (
                   <Button
@@ -184,7 +186,7 @@ function RouteComponent() {
                       } else {
                         setError({
                           productId: product.id,
-                          message: "Недостаточно яблок",
+                          message: `Вам не хватает: ${totalPrice - (user.apples - totalSpentApples)} яблок`,
                         });
                       }
                     }}

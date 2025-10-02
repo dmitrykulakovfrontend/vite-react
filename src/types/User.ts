@@ -11,6 +11,8 @@ export type User = {
   scopes: string[] | null;
   banned?: boolean;
   metadata: { name: string; [key: string]: unknown };
+  apples: number;
+  water: number;
 };
 export type UserNotification = {
   created_at: string;

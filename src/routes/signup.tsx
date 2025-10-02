@@ -63,21 +63,18 @@ function RouteComponent() {
           const data = await response.json();
           if (data.error) throw new Error(data.error.message);
 
-          const profileResponse = await fetch(
-            "https://hrzero.ru/api/passport/",
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: data.result,
-              },
-              body: JSON.stringify({
-                jsonrpc: "2.0",
-                method: "my_profile",
-                id: 1,
-              }),
+          const profileResponse = await fetch("https://hrzero.ru/api/app/", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: data.result,
             },
-          );
+            body: JSON.stringify({
+              jsonrpc: "2.0",
+              method: "get_user",
+              id: 1,
+            }),
+          });
           if (!profileResponse.ok)
             throw new Error("Не удалось загрузить профиль");
           const userData = await profileResponse.json();

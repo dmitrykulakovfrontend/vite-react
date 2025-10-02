@@ -13,11 +13,11 @@ const fetchUser = async (authToken: string) => {
   if (!authToken) return null;
   const jsonrpc = {
     jsonrpc: "2.0",
-    method: "my_profile",
+    method: "get_user",
     id: 1,
   };
 
-  const response = await fetch("https://hrzero.ru/api/passport/", {
+  const response = await fetch("https://hrzero.ru/api/app/", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

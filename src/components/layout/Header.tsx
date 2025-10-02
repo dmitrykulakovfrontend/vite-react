@@ -161,7 +161,6 @@ const Header = ({
   ) {
     links.push({ to: "/admin", label: "Админка" });
   }
-  console.log({ notifications });
   return (
     <header
       className={`sticky ${isMenuOpen ? "flex-col items-start" : ""} top-0 left-0 z-50 flex items-center justify-between w-full p-2 bg-[#00285e]  text-white`}

@@ -7,6 +7,7 @@ import type { UserTree } from "@/types/Tree";
 import { Link } from "@tanstack/react-router";
 import MapTreeData from "@/utils/mapApiResponse";
 import Loading from "../Loading";
+import { useMainStore } from "@/providers/store";
 function TreeTab({
   tree,
   isTreeLoading,
@@ -18,18 +19,19 @@ function TreeTab({
 }) {
   const [cookies] = useCookies(["auth-token"]);
   const [error, setError] = useState<string | null>(null);
+  const { totalSpentApples } = useMainStore();
   const treeRef = useRef<TreeHandle>(null);
   useEffect(() => {
     if (treeRef.current && tree) {
       treeRef.current.update(
-        [MapTreeData(tree)],
+        [MapTreeData({ ...tree, apples: tree.apples - totalSpentApples })],
         isTreeLoading,
         MapTreeData(tree),
       );
     } else {
       treeRef.current?.update([], isTreeLoading, null);
     }
-  }, [tree, isTreeLoading]);
+  }, [tree, isTreeLoading, totalSpentApples]);
   async function plantTree() {
     if (!cookies["auth-token"]) return null;
     const jsonrpc = {
@@ -109,6 +111,7 @@ function TreeTab({
     }
     if (treeRef.current && data.result) {
       await mutate("userTree" + tree?.user.id);
+      await mutate("currentUser");
       console.log(data.result);
     }
   }
@@ -129,9 +132,25 @@ function TreeTab({
               <div className="w-[200px] h-[200px]">
                 <ForestView
                   ref={treeRef}
-                  trees={tree ? [MapTreeData(tree)] : []}
+                  trees={
+                    tree
+                      ? [
+                          MapTreeData({
+                            ...tree,
+                            apples: tree.apples - totalSpentApples,
+                          }),
+                        ]
+                      : []
+                  }
                   isLoading={isTreeLoading}
-                  currentUserTree={tree ? MapTreeData(tree) : undefined}
+                  currentUserTree={
+                    tree
+                      ? MapTreeData({
+                          ...tree,
+                          apples: tree.apples - totalSpentApples,
+                        })
+                      : undefined
+                  }
                   isMainTree
                 />
               </div>
@@ -206,7 +225,7 @@ function TreeTab({
               <p className="font-futura-heavy">
                 Яблок в наличии:{" "}
                 <span className="font-futura-book text-blue-light">
-                  {tree?.apples || 0}
+                  {tree.apples - totalSpentApples}
                 </span>
               </p>
               {tree && (
@@ -225,9 +244,9 @@ function TreeTab({
               <div className="w-[200px] h-[200px]">
                 <ForestView
                   ref={treeRef}
-                  trees={tree ? [MapTreeData(tree)] : []}
+                  trees={[]}
                   isLoading={isTreeLoading}
-                  currentUserTree={tree ? MapTreeData(tree) : undefined}
+                  currentUserTree={undefined}
                   isMainTree
                 />
               </div>

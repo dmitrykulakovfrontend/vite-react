@@ -43,12 +43,38 @@ const columns: ColumnDef<TaskRating>[] = [
   {
     accessorKey: "last_task_updated_at",
     header: "Последняя задача",
-    cell: ({ getValue }) => {
-      if (getValue()) {
-        const date = new Date(getValue() as string);
+    cell: ({ row }) => {
+      if (row.original.last_task_updated_at) {
+        const date = new Date(row.original.last_task_updated_at);
         return <span>{date.toLocaleDateString(new Intl.Locale("ru"))}</span>;
       }
       return <span></span>;
+    },
+  },
+  {
+    accessorKey: "rank_progress",
+    header: "Прогресс",
+    cell: ({ row }) => {
+      return (
+        <div className="flex items-center gap-x-1">
+          {Array.from({ length: 10 }).map((_, index) => (
+            <div
+              key={index}
+              className={`h-4 w-2 rounded-sm ${
+                index < row.original.rank_progress
+                  ? "bg-green-500"
+                  : "bg-gray-300"
+              }`}
+            />
+          ))}
+        </div>
+      );
+    },
+  },
+  {
+    header: "До повышения",
+    cell: ({ row }) => {
+      return <span> {10 - row.original.rank_progress}</span>;
     },
   },
 ];
@@ -97,6 +123,7 @@ function ProfileTab({
     navigate({ to: "/" });
     return null;
   }
+  console.log({ rating });
   return (
     <div className=" w-full flex flex-col justify-start items-center   text-black ">
       <div className="flex gap-4 max-sm:flex-col   max-sm:items-center max-sm:justify-center ">
@@ -255,6 +282,20 @@ function ProfileTab({
                         )
                       : "-"}
                   </p>
+                  <p>Прогресс:</p>
+                  <div className="flex items-center gap-x-1">
+                    {Array.from({ length: 10 }).map((_, index) => (
+                      <div
+                        key={index}
+                        className={`h-4 w-2 rounded-sm ${
+                          index < row.rank_progress
+                            ? "bg-green-500"
+                            : "bg-gray-300"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <p>До повышения: {10 - row.rank_progress}</p>
                 </div>
               ))
             ) : (

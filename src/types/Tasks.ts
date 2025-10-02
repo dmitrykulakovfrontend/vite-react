@@ -49,4 +49,5 @@ export interface TaskRating {
   goal_title: string;
   last_task_updated_at: string;
   user_rank: number;
+  rank_progress: number;
 }

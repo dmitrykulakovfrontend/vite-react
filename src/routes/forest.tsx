@@ -40,6 +40,19 @@ import MapTreeData from "@/utils/mapApiResponse";
 
 export const Route = createFileRoute("/forest")({
   component: Index,
+  validateSearch: (search) => {
+    const user = search.centerOn;
+
+    // Check if 'user' (the centerOn param) exists and is a string
+    if (user && typeof user === "string") {
+      // If it exists and is valid, return it.
+      return { centerOn: user as string };
+    }
+
+    // If it's missing or invalid, return an empty object.
+    // This tells the router to treat 'centerOn' as undefined in the route's search state.
+    return {};
+  },
 });
 type LeaderboardUser = {
   name: string;
@@ -206,6 +219,7 @@ function Index() {
   const user = useMainStore((state) => state.user);
   const [isTableVisible, setTableVisible] = useState(true);
   const treeRef = useRef<TreeHandle>(null);
+  const { centerOn } = Route.useSearch();
   // const navigate = useNavigate({ from: "/forest" });
 
   const [cookies] = useCookies(["auth-token"]);
@@ -225,6 +239,7 @@ function Index() {
       treeRef.current.centerOnUser(+id);
     }
   }
+
   console.log({ usersTree });
   const table = useReactTable<LeaderboardUser>({
     data: data || [],
@@ -250,8 +265,11 @@ function Index() {
         false,
         userTree ? MapTreeData(userTree) : null,
       );
+      if (treeRef.current && centerOn) {
+        treeRef.current.centerOnUser(+centerOn);
+      }
     }
-  }, [usersTree, userTree, user]);
+  }, [usersTree, userTree, user, centerOn]);
   // const [isSimulationActive, setSimulationActive] = useState(false);
 
   // useEffect(() => {

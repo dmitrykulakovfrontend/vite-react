@@ -64,6 +64,7 @@ export interface Mission {
 export interface Goal {
   created_at: string;
   updated_at: string;
+  tasks_count: number;
   synced?: boolean;
   cache?: Record<string, unknown> | null;
   id: string;

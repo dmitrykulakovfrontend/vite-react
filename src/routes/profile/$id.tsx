@@ -2,6 +2,17 @@ import { createFileRoute, useParams } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/profile/$id")({
   component: Profile,
+  validateSearch: (search) => {
+    // We expect the 'tab' to be one of the allowed values or undefined
+    const validTabs = ["profile", "tree", "tasks"];
+    const tab = search.tab;
+
+    if (tab && typeof tab === "string" && validTabs.includes(tab)) {
+      return { tab: tab as "profile" | "tree" | "tasks" };
+    }
+    // Default to 'profile' if the param is missing or invalid
+    return { tab: "profile" as const };
+  },
 });
 
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
@@ -113,11 +124,11 @@ const fetchUserRating = async (id: string) => {
   return taskData.result;
 };
 function Profile() {
-  const [activeTab, setActiveTab] = useState<"profile" | "tree" | "tasks">(
-    "profile",
-  );
-
   const { id } = useParams({ from: "/profile/$id" });
+  const { tab: initialTab } = Route.useSearch();
+  const [activeTab, setActiveTab] = useState<"profile" | "tree" | "tasks">(
+    initialTab,
+  );
   const { data: user, isLoading: isUserLoading } = useSWR<User | null>(
     "user" + id,
     () => fetchUser(id),

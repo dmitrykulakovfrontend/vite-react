@@ -203,7 +203,7 @@ function TreeTab({
                 )}
                 <Button className=" max-w-[200px] max-lg:max-w-[150px] hover:bg-blue-500  bg-blue-primary w-full hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white mt-2">
                   <Link
-                    to="/forest"
+                    to={"/forest" + "?centerOn=" + tree?.id}
                     className="[&.active]:font-bold block p-1  rounded"
                   >
                     Посетить лес

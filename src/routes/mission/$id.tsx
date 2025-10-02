@@ -52,6 +52,25 @@ const columns: ColumnDef<Goal>[] = [
       </Button>
     ),
   },
+  {
+    accessorKey: "tasks_count",
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        className="p-0"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Количество заданий
+        {column.getIsSorted() === "asc" ? (
+          <ChevronUp className="ml-2 h-4 w-4" />
+        ) : column.getIsSorted() === "desc" ? (
+          <ChevronDown className="ml-2 h-4 w-4" />
+        ) : (
+          <ChevronsUpDown className="ml-2 h-4 w-4" />
+        )}
+      </Button>
+    ),
+  },
 ];
 const fetchGoals = async (id: string) => {
   const jsonrpc = {

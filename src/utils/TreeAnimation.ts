@@ -83,6 +83,9 @@ class TreeAnimation {
     text: string;
     position: { x: number; y: number };
   } | null;
+  targetViewport: { x: number; y: number; scale: number } | null;
+  animationStartTime: number | null;
+  animationDuration: number;
 
   constructor(options: Forest & { container: HTMLDivElement }) {
     this.trees = options.trees;
@@ -140,6 +143,10 @@ class TreeAnimation {
 
     this.hoveredTree = null;
     this.focusedTree = null;
+
+    this.targetViewport = null;
+    this.animationStartTime = null;
+    this.animationDuration = 1000;
 
     this.addEventListeners();
     this.viewportTransform = {
@@ -344,7 +351,45 @@ class TreeAnimation {
       // START: ================== FOREST DRAWING LOGIC ==================
       this.updateBackgroundColor();
       let closestUserTreePosition: { x: number; y: number } | null = null;
+      if (this.targetViewport && this.animationStartTime !== null) {
+        const elapsed = Date.now() - this.animationStartTime;
+        const progress = Math.min(1, elapsed / this.animationDuration);
 
+        // A smooth step function (e.g., ease-in-out) for better visual effect
+        const smoothProgress =
+          progress < 0.5
+            ? 2 * progress * progress
+            : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+
+        const startX = this.viewportTransform.x;
+        const startY = this.viewportTransform.y;
+        const startScale = this.viewportTransform.scale;
+
+        this.viewportTransform.x = this.lerp(
+          startX,
+          this.targetViewport.x,
+          smoothProgress,
+        );
+        this.viewportTransform.y = this.lerp(
+          startY,
+          this.targetViewport.y,
+          smoothProgress,
+        );
+        this.viewportTransform.scale = this.lerp(
+          startScale,
+          this.targetViewport.scale,
+          smoothProgress,
+        );
+
+        if (progress < 1) {
+          // Continue animation if not finished
+          requestAnimationFrame(() => this.render());
+        } else {
+          // Animation finished
+          this.targetViewport = null;
+          this.animationStartTime = null;
+        }
+      }
       if (this.trees) {
         // Find the user's tree and center the view ONCE.
         if (!this.hasCentered) {
@@ -549,7 +594,7 @@ class TreeAnimation {
 
         if (closestFocusedTreePosition) {
           this.drawTreeLabel(closestFocusedTreePosition, this.focusedTree.text);
-          this.drawOffscreenIndicator(closestFocusedTreePosition);
+          // this.drawOffscreenIndicator(closestFocusedTreePosition);
         }
       }
       // Draw planet name on top of everything
@@ -899,7 +944,7 @@ class TreeAnimation {
       }
       const clickedTree = this.getTreeAtScreenCoords(e.offsetX, e.offsetY);
       if (clickedTree) {
-        window.location.href = `/profile/${clickedTree.user_id}`;
+        window.location.href = `/profile/${clickedTree.user_id}?tab=tree`;
       }
     });
 
@@ -1363,11 +1408,22 @@ class TreeAnimation {
       Math.floor(treeIndex / this.treesPerRow) * this.rowHeight +
       Math.cos(treeIndex * frequency) * amplitude;
 
-    this.viewportTransform.x =
+    // --- NEW: SET TARGET VIEWPORT FOR SMOOTH MOVEMENT ---
+    const newViewportX =
       this.stageWidth / 2 - treeX * this.viewportTransform.scale;
-    this.viewportTransform.y =
+    const newViewportY =
       this.stageHeight / 2 - treeY * this.viewportTransform.scale;
 
+    this.targetViewport = {
+      x: newViewportX,
+      y: newViewportY,
+      scale: this.viewportTransform.scale, // Keep the current scale for now
+    };
+    this.animationStartTime = Date.now();
+    // ----------------------------------------------------
+
+    // Instead of directly setting this.viewportTransform, we call render
+    // which will start the animation through requestAnimationFrame.
     this.render();
   }
   private getTreeAtScreenCoords(screenX: number, screenY: number): Tree | null {

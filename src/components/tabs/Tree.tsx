@@ -98,7 +98,6 @@ function TreeTab({
       jsonrpc: "2.0",
       method: "add_resources",
       params: {
-        apples: 5,
         water: 10,
         user_id: tree?.user.id,
       },
@@ -167,7 +166,7 @@ function TreeTab({
                 />
               </div>
               <div className="flex justify-center gap-2 flex-col">
-                {isCurrentUserPage && tree && (
+                {tree && (
                   <Button
                     onClick={() => waterTree()}
                     className=" max-w-[200px] max-lg:max-w-[150px] hover:bg-blue-500  bg-blue-primary w-full hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white mt-2 "
@@ -188,7 +187,7 @@ function TreeTab({
                     onClick={addResources}
                     className="max-w-[200px] max-lg:max-w-[150px] whitespace-normal break-words hover:bg-blue-500 bg-blue-primary w-full hover:cursor-pointer font-futura-heavy p-2 h-fit rounded-sm text-white mt-2"
                   >
-                    ДЕМО: Добавить 10 воды и 5 яблок
+                    ДЕМО: Добавить 10 воды
                   </Button>
                 )}
               </div>

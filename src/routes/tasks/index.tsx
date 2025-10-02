@@ -1,5 +1,8 @@
+// src/routes/tasks.index.tsx
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -21,277 +24,131 @@ import {
 } from "@tanstack/react-table";
 import type { Task } from "@/types/Tasks";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
-import { ArrowDown, ArrowUp, SearchIcon } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronsUpDown,
+  ChevronUp,
+  SearchIcon,
+} from "lucide-react";
 import { useState } from "react";
 import useSWR from "swr";
 import { useCookies } from "react-cookie";
 import Loading from "@/components/Loading";
 
-ChartJS.register(ArcElement, Tooltip, Legend);
-
 export const Route = createFileRoute("/tasks/")({
   component: Tasks,
 });
+
+// Column definitions for the table
 const columns: ColumnDef<Task>[] = [
   {
     accessorKey: "title",
-    header: ({ column }) => {
-      const isSorted = column.getIsSorted();
-      return (
-        <Button
-          variant="ghost"
-          className="gap-1 rounded-none p-2 w-full flex justify-start"
-          onClick={() => column.toggleSorting(isSorted === "asc")}
-        >
-          Имя задачи
-          {isSorted === "asc" ? (
-            <ArrowUp className="w-4 h-4" />
-          ) : isSorted === "desc" ? (
-            <ArrowDown className="w-4 h-4" />
-          ) : (
-            <div className="w-4 h-4" />
-          )}
-        </Button>
-      );
-    },
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Имя задачи
+        {column.getIsSorted() === "asc" ? (
+          <ChevronUp className="ml-2 h-4 w-4" />
+        ) : column.getIsSorted() === "desc" ? (
+          <ChevronDown className="ml-2 h-4 w-4" />
+        ) : (
+          <ChevronsUpDown className="ml-2 h-4 w-4" />
+        )}
+      </Button>
+    ),
   },
   {
     accessorKey: "event_date",
-    header: ({ column }) => {
-      const isSorted = column.getIsSorted();
-      return (
-        <Button
-          variant="ghost"
-          className="gap-1 rounded-none p-2 w-full flex justify-start"
-          onClick={() => column.toggleSorting(isSorted === "asc")}
-        >
-          Дата начала
-          {isSorted === "asc" ? (
-            <ArrowUp className="w-4 h-4" />
-          ) : isSorted === "desc" ? (
-            <ArrowDown className="w-4 h-4" />
-          ) : (
-            <div className="w-4 h-4" />
-          )}
-        </Button>
-      );
-    },
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Дата начала
+        {column.getIsSorted() === "asc" ? (
+          <ChevronUp className="ml-2 h-4 w-4" />
+        ) : column.getIsSorted() === "desc" ? (
+          <ChevronDown className="ml-2 h-4 w-4" />
+        ) : (
+          <ChevronsUpDown className="ml-2 h-4 w-4" />
+        )}
+      </Button>
+    ),
     cell: ({ getValue }) => {
-      if (getValue()) {
-        const date = new Date(getValue() as string);
-        return <span>{date.toLocaleDateString(new Intl.Locale("ru"))}</span>;
+      const value = getValue();
+      if (value) {
+        const date = new Date(value as string);
+        return <span>{date.toLocaleDateString("ru-RU")}</span>;
       }
-      return <span></span>;
+      return <span>-</span>;
     },
   },
   {
     accessorKey: "deadline",
-    header: ({ column }) => {
-      const isSorted = column.getIsSorted();
-      return (
-        <Button
-          variant="ghost"
-          className="gap-1 rounded-none p-2 w-full flex justify-start"
-          onClick={() => column.toggleSorting(isSorted === "asc")}
-        >
-          Дедлайн
-          {isSorted === "asc" ? (
-            <ArrowUp className="w-4 h-4" />
-          ) : isSorted === "desc" ? (
-            <ArrowDown className="w-4 h-4" />
-          ) : (
-            <div className="w-4 h-4" />
-          )}
-        </Button>
-      );
-    },
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Дедлайн
+        {column.getIsSorted() === "asc" ? (
+          <ChevronUp className="ml-2 h-4 w-4" />
+        ) : column.getIsSorted() === "desc" ? (
+          <ChevronDown className="ml-2 h-4 w-4" />
+        ) : (
+          <ChevronsUpDown className="ml-2 h-4 w-4" />
+        )}
+      </Button>
+    ),
     cell: ({ getValue }) => {
-      if (getValue()) {
-        const date = new Date(getValue() as string);
-        return <span>{date.toLocaleDateString(new Intl.Locale("ru"))}</span>;
+      const value = getValue();
+      if (value) {
+        const date = new Date(value as string);
+        return <span>{date.toLocaleDateString("ru-RU")}</span>;
       }
-      return <span></span>;
+      return <span>-</span>;
     },
   },
   {
     accessorKey: "mission_title",
-    header: ({ column }) => {
-      const isSorted = column.getIsSorted();
-      return (
-        <Button
-          variant="ghost"
-          className="gap-1 rounded-none p-2 w-full flex justify-start"
-          onClick={() => column.toggleSorting(isSorted === "asc")}
-        >
-          Миссия
-          {isSorted === "asc" ? (
-            <ArrowUp className="w-4 h-4" />
-          ) : isSorted === "desc" ? (
-            <ArrowDown className="w-4 h-4" />
-          ) : (
-            <div className="w-4 h-4" />
-          )}
-        </Button>
-      );
-    },
+    header: "Миссия",
   },
   {
     accessorKey: "goal_title",
-    header: ({ column }) => {
-      const isSorted = column.getIsSorted();
-      return (
-        <Button
-          variant="ghost"
-          className="gap-1 rounded-none p-2 w-full flex justify-start"
-          onClick={() => column.toggleSorting(isSorted === "asc")}
-        >
-          Кампания
-          {isSorted === "asc" ? (
-            <ArrowUp className="w-4 h-4" />
-          ) : isSorted === "desc" ? (
-            <ArrowDown className="w-4 h-4" />
-          ) : (
-            <div className="w-4 h-4" />
-          )}
-        </Button>
-      );
-    },
+    header: "Кампания",
   },
   {
     accessorKey: "skill_title",
-    header: ({ column }) => {
-      const isSorted = column.getIsSorted();
-      return (
-        <Button
-          variant="ghost"
-          className="gap-1 rounded-none p-2 w-full flex justify-start"
-          onClick={() => column.toggleSorting(isSorted === "asc")}
-        >
-          Ранг
-          {isSorted === "asc" ? (
-            <ArrowUp className="w-4 h-4" />
-          ) : isSorted === "desc" ? (
-            <ArrowDown className="w-4 h-4" />
-          ) : (
-            <div className="w-4 h-4" />
-          )}
-        </Button>
-      );
-    },
+    header: "Ранг",
   },
   {
     accessorKey: "online",
-    header: ({ column }) => {
-      const isSorted = column.getIsSorted();
-      return (
-        <Button
-          variant="ghost"
-          className="gap-1 rounded-none p-2 w-full flex justify-start"
-          onClick={() => column.toggleSorting(isSorted === "asc")}
-        >
-          Место
-          {isSorted === "asc" ? (
-            <ArrowUp className="w-4 h-4" />
-          ) : isSorted === "desc" ? (
-            <ArrowDown className="w-4 h-4" />
-          ) : (
-            <div className="w-4 h-4" />
-          )}
-        </Button>
-      );
-    },
-    cell: ({ getValue }) => {
-      const value = getValue<string | null>();
-      return value ? "Онлайн" : "Оффлайн";
-    },
-  },
-  {
-    accessorKey: "description",
-    header: ({ column }) => {
-      const isSorted = column.getIsSorted();
-      return (
-        <Button
-          variant="ghost"
-          className="gap-1 rounded-none p-2 w-full flex justify-start"
-          onClick={() => column.toggleSorting(isSorted === "asc")}
-        >
-          Описание
-          {isSorted === "asc" ? (
-            <ArrowUp className="w-4 h-4" />
-          ) : isSorted === "desc" ? (
-            <ArrowDown className="w-4 h-4" />
-          ) : (
-            <div className="w-4 h-4" />
-          )}
-        </Button>
+    header: "Место",
+    cell: ({ row }) => {
+      const isOnline = row.getValue("online");
+      return isOnline ? (
+        <Badge variant="default">Онлайн</Badge>
+      ) : (
+        <Badge variant="secondary">Оффлайн</Badge>
       );
     },
   },
   {
     accessorKey: "water_reward",
-    header: ({ column }) => {
-      const isSorted = column.getIsSorted();
-      return (
-        <Button
-          variant="ghost"
-          className="gap-1 rounded-none p-2 w-full flex justify-start"
-          onClick={() => column.toggleSorting(isSorted === "asc")}
-        >
-          Воды
-          {isSorted === "asc" ? (
-            <ArrowUp className="w-4 h-4" />
-          ) : isSorted === "desc" ? (
-            <ArrowDown className="w-4 h-4" />
-          ) : (
-            <div className="w-4 h-4" />
-          )}
-        </Button>
-      );
-    },
+    header: "Воды",
   },
   {
     accessorKey: "apple_reward",
-    header: ({ column }) => {
-      const isSorted = column.getIsSorted();
-      return (
-        <Button
-          variant="ghost"
-          className="gap-1 rounded-none p-2 w-full flex justify-start"
-          onClick={() => column.toggleSorting(isSorted === "asc")}
-        >
-          Яблок
-          {isSorted === "asc" ? (
-            <ArrowUp className="w-4 h-4" />
-          ) : isSorted === "desc" ? (
-            <ArrowDown className="w-4 h-4" />
-          ) : (
-            <div className="w-4 h-4" />
-          )}
-        </Button>
-      );
-    },
+    header: "Яблок",
   },
   {
     accessorKey: "user_limit",
-    header: ({ column }) => {
-      const isSorted = column.getIsSorted();
-      return (
-        <Button
-          variant="ghost"
-          className="gap-1 rounded-none p-2 w-full flex justify-start"
-          onClick={() => column.toggleSorting(isSorted === "asc")}
-        >
-          Максимум участников
-          {isSorted === "asc" ? (
-            <ArrowUp className="w-4 h-4" />
-          ) : isSorted === "desc" ? (
-            <ArrowDown className="w-4 h-4" />
-          ) : (
-            <div className="w-4 h-4" />
-          )}
-        </Button>
-      );
+    header: "Участники",
+    cell: ({ row }) => {
+      const limit = row.getValue("user_limit");
+      return limit === null ? "∞" : limit;
     },
     filterFn: (row, id, value) => {
       if (!value) return true;
@@ -299,6 +156,8 @@ const columns: ColumnDef<Task>[] = [
     },
   },
 ];
+
+// Async function to fetch tasks from the API
 const fetchTasks = async (jwt: string) => {
   const jsonrpc = {
     jsonrpc: "2.0",
@@ -318,6 +177,7 @@ const fetchTasks = async (jwt: string) => {
         },
     body: JSON.stringify(jsonrpc),
   });
+
   if (!response.ok) {
     throw new Error("Network response was not ok");
   }
@@ -325,9 +185,10 @@ const fetchTasks = async (jwt: string) => {
   if (tasksData.error) {
     throw new Error(tasksData.error.message);
   }
-  console.log({ result: tasksData.result });
   return tasksData.result;
 };
+
+// Main Tasks component
 function Tasks() {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [cookies] = useCookies(["auth-token"]);
@@ -337,6 +198,7 @@ function Tasks() {
   const { data, isLoading } = useSWR<Task[] | null>("tasks", () =>
     fetchTasks(cookies["auth-token"]),
   );
+
   const table = useReactTable<Task>({
     data: data || [],
     columns,
@@ -351,186 +213,138 @@ function Tasks() {
       columnFilters,
     },
     initialState: {
-      pagination: { pageSize: 7, pageIndex: 0 },
+      pagination: { pageSize: 8, pageIndex: 0 },
     },
   });
 
   if (isLoading) {
     return <Loading />;
   }
-  // interface ChartDataset {
-  //   label: string;
-  //   data: number[];
-  //   backgroundColor?: string[];
-  //   borderColor?: string[];
-  //   borderWidth?: number;
-  // }
-  // interface ChartData {
-  //   labels: string[];
-  //   datasets: ChartDataset[];
-  // }
-
-  // const chartData2 = (data || []).reduce(
-  //   (acc: ChartData, task: Task) => {
-  //     let label: string;
-  //     if (task.mission_title === null) {
-  //       label = "Без миссии";
-  //     } else {
-  //       label = task.mission_title;
-  //     }
-  //     if (!acc.labels.includes(label)) {
-  //       acc.labels.push(label);
-  //       acc.datasets[0].data.push(1);
-  //     } else {
-  //       const index = acc.labels.indexOf(label);
-  //       acc.datasets[0].data[index]++;
-  //     }
-  //     return acc;
-  //   },
-  //   {
-  //     labels: [],
-  //     datasets: [
-  //       {
-  //         label: "Количество задач:",
-  //         data: [],
-  //         backgroundColor: [
-  //           "rgba(255, 99, 132, 0.2)",
-  //           "rgba(54, 162, 235, 0.2)",
-  //           "rgba(255, 206, 86, 0.2)",
-  //         ],
-  //         borderColor: [
-  //           "rgba(255, 99, 132, 1)",
-  //           "rgba(54, 162, 235, 1)",
-  //           "rgba(255, 206, 86, 1)",
-  //         ],
-  //         borderWidth: 1,
-  //       },
-  //     ],
-  //   } as ChartData,
-  // );
 
   return (
-    <div className="p-4 bg-white w-full h-full">
-      {/* <div className="bg-white rounded mb-6 text-black flex flex-col w-fit p-6 mx-auto items-center justify-between">
-        <h2 className="text-2xl font-futura-heavy mb-4">
-          Количество задач: {data?.length || "Загрузка..."}
-        </h2>
-        <div>
-          <h3 className="text-2xl font-futura-heavy mb-4">
-            Статистика по кампаниям:
-          </h3>
-          <div className="w-[200px] h-[200px] mx-auto bg-white">
-            <Pie data={chartData2} />
-          </div>
-        </div>
-      </div> */}
-      <h1 className="text-2xl mx-auto w-fit  font-futura-heavy my-4 text-black">
-        Доступные задачи:
-      </h1>
-      <div className=" lg:w-fit lg:mx-auto max-lg:max-w-full max-lg:overflow-x-auto">
-        <div className="  flex justify-between  items-end  max-[500px]:flex-col-reverse max-[500px]:items-start">
-          <div className="relative  max-[500px]:min-w-[240px]  ">
-            <SearchIcon className="absolute w-4 h-4 text-black left-1 bottom-[10px]" />
-            <Input
-              placeholder="Поиск по названию"
-              value={
-                (table.getColumn("title")?.getFilterValue() as string) ?? ""
-              }
-              onChange={(event) =>
-                table.getColumn("title")?.setFilterValue(event.target.value)
-              }
-              className="max-w-sm pl-6  border-b border-t-0 text-black bg-white rounded-none max-[500px]:rounded-t-none rounded-t-md shadow-none border-none"
-            />
-          </div>
-          <div className="flex gap-2 max-md:flex-col  border-b max-[500px]:rounded-t-md  max-[500px]:min-w-[240px] bg-white max-md:h-fit h-9 px-3 py-1 rounded-t-md text-black  items-start border-none justify-center">
-            <label className="flex items-center gap-2  mb-2">
+    <div className="w-full h-full bg-white text-black p-4 sm:p-6 lg:p-8">
+      <div className="max-w-7xl mx-auto ">
+        <h1 className="text-3xl font-bold mb-6 text-gray-800">
+          Доступные задачи
+        </h1>
+        <div className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-50">
+          {/* Table Controls: Search and Filters */}
+          <div className="p-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-b">
+            <div className="relative w-full sm:max-w-xs">
+              <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
               <Input
+                placeholder="Поиск по названию..."
+                value={
+                  (table.getColumn("title")?.getFilterValue() as string) ?? ""
+                }
+                onChange={(event) =>
+                  table.getColumn("title")?.setFilterValue(event.target.value)
+                }
+                className="pl-10"
+              />
+            </div>
+            <div className="flex items-center space-x-2">
+              <Input
+                id="infinite-tasks"
                 type="checkbox"
                 checked={showInfinite}
-                className="w-4 h-4"
+                className="h-4 w-4"
                 onChange={(e) => {
                   const checked = e.target.checked;
                   setShowInfinite(checked);
                   table.getColumn("user_limit")?.setFilterValue(checked);
                 }}
               />
-              Только бесконечные задачи
-            </label>
+              <label
+                htmlFor="infinite-tasks"
+                className="text-sm font-medium text-gray-700 select-none"
+              >
+                Только бесконечные задачи
+              </label>
+            </div>
           </div>
-        </div>
-        <Table className="w-fit border-2 mx-auto max-[500px]:rounded-tr-md  max-w-7xl text-black bg-white">
-          <TableHeader>
-            {table.getRowModel().rows.length
-              ? table.getHeaderGroups().map((headerGroup) => (
+
+          {/* Table Container */}
+          <div className="overflow-x-auto">
+            <Table className="border border-gray-50">
+              <TableHeader>
+                {table.getHeaderGroups().map((headerGroup) => (
                   <TableRow key={headerGroup.id}>
-                    {headerGroup.headers.map((header) => {
-                      return (
-                        <TableHead key={header.id} className="px-0">
-                          {header.isPlaceholder
-                            ? null
-                            : flexRender(
-                                header.column.columnDef.header,
-                                header.getContext(),
-                              )}
-                        </TableHead>
-                      );
-                    })}
+                    {headerGroup.headers.map((header) => (
+                      <TableHead key={header.id}>
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext(),
+                            )}
+                      </TableHead>
+                    ))}
                   </TableRow>
-                ))
-              : null}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  className="hover:cursor-pointer"
-                  onClick={() => {
-                    navigate({
-                      to: `/tasks/${row.original.id}`,
-                    });
-                  }}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="border-2">
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
+                ))}
+              </TableHeader>
+              <TableBody>
+                {table.getRowModel().rows?.length ? (
+                  table.getRowModel().rows.map((row) => (
+                    <TableRow
+                      key={row.id}
+                      className="hover:bg-gray-100 cursor-pointer even:bg-slate-50"
+                      onClick={() => {
+                        navigate({
+                          to: `/tasks/${row.original.id}`,
+                        });
+                      }}
+                      data-state={row.getIsSelected() && "selected"}
+                    >
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell key={cell.id}>
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext(),
+                          )}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell
+                      colSpan={columns.length}
+                      className="h-24 text-center"
+                    >
+                      Ничего не найдено.
                     </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  Ничего не найдено
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-        <div className="flex items-center justify-center w-full py-4 space-x-2 text-black bg-white rounded-b-md">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-          >
-            Предыдущая страница
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-          >
-            Следующая страница
-          </Button>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* Pagination */}
+          <div className="p-4 flex items-center justify-between flex-wrap gap-4 border-t">
+            <div className="text-sm text-muted-foreground">
+              Страница {table.getState().pagination.pageIndex + 1} из{" "}
+              {table.getPageCount()}
+            </div>
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => table.previousPage()}
+                disabled={!table.getCanPreviousPage()}
+              >
+                Предыдущая
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => table.nextPage()}
+                disabled={!table.getCanNextPage()}
+              >
+                Следующая
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

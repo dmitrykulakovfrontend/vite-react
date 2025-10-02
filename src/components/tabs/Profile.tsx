@@ -189,42 +189,40 @@ function ProfileTab({
         )}
       </div>
 
-      {!isRatingLoading ? (
-        <div className="mt-8">
-          <h1 className="text-2xl mx-auto w-fit  font-futura-heavy my-2">
-            Рейтинг
-          </h1>
-          <div className="hidden md:block md:w-fit md:mx-auto">
-            <Table className=" text-black bg-white rounded-md">
+      {/* Rating Section */}
+      {isRatingLoading ? (
+        <Loading />
+      ) : (
+        <div className="bg-white  overflow-hidden">
+          <h2 className="text-2xl font-bold p-6 border-b">Рейтинг</h2>
+
+          {/* Desktop Table */}
+          <div className="hidden md:block overflow-x-auto">
+            <Table className="border-gray-50 border">
               <TableHeader>
-                {table.getRowModel().rows.length
-                  ? table.getHeaderGroups().map((headerGroup) => (
-                      <TableRow key={headerGroup.id}>
-                        {headerGroup.headers.map((header) => {
-                          return (
-                            <TableHead key={header.id}>
-                              {header.isPlaceholder
-                                ? null
-                                : flexRender(
-                                    header.column.columnDef.header,
-                                    header.getContext(),
-                                  )}
-                            </TableHead>
-                          );
-                        })}
-                      </TableRow>
-                    ))
-                  : null}
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <TableRow key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => (
+                      <TableHead key={header.id}>
+                        {flexRender(
+                          header.column.columnDef.header,
+                          header.getContext(),
+                        )}
+                      </TableHead>
+                    ))}
+                  </TableRow>
+                ))}
               </TableHeader>
               <TableBody>
                 {table.getRowModel().rows.length ? (
                   table.getRowModel().rows.map((row) => (
                     <TableRow
                       key={row.id}
+                      className="even:bg-slate-50"
                       data-state={row.getIsSelected() && "selected"}
                     >
                       {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id} className="border-2">
+                        <TableCell key={cell.id}>
                           {flexRender(
                             cell.column.columnDef.cell,
                             cell.getContext(),
@@ -245,14 +243,77 @@ function ProfileTab({
                 )}
               </TableBody>
             </Table>
-            <div className="flex items-center justify-center w-full py-4 space-x-2 text-black bg-white rounded-b-md">
+          </div>
+
+          {/* Mobile Cards */}
+          <div className="md:hidden p-4 space-y-4 bg-white">
+            {rating && rating.length ? (
+              rating.map((row) => (
+                <div
+                  key={row.goal_title}
+                  className="rounded-md border p-4 bg-white shadow-sm"
+                >
+                  <h3 className="font-bold text-lg mb-2">{row.goal_title}</h3>
+                  <div className="space-y-1 text-sm">
+                    <p>
+                      <span className="font-semibold">Ранг:</span>{" "}
+                      {row.user_rank}
+                    </p>
+                    <p>
+                      <span className="font-semibold">Выполнено задач:</span>{" "}
+                      {row.completed_tasks_count}
+                    </p>
+                    <p>
+                      <span className="font-semibold">Последняя задача:</span>{" "}
+                      {row.last_task_updated_at
+                        ? new Date(row.last_task_updated_at).toLocaleDateString(
+                            "ru-RU",
+                          )
+                        : "-"}
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold">Прогресс:</span>
+                      <div className="flex items-center gap-x-1">
+                        {Array.from({ length: 10 }).map((_, index) => (
+                          <div
+                            key={index}
+                            className={`h-4 w-2 rounded-sm ${
+                              index < row.rank_progress
+                                ? "bg-green-500"
+                                : "bg-gray-300"
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    <p>
+                      <span className="font-semibold">До повышения:</span>{" "}
+                      {10 - row.rank_progress}
+                    </p>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-center text-gray-500 py-10">
+                Ничего не найдено
+              </p>
+            )}
+          </div>
+
+          {/* Pagination */}
+          <div className="p-4 flex items-center justify-between border-t">
+            <div className="text-sm text-muted-foreground">
+              Страница {table.getState().pagination.pageIndex + 1} из{" "}
+              {table.getPageCount()}
+            </div>
+            <div className="flex items-center space-x-2">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => table.previousPage()}
                 disabled={!table.getCanPreviousPage()}
               >
-                Предыдущая страница
+                Назад
               </Button>
               <Button
                 variant="outline"
@@ -260,51 +321,11 @@ function ProfileTab({
                 onClick={() => table.nextPage()}
                 disabled={!table.getCanNextPage()}
               >
-                Следующая страница
+                Вперед
               </Button>
             </div>
           </div>
-          <div className="space-y-4 md:hidden overflow-y-scroll">
-            {rating && rating.length ? (
-              rating.map((row) => (
-                <div
-                  key={row.goal_title}
-                  className="rounded-md border p-4 bg-white shadow"
-                >
-                  <h3 className="font-bold text-lg">{row.goal_title}</h3>
-                  <p>Ранг: {row.user_rank}</p>
-                  <p>Выполнено задач: {row.completed_tasks_count}</p>
-                  <p>
-                    Последняя задача:{" "}
-                    {row.last_task_updated_at
-                      ? new Date(row.last_task_updated_at).toLocaleDateString(
-                          new Intl.Locale("ru"),
-                        )
-                      : "-"}
-                  </p>
-                  <p>Прогресс:</p>
-                  <div className="flex items-center gap-x-1">
-                    {Array.from({ length: 10 }).map((_, index) => (
-                      <div
-                        key={index}
-                        className={`h-4 w-2 rounded-sm ${
-                          index < row.rank_progress
-                            ? "bg-green-500"
-                            : "bg-gray-300"
-                        }`}
-                      />
-                    ))}
-                  </div>
-                  <p>До повышения: {10 - row.rank_progress}</p>
-                </div>
-              ))
-            ) : (
-              <p className="text-center">Ничего не найдено</p>
-            )}
-          </div>
         </div>
-      ) : (
-        <Loading />
       )}
     </div>
   );

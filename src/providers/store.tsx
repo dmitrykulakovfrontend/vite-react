@@ -25,7 +25,12 @@ interface State {
   totalSpentApples: number;
   setTrees: (nextTrees: Tree[]) => void;
   setUser: (nextUser: User | "loading" | null) => void;
-  buyProduct: (productId: number, amount: number, jwt: string) => void;
+  buyProduct: (
+    productId: number,
+    amount: number,
+    jwt: string,
+    userID: number,
+  ) => void;
   reset: () => void;
 }
 
@@ -68,7 +73,7 @@ export const useMainStore = create<State>()(
       totalSpentApples: 0,
       setTrees: (nextTrees) => set({ trees: nextTrees }),
       setUser: (nextUser) => set({ user: nextUser }),
-      buyProduct: async (productId, amount, jwt) => {
+      buyProduct: async (productId, amount, jwt, userID) => {
         if (!jwt) return;
         const { products, inventory, totalSpentApples } = get();
         const productToBuy = products.find((p) => p.id === productId);
@@ -80,6 +85,7 @@ export const useMainStore = create<State>()(
               method: "add_resources",
               params: {
                 water: amount,
+                user_id: userID,
               },
               id: 0,
             };
@@ -94,7 +100,7 @@ export const useMainStore = create<State>()(
             });
             const data = await response.json();
             if (data.result) {
-              await mutate("currentUser");
+              await mutate(["currentUser", jwt]);
               console.log(data.result);
             }
             const newTotalSpentApples =

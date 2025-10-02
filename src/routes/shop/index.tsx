@@ -36,6 +36,8 @@ function RouteComponent() {
       method: "add_resources",
       params: {
         apples: 5,
+        user_id:
+          typeof user === "object" && user !== null ? user.id : undefined,
       },
       id: 0,
     };
@@ -56,7 +58,7 @@ function RouteComponent() {
       });
     }
     if (data.result) {
-      await mutate("currentUser");
+      await mutate(["currentUser", cookies["auth-token"]]);
       console.log(data.result);
     }
   }
@@ -183,7 +185,12 @@ function RouteComponent() {
                   <Button
                     onClick={() => {
                       if (user.apples - totalSpentApples >= totalPrice) {
-                        buyProduct(product.id, amount, cookies["auth-token"]);
+                        buyProduct(
+                          product.id,
+                          amount,
+                          cookies["auth-token"],
+                          user.id,
+                        );
                       } else {
                         setError({
                           productId: product.id,

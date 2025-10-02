@@ -159,6 +159,7 @@ function TreeTab({
             {error}
           </p>
         )}
+        <div className="flex justify-center gap-2 flex-col mb-2"></div>
         {tree ? (
           <div className="flex items-start justify-center gap-4 max-sm:flex-col max-sm:items-center">
             <div className="max-sm:flex max-sm:flex-col max-sm:items-center max-sm:justify-center">
@@ -195,11 +196,19 @@ function TreeTab({
                 {tree && (
                   <Button
                     onClick={() => waterTree()}
-                    className=" max-w-[200px] max-lg:max-w-[150px] hover:bg-blue-500  bg-blue-primary w-full hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white mt-2 "
+                    className=" max-w-[200px] max-lg:max-w-[150px] hover:bg-blue-500  bg-blue-primary w-full hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white mt-4 "
                   >
                     Полить
                   </Button>
                 )}
+                <Button className=" max-w-[200px] max-lg:max-w-[150px] hover:bg-blue-500  bg-blue-primary w-full hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white mt-2">
+                  <Link
+                    to="/forest"
+                    className="[&.active]:font-bold block p-1  rounded"
+                  >
+                    Посетить лес
+                  </Link>
+                </Button>
                 {tree && (
                   <Button
                     onClick={() => waterTree(true)}
@@ -343,14 +352,6 @@ function TreeTab({
             </div>
           </div>
         )}
-        <Button className=" max-w-[200px] max-lg:max-w-[150px] hover:bg-blue-500  bg-blue-primary w-full hover:cursor-pointer font-futura-heavy rounded-full p-2 text-white mt-2">
-          <Link
-            to="/forest"
-            className="[&.active]:font-bold block p-1  rounded"
-          >
-            Посетить лес
-          </Link>
-        </Button>
       </div>
     </div>
   );

@@ -9,13 +9,12 @@ type ModifiedTreeOptions = Tree & {
   treeX: number;
   treeY: number;
   rng: () => number;
-  leafPositions: { x: number; y: number }[]; // Add this line
+  leafPositions: { x: number; y: number }[];
 };
 type Colors = typeof colors;
 
 const colors = {
   sky: "#00C0F0",
-  // ENHANCEMENT: Add new colors for the dynamic background
   skyTop: "#00C0F0",
   skyBottom: "#87CEFA",
   grassTop: "#3CB371",
@@ -62,14 +61,13 @@ class TreeAnimation {
   targetColor: { r: number; g: number; b: number };
   colorTransition: { startTime: number | null; duration: number };
   currentUserTree?: Tree | null;
-  userTreePosition: { x: number; y: number } | null; // Add this line
+  userTreePosition: { x: number; y: number } | null;
   maxTimesWatered: number;
   startingDepth: number;
   maxLeafSize: number;
   startingLeafSize: number;
   maxTreeWidth: number;
   startingTreeWidth: number;
-  // ENHANCEMENT: Add properties for clouds
   clouds: { x: number; y: number; radius: number }[];
   cloudOffset: number;
   grassBlades: {
@@ -111,7 +109,7 @@ class TreeAnimation {
     this.colorTransition = { startTime: null, duration: 2000 }; // 2-second duration
 
     this.currentUserTree = options.currentUserTree;
-    this.userTreePosition = null; // And initialize it here
+    this.userTreePosition = null;
 
     this.gradientOffset = 0;
     this.direction = 2;
@@ -124,13 +122,12 @@ class TreeAnimation {
     // this.treeScale = 0.3725;
     this.treeScale = 1;
 
-    // ENHANCEMENT: Initialize scenery properties
     this.clouds = [];
     this.cloudOffset = 0;
-    this.grassBlades = []; // ADD THIS LINE
+    this.grassBlades = [];
     if (this.isMainTree) {
       this.initializeScenery();
-      this.initializeGrass(); // ADD THIS LINE
+      this.initializeGrass();
     }
 
     this.hasCentered = false;
@@ -140,7 +137,7 @@ class TreeAnimation {
       y: 0,
       scale: this.isMainTree
         ? 1 - this.getTreeDepth(this.trees[0]?.timesWatered || 0) / 15
-        : 0.1,
+        : 0.2,
     };
     if (this.isMainTree) {
       this.animate();
@@ -148,7 +145,6 @@ class TreeAnimation {
       this.render();
     }
   }
-  // ENHANCEMENT: New method to generate clouds
   private initializeScenery() {
     this.clouds = [];
     const numClouds = 7;
@@ -161,7 +157,6 @@ class TreeAnimation {
     }
   }
 
-  // ENHANCEMENT: New method to draw grass blades for texture
   private drawGrassBlades() {
     this.ctx.save();
     this.ctx.lineWidth = 2;
@@ -227,7 +222,6 @@ class TreeAnimation {
     }
 
     if (this.isMainTree) {
-      // START: ================== NEW DYNAMIC BACKGROUND ==================
       const horizonY = this.canvas.height / 2;
 
       // 1. Sky Gradient
@@ -302,7 +296,6 @@ class TreeAnimation {
 
       // 5. Grass Texture
       this.drawGrassBlades();
-      // END: ================== NEW DYNAMIC BACKGROUND ==================
 
       // START: ================== SINGLE TREE DRAWING LOGIC ==================
       if (this.trees && this.trees.length > 0) {
@@ -338,7 +331,7 @@ class TreeAnimation {
       }
       // END: ================== SINGLE TREE DRAWING LOGIC ==================
     } else {
-      // START: ================== FOREST DRAWING LOGIC (EXISTING) ==================
+      // START: ================== FOREST DRAWING LOGIC ==================
       this.updateBackgroundColor();
       let closestUserTreePosition: { x: number; y: number } | null = null;
 

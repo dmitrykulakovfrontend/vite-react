@@ -203,7 +203,7 @@ function TreeTab({
                 {tree && (
                   <Button
                     onClick={() => waterTree(true)}
-                    className="max-w-[200px] max-lg:max-w-[150px] whitespace-normal break-words hover:bg-blue-500 bg-blue-primary w-full hover:cursor-pointer font-futura-heavy p-2 h-fit rounded-sm text-white mt-2"
+                    className="max-w-[200px] max-lg:max-w-[150px] whitespace-normal break-words hover:bg-gray-500 bg-gray-400 w-full hover:cursor-pointer font-futura-heavy p-2 h-fit rounded-sm text-white mt-2"
                   >
                     ДЕМО: Пропустить требования и полить
                   </Button>
@@ -211,7 +211,7 @@ function TreeTab({
                 {tree && (
                   <Button
                     onClick={() => witherTree()}
-                    className="max-w-[200px] max-lg:max-w-[150px] whitespace-normal break-words hover:bg-blue-500 bg-blue-primary w-full hover:cursor-pointer font-futura-heavy p-2 h-fit rounded-sm text-white mt-2"
+                    className="max-w-[200px] max-lg:max-w-[150px] whitespace-normal break-words hover:bg-gray-500 bg-gray-400 w-full hover:cursor-pointer font-futura-heavy p-2 h-fit rounded-sm text-white mt-2"
                   >
                     ДЕМО: Пропустить 7 дней без полива
                   </Button>
@@ -219,7 +219,7 @@ function TreeTab({
                 {tree && (
                   <Button
                     onClick={addResources}
-                    className="max-w-[200px] max-lg:max-w-[150px] whitespace-normal break-words hover:bg-blue-500 bg-blue-primary w-full hover:cursor-pointer font-futura-heavy p-2 h-fit rounded-sm text-white mt-2"
+                    className="max-w-[200px] max-lg:max-w-[150px] whitespace-normal break-words hover:bg-gray-500 bg-gray-400 w-full hover:cursor-pointer font-futura-heavy p-2 h-fit rounded-sm text-white mt-2"
                   >
                     ДЕМО: Добавить 10 воды
                   </Button>

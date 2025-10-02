@@ -199,7 +199,13 @@ const Header = ({
                 height={40}
                 className="rounded-full"
               />
-              <p>{user.metadata.name}</p>
+              <Link
+                to={"/profile/" + user.id}
+                className="[&.active]:font-bold shrink-0"
+              >
+                <p>{user.metadata.name}</p>
+              </Link>
+
               <Drawer
                 open={openNotifications}
                 onOpenChange={setOpenNotifications}
@@ -355,7 +361,12 @@ const Header = ({
               height={40}
               className="rounded-full"
             />
-            <p>{user.metadata.name}</p>
+            <Link
+              to={"/profile/" + user.id}
+              className="[&.active]:font-bold shrink-0"
+            >
+              <p>{user.metadata.name}</p>
+            </Link>
             {isDesktop && (
               <Popover>
                 <PopoverTrigger onClick={handleFetchNotifications}>

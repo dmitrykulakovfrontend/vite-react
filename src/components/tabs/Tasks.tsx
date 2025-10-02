@@ -12,7 +12,7 @@ import {
   type ColumnDef,
 } from "@tanstack/react-table";
 import { ArrowDown, ArrowUp } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { mutate } from "swr";
 import { Button } from "../ui/button";
 import {
@@ -24,6 +24,7 @@ import {
   Table,
 } from "../ui/table";
 import { useCookies } from "react-cookie";
+
 function TasksTab({
   tasks,
   isCurrentUserPage,
@@ -371,8 +372,27 @@ function TasksTab({
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const navigate = useNavigate({ from: "/tasks" });
 
-  const userTasksTable = useReactTable<Task>({
-    data: tasks || [],
+  const inProgressTasks = useMemo(
+    () => tasks?.filter((task) => task.state === "in-progress") || [],
+    [tasks],
+  );
+  const completedTasks = useMemo(
+    () =>
+      tasks?.filter(
+        (task) => task.state === "done" || task.state === "success",
+      ) || [],
+    [tasks],
+  );
+  const rejectedTasks = useMemo(
+    () =>
+      tasks?.filter(
+        (task) => task.state === "rejected" || task.state === "refused",
+      ) || [],
+    [tasks],
+  );
+
+  const inProgressTable = useReactTable<Task>({
+    data: inProgressTasks,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -388,6 +408,43 @@ function TasksTab({
       pagination: { pageSize: 7, pageIndex: 0 },
     },
   });
+
+  const completedTable = useReactTable<Task>({
+    data: completedTasks,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    onSortingChange: setSorting,
+    getSortedRowModel: getSortedRowModel(),
+    onColumnFiltersChange: setColumnFilters,
+    getFilteredRowModel: getFilteredRowModel(),
+    state: {
+      sorting,
+      columnFilters,
+    },
+    initialState: {
+      pagination: { pageSize: 7, pageIndex: 0 },
+    },
+  });
+
+  const rejectedTable = useReactTable<Task>({
+    data: rejectedTasks,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    onSortingChange: setSorting,
+    getSortedRowModel: getSortedRowModel(),
+    onColumnFiltersChange: setColumnFilters,
+    getFilteredRowModel: getFilteredRowModel(),
+    state: {
+      sorting,
+      columnFilters,
+    },
+    initialState: {
+      pagination: { pageSize: 7, pageIndex: 0 },
+    },
+  });
+
   async function cancelTask(id: number) {
     if (!cookies["auth-token"]) return null;
     const jsonrpc = {
@@ -419,84 +476,244 @@ function TasksTab({
   }
   return (
     <div className="p-4  bg-white rounded-4xl h-full text-black w-full ">
-      <div className="">
-        <h1 className="text-2xl mx-auto w-fit  font-futura-heavy my-4">
-          Задачи:
-        </h1>
-        <div className="w-fit mx-auto max-w-full overflow-x-auto">
-          <Table className="w-fit mx-auto max-[500px]:rounded-tr-md  max-w-7xl text-black bg-white">
-            <TableHeader>
-              {userTasksTable.getRowModel().rows.length
-                ? userTasksTable.getHeaderGroups().map((headerGroup) => (
-                    <TableRow key={headerGroup.id}>
-                      {headerGroup.headers.map((header) => {
-                        return (
-                          <TableHead key={header.id}>
-                            {header.isPlaceholder
-                              ? null
-                              : flexRender(
-                                  header.column.columnDef.header,
-                                  header.getContext(),
-                                )}
-                          </TableHead>
-                        );
-                      })}
+      <div className="flex flex-col gap-4">
+        <div>
+          <h1 className="text-2xl mx-auto w-fit font-futura-heavy my-4">
+            В работе:
+          </h1>
+          <div className="w-fit mx-auto max-w-full overflow-x-auto">
+            <Table className="w-fit mx-auto max-[500px]:rounded-tr-md  max-w-7xl text-black bg-white">
+              <TableHeader>
+                {inProgressTable.getHeaderGroups().map((headerGroup) => (
+                  <TableRow key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => {
+                      return (
+                        <TableHead key={header.id}>
+                          {header.isPlaceholder
+                            ? null
+                            : flexRender(
+                                header.column.columnDef.header,
+                                header.getContext(),
+                              )}
+                        </TableHead>
+                      );
+                    })}
+                  </TableRow>
+                ))}
+              </TableHeader>
+              <TableBody>
+                {inProgressTable.getRowModel().rows.length ? (
+                  inProgressTable.getRowModel().rows.map((row) => (
+                    <TableRow
+                      key={row.id}
+                      className="hover:cursor-pointer"
+                      onClick={() => {
+                        navigate({
+                          to: `/tasks/${row.original.id}`,
+                        });
+                      }}
+                      data-state={row.getIsSelected() && "selected"}
+                    >
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell key={cell.id} className="border-2">
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext(),
+                          )}
+                        </TableCell>
+                      ))}
                     </TableRow>
                   ))
-                : null}
-            </TableHeader>
-            <TableBody>
-              {userTasksTable.getRowModel().rows.length ? (
-                userTasksTable.getRowModel().rows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    className="hover:cursor-pointer"
-                    onClick={() => {
-                      navigate({
-                        to: `/tasks/${row.original.id}`,
-                      });
-                    }}
-                    data-state={row.getIsSelected() && "selected"}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id} className="border-2">
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
-                        )}
-                      </TableCell>
-                    ))}
+                ) : (
+                  <TableRow>
+                    <TableCell
+                      colSpan={columns.length}
+                      className="h-24 text-center"
+                    >
+                      Ничего не найдено
+                    </TableCell>
                   </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="h-24 text-center"
-                  >
-                    Ничего не найдено
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-          <div className="flex items-center justify-center w-full py-4 space-x-2 text-black bg-white rounded-b-md">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => userTasksTable.previousPage()}
-              disabled={!userTasksTable.getCanPreviousPage()}
-            >
-              Предыдущая страница
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => userTasksTable.nextPage()}
-              disabled={!userTasksTable.getCanNextPage()}
-            >
-              Следующая страница
-            </Button>
+                )}
+              </TableBody>
+            </Table>
+            <div className="flex items-center max-sm:flex-col-reverse max-sm:gap-2 max-sm:items-center max-sm:space-x-0 justify-center w-full py-4 space-x-2 text-black bg-white rounded-b-md">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => inProgressTable.previousPage()}
+                disabled={!inProgressTable.getCanPreviousPage()}
+              >
+                Предыдущая страница
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => inProgressTable.nextPage()}
+                disabled={!inProgressTable.getCanNextPage()}
+              >
+                Следующая страница
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h1 className="text-2xl mx-auto w-fit font-futura-heavy my-4">
+            Выполненные:
+          </h1>
+          <div className="w-fit mx-auto max-w-full overflow-x-auto">
+            <Table className="w-fit mx-auto max-[500px]:rounded-tr-md  max-w-7xl text-black bg-white">
+              <TableHeader>
+                {completedTable.getHeaderGroups().map((headerGroup) => (
+                  <TableRow key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => {
+                      return (
+                        <TableHead key={header.id}>
+                          {header.isPlaceholder
+                            ? null
+                            : flexRender(
+                                header.column.columnDef.header,
+                                header.getContext(),
+                              )}
+                        </TableHead>
+                      );
+                    })}
+                  </TableRow>
+                ))}
+              </TableHeader>
+              <TableBody>
+                {completedTable.getRowModel().rows.length ? (
+                  completedTable.getRowModel().rows.map((row) => (
+                    <TableRow
+                      key={row.id}
+                      className="hover:cursor-pointer"
+                      onClick={() => {
+                        navigate({
+                          to: `/tasks/${row.original.id}`,
+                        });
+                      }}
+                      data-state={row.getIsSelected() && "selected"}
+                    >
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell key={cell.id} className="border-2">
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext(),
+                          )}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell
+                      colSpan={columns.length}
+                      className="h-24 text-center"
+                    >
+                      Ничего не найдено
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+            <div className="flex items-center max-sm:flex-col-reverse max-sm:gap-2 max-sm:items-center max-sm:space-x-0 justify-center w-full py-4 space-x-2 text-black bg-white rounded-b-md">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => completedTable.previousPage()}
+                disabled={!completedTable.getCanPreviousPage()}
+              >
+                Предыдущая страница
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => completedTable.nextPage()}
+                disabled={!completedTable.getCanNextPage()}
+              >
+                Следующая страница
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h1 className="text-2xl mx-auto w-fit font-futura-heavy my-4">
+            Отказ:
+          </h1>
+          <div className="w-fit mx-auto max-w-full overflow-x-auto">
+            <Table className="w-fit mx-auto max-[500px]:rounded-tr-md  max-w-7xl text-black bg-white">
+              <TableHeader>
+                {rejectedTable.getHeaderGroups().map((headerGroup) => (
+                  <TableRow key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => {
+                      return (
+                        <TableHead key={header.id}>
+                          {header.isPlaceholder
+                            ? null
+                            : flexRender(
+                                header.column.columnDef.header,
+                                header.getContext(),
+                              )}
+                        </TableHead>
+                      );
+                    })}
+                  </TableRow>
+                ))}
+              </TableHeader>
+              <TableBody>
+                {rejectedTable.getRowModel().rows.length ? (
+                  rejectedTable.getRowModel().rows.map((row) => (
+                    <TableRow
+                      key={row.id}
+                      className="hover:cursor-pointer"
+                      onClick={() => {
+                        navigate({
+                          to: `/tasks/${row.original.id}`,
+                        });
+                      }}
+                      data-state={row.getIsSelected() && "selected"}
+                    >
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell key={cell.id} className="border-2">
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext(),
+                          )}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell
+                      colSpan={columns.length}
+                      className="h-24 text-center"
+                    >
+                      Ничего не найдено
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+            <div className="flex items-center max-sm:flex-col-reverse max-sm:gap-2 max-sm:items-center max-sm:space-x-0 justify-center w-full py-4 space-x-2 text-black bg-white rounded-b-md">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => rejectedTable.previousPage()}
+                disabled={!rejectedTable.getCanPreviousPage()}
+              >
+                Предыдущая страница
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => rejectedTable.nextPage()}
+                disabled={!rejectedTable.getCanNextPage()}
+              >
+                Следующая страница
+              </Button>
+            </div>
           </div>
         </div>
       </div>

@@ -14,6 +14,8 @@ export async function fakeTrees(): Promise<Tree[]> {
               decayProgress: Math.pow(Math.random(), 12) * 2,
               timesWatered: size,
               apples: Math.round(size / 2) + Math.round(Math.random() * 2),
+              user_id: Math.random() * 100000,
+              username: "a",
             } satisfies Tree;
           }),
         ),

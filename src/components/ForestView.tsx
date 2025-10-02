@@ -8,6 +8,7 @@ export type TreeHandle = {
   witherTree: (tree: Tree) => void;
   growOneLevel: (tree: Tree) => void;
   render: () => void;
+  centerOnUser: (treeID: number) => void;
   update: (
     trees: Tree[],
     isLoading: boolean,
@@ -36,6 +37,11 @@ export const ForestView = forwardRef<
     render: () => {
       if (treeRef.current) {
         treeRef.current.render();
+      }
+    },
+    centerOnUser(treeID) {
+      if (treeRef.current) {
+        treeRef.current.centerOnUser(treeID);
       }
     },
     updatePlanet: (planet: Planet) => {

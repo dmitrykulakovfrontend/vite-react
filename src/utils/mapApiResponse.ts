@@ -49,6 +49,8 @@ function MapTreeData(data: UserTree): Tree {
     decayProgress: finalDecayProgress,
     timesWatered: data.vitality_percent / 5,
     apples: data.apples,
+    username: data.user_name,
+    user_id: data.user_id,
   };
 }
 

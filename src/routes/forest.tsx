@@ -7,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 
 import { useMainStore } from "@/providers/store";
@@ -49,6 +49,7 @@ type LeaderboardUser = {
   started_at: string;
   tree_vitality_percent: number;
   id: number;
+  tree_id: number;
 };
 const columns: ColumnDef<LeaderboardUser>[] = [
   {
@@ -205,7 +206,7 @@ function Index() {
   const user = useMainStore((state) => state.user);
   const [isTableVisible, setTableVisible] = useState(true);
   const treeRef = useRef<TreeHandle>(null);
-  const navigate = useNavigate({ from: "/forest" });
+  // const navigate = useNavigate({ from: "/forest" });
 
   const [cookies] = useCookies(["auth-token"]);
 
@@ -219,6 +220,11 @@ function Index() {
   const { data: userTree } = useSWR<UserTree | null>("userTree" + userId, () =>
     fetchUserTree(cookies["auth-token"]),
   );
+  function handleRatingClick(id: number) {
+    if (treeRef.current) {
+      treeRef.current.centerOnUser(+id);
+    }
+  }
   console.log({ usersTree });
   const table = useReactTable<LeaderboardUser>({
     data: data || [],
@@ -312,9 +318,7 @@ function Index() {
                           key={row.id}
                           className="hover:cursor-pointer h-8"
                           onClick={() => {
-                            navigate({
-                              to: `/profile/${row.original.id}`,
-                            });
+                            handleRatingClick(row.original.tree_id);
                           }}
                         >
                           {row.getVisibleCells().map((cell) => (
@@ -336,6 +340,7 @@ function Index() {
                   {table.getRowModel().rows.length ? (
                     table.getRowModel().rows.map((row) => (
                       <div
+                        onClick={() => handleRatingClick(row.original.tree_id)}
                         key={row.id}
                         className="p-2 bg-white text-black shadow border rounded text-sm"
                       >

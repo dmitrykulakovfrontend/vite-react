@@ -7,6 +7,8 @@ export interface Tree {
   seed: number;
   decayProgress: number; // Add this new property
   apples?: number;
+  username: string;
+  user_id: number;
 }
 export type Planet = "Земля" | "Юпитер" | "Марс";
 export interface Forest {
@@ -40,4 +42,6 @@ export type UserTree = {
   user: User;
   days_since_watering: number;
   id: number;
+  user_name: string;
+  user_id: number;
 };

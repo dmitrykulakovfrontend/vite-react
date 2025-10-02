@@ -77,6 +77,12 @@ class TreeAnimation {
     sway: number;
     color: string;
   }[];
+  hoveredTree: Tree | null;
+  focusedTree: {
+    tree: Tree;
+    text: string;
+    position: { x: number; y: number };
+  } | null;
 
   constructor(options: Forest & { container: HTMLDivElement }) {
     this.trees = options.trees;
@@ -131,6 +137,10 @@ class TreeAnimation {
     }
 
     this.hasCentered = false;
+
+    this.hoveredTree = null;
+    this.focusedTree = null;
+
     this.addEventListeners();
     this.viewportTransform = {
       x: 0,
@@ -496,7 +506,51 @@ class TreeAnimation {
         }
       }
       if (closestUserTreePosition) {
-        this.drawHighlight(closestUserTreePosition, this.currentUserTree);
+        this.drawTreeLabel(closestUserTreePosition, "Ваше дерево");
+      }
+
+      // Draw label for the focused tree, if it exists and is not the user's tree
+      if (
+        this.focusedTree &&
+        this.focusedTree.tree.seed !== this.currentUserTree?.seed
+      ) {
+        // We need to find the closest instance of the focused tree on screen
+        const { x: focusedX, y: focusedY } = this.focusedTree.position;
+
+        const centerXWorld =
+          (this.stageWidth / 2 - this.viewportTransform.x) /
+          this.viewportTransform.scale;
+        const centerYWorld =
+          (this.stageHeight / 2 - this.viewportTransform.y) /
+          this.viewportTransform.scale;
+        const worldWidth = this.treesPerRow * this.distanceBetween;
+        const numRows = Math.ceil(this.trees.length / this.treesPerRow);
+        const worldHeight = numRows * this.rowHeight;
+
+        let minDistanceSq = Infinity;
+        let closestFocusedTreePosition: { x: number; y: number } | null = null;
+        const centerTileN = Math.round((centerXWorld - focusedX) / worldWidth);
+        const centerTileM = Math.round((centerYWorld - focusedY) / worldHeight);
+
+        for (let m = centerTileM - 1; m <= centerTileM + 1; m++) {
+          for (let n = centerTileN - 1; n <= centerTileN + 1; n++) {
+            const instanceX = focusedX + n * worldWidth;
+            const instanceY = focusedY + m * worldHeight;
+            const dx = instanceX - centerXWorld;
+            const dy = instanceY - centerYWorld;
+            const distanceSq = dx * dx + dy * dy;
+
+            if (distanceSq < minDistanceSq) {
+              minDistanceSq = distanceSq;
+              closestFocusedTreePosition = { x: instanceX, y: instanceY };
+            }
+          }
+        }
+
+        if (closestFocusedTreePosition) {
+          this.drawTreeLabel(closestFocusedTreePosition, this.focusedTree.text);
+          this.drawOffscreenIndicator(closestFocusedTreePosition);
+        }
       }
       // Draw planet name on top of everything
       this.ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -648,13 +702,7 @@ class TreeAnimation {
       requestAnimationFrame(() => this.render());
     }
   }
-  private drawHighlight(
-    treePosition: { x: number; y: number },
-    tree: Tree | null | undefined,
-  ) {
-    if (!this.userTreePosition) return;
-    if (!tree) return;
-
+  private drawTreeLabel(treePosition: { x: number; y: number }, text: string) {
     const { ctx, viewportTransform, canvas, simulation } = this;
     const { x: treeWorldX, y: treeWorldY } = treePosition;
     const { x: viewX, y: viewY, scale } = viewportTransform;
@@ -666,36 +714,34 @@ class TreeAnimation {
     const { width: w, height: h } = canvas;
     const padding = 40;
 
-    // Determine if the highlight should be drawn based on the mode
-    let shouldDrawHighlight = false;
+    let shouldDrawLabel = false;
 
     if (simulation) {
       const centerX = w / 2;
       const centerY = h / 2;
       const radius = Math.min(centerX, centerY);
       const distance = Math.hypot(screenX - centerX, screenY - centerY);
-      shouldDrawHighlight = distance < radius - padding;
+      shouldDrawLabel = distance < radius - padding;
     } else {
-      shouldDrawHighlight =
+      shouldDrawLabel =
         screenX > padding &&
         screenX < w - padding &&
         screenY > padding &&
         screenY < h - padding;
     }
 
-    // If the highlight should not be drawn, exit early
-    if (!shouldDrawHighlight) {
+    if (!shouldDrawLabel) {
       return;
     }
+
     ctx.save();
     ctx.setTransform(scale, 0, 0, scale, viewX, viewY);
 
-    // Draw "Ваше дерево" text
     ctx.font = `bold ${12 / this.viewportTransform.scale}px Arial, sans-serif`;
     ctx.fillStyle = "white";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText("Ваше дерево", treeWorldX - 20, treeWorldY + 40);
+    ctx.fillText(text, treeWorldX, treeWorldY + 40); // Y offset to draw above the base
 
     ctx.restore();
   }
@@ -832,13 +878,40 @@ class TreeAnimation {
     const throttledMouseMove = throttle(this.onMouseMove.bind(this), 20);
     const throttledMouseWheel = throttle(this.onMouseWheel.bind(this), 20);
 
+    // Handles HOVER detection
+    this.canvas.addEventListener("mousemove", (e: MouseEvent) => {
+      if (this.isMainTree || !this.trees || this.isLoading || this.simulation) {
+        // For now, we only care about the forest.
+        return null;
+      }
+      const hovered = this.getTreeAtScreenCoords(e.offsetX, e.offsetY);
+      if (hovered !== this.hoveredTree) {
+        this.hoveredTree = hovered;
+        this.canvas.style.cursor = this.hoveredTree ? "pointer" : "default";
+      }
+    });
+
+    // Handles CLICK navigation
+    this.canvas.addEventListener("click", (e: MouseEvent) => {
+      if (this.isMainTree || !this.trees || this.isLoading || this.simulation) {
+        // For now, we only care about the forest.
+        return null;
+      }
+      const clickedTree = this.getTreeAtScreenCoords(e.offsetX, e.offsetY);
+      if (clickedTree) {
+        window.location.href = `/profile/${clickedTree.user_id}`;
+      }
+    });
+
+    // Handles PANNING (drag)
     this.canvas.addEventListener("mousedown", (e: MouseEvent) => {
       this.previousX = e.clientX;
       this.previousY = e.clientY;
+      // Also clear focus when user starts dragging the canvas
+      // this.focusedTree = null;
 
       this.canvas.addEventListener("mousemove", throttledMouseMove);
     });
-
     const removeMouseMove = () => {
       this.canvas.removeEventListener("mousemove", throttledMouseMove);
     };
@@ -1237,6 +1310,129 @@ class TreeAnimation {
     }
     // Fully decayed
     return this.colors.dyingTrunk;
+  }
+  centerOnUser(treeID: number) {
+    // This function is only meaningful in the forest view.
+    if (this.isMainTree) {
+      console.warn("centerOnUser is not applicable in the main tree view.");
+      return;
+    }
+
+    const treeIndex = this.trees.findIndex((tree) => tree.seed === treeID);
+
+    if (treeIndex === -1) {
+      console.warn(`Tree with seed ${treeID} not found.`);
+      this.focusedTree = null; // Clear focus if tree not found
+      this.render();
+      return;
+    }
+
+    const tree = this.trees[treeIndex];
+
+    // Don't set focus on the user's own tree, as it already has a label.
+    if (this.currentUserTree?.seed === treeID) {
+      this.focusedTree = null;
+    } else {
+      const depth = this.getTreeDepth(tree.timesWatered);
+      const frequency = 0.2;
+      const amplitude = depth * 5;
+      const treeX =
+        (treeIndex % this.treesPerRow) * this.distanceBetween +
+        Math.sin(treeIndex * frequency) * amplitude;
+      const treeY =
+        Math.floor(treeIndex / this.treesPerRow) * this.rowHeight +
+        Math.cos(treeIndex * frequency) * amplitude;
+
+      // SET THE FOCUSED TREE STATE
+      this.focusedTree = {
+        tree: tree,
+        text: tree.username,
+        position: { x: treeX, y: treeY },
+      };
+    }
+
+    // The rest of the centering logic remains the same
+    const depth = this.getTreeDepth(tree.timesWatered);
+    const frequency = 0.2;
+    const amplitude = depth * 5;
+
+    const treeX =
+      (treeIndex % this.treesPerRow) * this.distanceBetween +
+      Math.sin(treeIndex * frequency) * amplitude;
+    const treeY =
+      Math.floor(treeIndex / this.treesPerRow) * this.rowHeight +
+      Math.cos(treeIndex * frequency) * amplitude;
+
+    this.viewportTransform.x =
+      this.stageWidth / 2 - treeX * this.viewportTransform.scale;
+    this.viewportTransform.y =
+      this.stageHeight / 2 - treeY * this.viewportTransform.scale;
+
+    this.render();
+  }
+  private getTreeAtScreenCoords(screenX: number, screenY: number): Tree | null {
+    if (this.isMainTree || !this.trees || this.isLoading || this.simulation) {
+      // For now, we only care about the forest.
+      return null;
+    }
+
+    // Convert screen coordinates to world coordinates
+    const worldX =
+      (screenX - this.viewportTransform.x) / this.viewportTransform.scale;
+    const worldY =
+      (screenY - this.viewportTransform.y) / this.viewportTransform.scale;
+
+    // Use the same culling logic as the render method to only check visible trees
+    const viewLeft = -this.viewportTransform.x / this.viewportTransform.scale;
+    const viewTop = -this.viewportTransform.y / this.viewportTransform.scale;
+    const viewRight =
+      (this.canvas.width - this.viewportTransform.x) /
+      this.viewportTransform.scale;
+    const viewBottom =
+      (this.canvas.height - this.viewportTransform.y) /
+      this.viewportTransform.scale;
+
+    const startCol = Math.floor(viewLeft / this.distanceBetween) - 1;
+    const endCol = Math.ceil(viewRight / this.distanceBetween) + 1;
+    const startRow = Math.floor(viewTop / this.rowHeight) - 1;
+    const endRow = Math.ceil(viewBottom / this.rowHeight) + 1;
+
+    for (let row = endRow - 1; row >= startRow; row--) {
+      // Iterate backwards to pick top trees first
+      for (let col = startCol; col < endCol; col++) {
+        const absoluteIndex = row * this.treesPerRow + col;
+        const treeIndex =
+          ((absoluteIndex % this.trees.length) + this.trees.length) %
+          this.trees.length;
+        const tree = this.trees[treeIndex];
+
+        // Calculate tree position
+        const frequency = 0.2;
+        const treeX =
+          col * this.distanceBetween + Math.sin(absoluteIndex * frequency);
+        const treeY =
+          row * this.rowHeight + Math.cos(absoluteIndex * frequency);
+
+        // Estimate a bounding box for the tree
+        const treeHeight = this.getTreeDepth(tree.timesWatered) * 35; // Approximation
+        const treeWidth = this.getTreeWidth(tree.timesWatered) * 20; // Approximation
+
+        const treeTop = treeY - treeHeight;
+        const treeLeft = treeX - treeWidth / 2;
+        const treeRight = treeX + treeWidth / 2;
+
+        if (
+          worldX >= treeLeft &&
+          worldX <= treeRight &&
+          worldY >= treeTop &&
+          worldY <= treeY
+        ) {
+          return tree;
+        }
+      }
+    }
+
+    return null;
   }
   drawFullTree(tree: ModifiedTreeOptions) {
     // Reset tree top

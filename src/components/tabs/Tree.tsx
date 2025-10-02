@@ -92,6 +92,32 @@ function TreeTab({
       console.log(data.result);
     }
   }
+  async function witherTree() {
+    if (!cookies["auth-token"]) return null;
+    const jsonrpc = {
+      jsonrpc: "2.0",
+      method: "simulate_tree_drying",
+      params: { user_id: tree?.user.id },
+      id: 1,
+    };
+
+    const response = await fetch("https://hrzero.ru/api/app/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: cookies["auth-token"],
+      },
+      body: JSON.stringify(jsonrpc),
+    });
+    const data = await response.json();
+    if (data.error) {
+      setError(data.error.message);
+    }
+    if (treeRef.current && data.result) {
+      await mutate("userTree" + tree?.user.id);
+      console.log(data.result);
+    }
+  }
   async function addResources() {
     if (!cookies["auth-token"]) return null;
     const jsonrpc = {
@@ -180,6 +206,14 @@ function TreeTab({
                     className="max-w-[200px] max-lg:max-w-[150px] whitespace-normal break-words hover:bg-blue-500 bg-blue-primary w-full hover:cursor-pointer font-futura-heavy p-2 h-fit rounded-sm text-white mt-2"
                   >
                     ДЕМО: Пропустить требования и полить
+                  </Button>
+                )}
+                {tree && (
+                  <Button
+                    onClick={() => witherTree()}
+                    className="max-w-[200px] max-lg:max-w-[150px] whitespace-normal break-words hover:bg-blue-500 bg-blue-primary w-full hover:cursor-pointer font-futura-heavy p-2 h-fit rounded-sm text-white mt-2"
+                  >
+                    ДЕМО: Пропустить 7 дней без полива
                   </Button>
                 )}
                 {tree && (

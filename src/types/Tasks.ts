@@ -51,3 +51,23 @@ export interface TaskRating {
   user_rank: number;
   rank_progress: number;
 }
+export interface Mission {
+  created_at: string;
+  updated_at: string;
+  synced?: boolean;
+  cache?: Record<string, unknown> | null;
+  id: string;
+  title: string;
+  description: string | null;
+}
+export interface Goal {
+  created_at: string;
+  updated_at: string;
+  synced?: boolean;
+  cache?: Record<string, unknown> | null;
+  id: string;
+  mission: Mission; // required
+  mission_id: string; // required
+  title: string; // required
+  description: string | null; // required, nullable
+}

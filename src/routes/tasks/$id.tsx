@@ -239,7 +239,9 @@ function RouteComponent() {
         <div className=" text-black flex items-start gap-4 max-md:flex-col">
           <div>
             <h1 className="text-2xl font-bold   font-futura-heavy ">
+              {/* <Link to={"/mission/" + currentTask.mission_id}> */}
               Миссия: {currentTask.mission_title}
+              {/* </Link> */}
             </h1>
             <h2 className="text-xl font-bold ">
               Кампания: {currentTask.goal_title}

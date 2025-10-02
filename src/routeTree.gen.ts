@@ -17,6 +17,7 @@ import { Route as TasksIndexRouteImport } from './routes/tasks/index'
 import { Route as ShopIndexRouteImport } from './routes/shop/index'
 import { Route as TasksIdRouteImport } from './routes/tasks/$id'
 import { Route as ProfileIdRouteImport } from './routes/profile/$id'
+import { Route as CampaignIdRouteImport } from './routes/campaign/$id'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -58,12 +59,18 @@ const ProfileIdRoute = ProfileIdRouteImport.update({
   path: '/profile/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CampaignIdRoute = CampaignIdRouteImport.update({
+  id: '/campaign/$id',
+  path: '/campaign/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/forest': typeof ForestRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/campaign/$id': typeof CampaignIdRoute
   '/profile/$id': typeof ProfileIdRoute
   '/tasks/$id': typeof TasksIdRoute
   '/shop': typeof ShopIndexRoute
@@ -74,6 +81,7 @@ export interface FileRoutesByTo {
   '/forest': typeof ForestRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/campaign/$id': typeof CampaignIdRoute
   '/profile/$id': typeof ProfileIdRoute
   '/tasks/$id': typeof TasksIdRoute
   '/shop': typeof ShopIndexRoute
@@ -85,6 +93,7 @@ export interface FileRoutesById {
   '/forest': typeof ForestRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/campaign/$id': typeof CampaignIdRoute
   '/profile/$id': typeof ProfileIdRoute
   '/tasks/$id': typeof TasksIdRoute
   '/shop/': typeof ShopIndexRoute
@@ -97,6 +106,7 @@ export interface FileRouteTypes {
     | '/forest'
     | '/login'
     | '/signup'
+    | '/campaign/$id'
     | '/profile/$id'
     | '/tasks/$id'
     | '/shop'
@@ -107,6 +117,7 @@ export interface FileRouteTypes {
     | '/forest'
     | '/login'
     | '/signup'
+    | '/campaign/$id'
     | '/profile/$id'
     | '/tasks/$id'
     | '/shop'
@@ -117,6 +128,7 @@ export interface FileRouteTypes {
     | '/forest'
     | '/login'
     | '/signup'
+    | '/campaign/$id'
     | '/profile/$id'
     | '/tasks/$id'
     | '/shop/'
@@ -128,6 +140,7 @@ export interface RootRouteChildren {
   ForestRoute: typeof ForestRoute
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
+  CampaignIdRoute: typeof CampaignIdRoute
   ProfileIdRoute: typeof ProfileIdRoute
   TasksIdRoute: typeof TasksIdRoute
   ShopIndexRoute: typeof ShopIndexRoute
@@ -192,6 +205,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProfileIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/campaign/$id': {
+      id: '/campaign/$id'
+      path: '/campaign/$id'
+      fullPath: '/campaign/$id'
+      preLoaderRoute: typeof CampaignIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -200,6 +220,7 @@ const rootRouteChildren: RootRouteChildren = {
   ForestRoute: ForestRoute,
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
+  CampaignIdRoute: CampaignIdRoute,
   ProfileIdRoute: ProfileIdRoute,
   TasksIdRoute: TasksIdRoute,
   ShopIndexRoute: ShopIndexRoute,

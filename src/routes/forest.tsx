@@ -47,7 +47,7 @@ type LeaderboardUser = {
   tree_age: string;
   activity: string;
   started_at: string;
-  vitality_percent: number;
+  tree_vitality_percent: number;
   id: number;
 };
 const columns: ColumnDef<LeaderboardUser>[] = [
@@ -115,7 +115,7 @@ const columns: ColumnDef<LeaderboardUser>[] = [
     },
   },
   {
-    accessorKey: "vitality_percent",
+    accessorKey: "tree_vitality_percent",
     header: () => {
       return (
         <Button variant="ghost" className="p-0 rounded-none">
@@ -372,7 +372,7 @@ function Index() {
                           </p>
                           <p>
                             <span className="font-medium">Сила дерева:</span>{" "}
-                            {row.original.vitality_percent}
+                            {row.original.tree_vitality_percent}
                           </p>
                         </div>
                       </div>

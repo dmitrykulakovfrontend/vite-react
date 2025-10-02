@@ -118,7 +118,7 @@ function RouteComponent() {
             </div>
           </div>
         </div>
-        <div className="flex flex-wrap gap-8 my-4 max-sm:justify-center max-w-2xl">
+        <div className="flex flex-wrap gap-8 my-4 max-sm:justify-center  max-w-3xl w-full">
           {products.map((product) => {
             const amount = amounts[product.id] || (product.id === 4 ? 100 : 1);
             const totalPrice = product.price * amount;
@@ -212,7 +212,7 @@ function RouteComponent() {
             <h2 className="text-2xl font-futura-heavy max-sm:text-center">
               Инвентарь (уже купленные предметы)
             </h2>
-            <div className="flex flex-wrap gap-8 mb-4 max-sm:justify-center max-w-2xl">
+            <div className="flex flex-wrap gap-8 my-4 max-sm:justify-center max-w-3xl w-full">
               {inventory.map((product) => (
                 <div
                   key={product.id + Math.random()}

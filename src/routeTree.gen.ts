@@ -17,6 +17,7 @@ import { Route as TasksIndexRouteImport } from './routes/tasks/index'
 import { Route as ShopIndexRouteImport } from './routes/shop/index'
 import { Route as TasksIdRouteImport } from './routes/tasks/$id'
 import { Route as ProfileIdRouteImport } from './routes/profile/$id'
+import { Route as MissionIdRouteImport } from './routes/mission/$id'
 import { Route as CampaignIdRouteImport } from './routes/campaign/$id'
 
 const SignupRoute = SignupRouteImport.update({
@@ -59,6 +60,11 @@ const ProfileIdRoute = ProfileIdRouteImport.update({
   path: '/profile/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MissionIdRoute = MissionIdRouteImport.update({
+  id: '/mission/$id',
+  path: '/mission/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CampaignIdRoute = CampaignIdRouteImport.update({
   id: '/campaign/$id',
   path: '/campaign/$id',
@@ -71,6 +77,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/campaign/$id': typeof CampaignIdRoute
+  '/mission/$id': typeof MissionIdRoute
   '/profile/$id': typeof ProfileIdRoute
   '/tasks/$id': typeof TasksIdRoute
   '/shop': typeof ShopIndexRoute
@@ -82,6 +89,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/campaign/$id': typeof CampaignIdRoute
+  '/mission/$id': typeof MissionIdRoute
   '/profile/$id': typeof ProfileIdRoute
   '/tasks/$id': typeof TasksIdRoute
   '/shop': typeof ShopIndexRoute
@@ -94,6 +102,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/campaign/$id': typeof CampaignIdRoute
+  '/mission/$id': typeof MissionIdRoute
   '/profile/$id': typeof ProfileIdRoute
   '/tasks/$id': typeof TasksIdRoute
   '/shop/': typeof ShopIndexRoute
@@ -107,6 +116,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/campaign/$id'
+    | '/mission/$id'
     | '/profile/$id'
     | '/tasks/$id'
     | '/shop'
@@ -118,6 +128,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/campaign/$id'
+    | '/mission/$id'
     | '/profile/$id'
     | '/tasks/$id'
     | '/shop'
@@ -129,6 +140,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/campaign/$id'
+    | '/mission/$id'
     | '/profile/$id'
     | '/tasks/$id'
     | '/shop/'
@@ -141,6 +153,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
   CampaignIdRoute: typeof CampaignIdRoute
+  MissionIdRoute: typeof MissionIdRoute
   ProfileIdRoute: typeof ProfileIdRoute
   TasksIdRoute: typeof TasksIdRoute
   ShopIndexRoute: typeof ShopIndexRoute
@@ -205,6 +218,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProfileIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/mission/$id': {
+      id: '/mission/$id'
+      path: '/mission/$id'
+      fullPath: '/mission/$id'
+      preLoaderRoute: typeof MissionIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/campaign/$id': {
       id: '/campaign/$id'
       path: '/campaign/$id'
@@ -221,6 +241,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
   CampaignIdRoute: CampaignIdRoute,
+  MissionIdRoute: MissionIdRoute,
   ProfileIdRoute: ProfileIdRoute,
   TasksIdRoute: TasksIdRoute,
   ShopIndexRoute: ShopIndexRoute,

@@ -36,6 +36,7 @@ export interface Task {
   goal_id: number;
   skill: Record<string, unknown>;
   skill_title: string;
+  rank: number;
   skill_id: number;
   state?: "done" | "in-progress" | "success" | "rejected" | "refused";
   online: boolean | null;

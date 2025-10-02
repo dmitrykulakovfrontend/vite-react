@@ -46,6 +46,7 @@ const columns: ColumnDef<Task>[] = [
     header: ({ column }) => (
       <Button
         variant="ghost"
+        className="p-0"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
         Имя задачи
@@ -64,6 +65,7 @@ const columns: ColumnDef<Task>[] = [
     header: ({ column }) => (
       <Button
         variant="ghost"
+        className="p-0"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
         Дата начала
@@ -90,6 +92,7 @@ const columns: ColumnDef<Task>[] = [
     header: ({ column }) => (
       <Button
         variant="ghost"
+        className="p-0"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
         Дедлайн
@@ -120,7 +123,7 @@ const columns: ColumnDef<Task>[] = [
     header: "Кампания",
   },
   {
-    accessorKey: "skill_title",
+    accessorKey: "rank",
     header: "Ранг",
   },
   {

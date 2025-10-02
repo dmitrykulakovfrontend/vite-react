@@ -239,18 +239,20 @@ function RouteComponent() {
         <div className=" text-black flex items-start gap-4 max-md:flex-col">
           <div>
             <h1 className="text-2xl font-bold   font-futura-heavy ">
-              {/* <Link to={"/mission/" + currentTask.mission_id}> */}
-              Миссия: {currentTask.mission_title}
-              {/* </Link> */}
+              <Link to={"/mission/" + currentTask.mission_id}>
+                Миссия: {currentTask.mission_title}
+              </Link>
             </h1>
             <h2 className="text-xl font-bold ">
-              Кампания: {currentTask.goal_title}
+              <Link to={"/campaign/" + currentTask.goal_id}>
+                Кампания: {currentTask.goal_title}
+              </Link>
             </h2>
             <h3 className="text-lg font-bold ">
               Название задачи: {currentTask.title}
             </h3>
             <p className="mb-2">Описание задачи: {currentTask.description}</p>
-            <p className="mb-2">Ранг: {currentTask.skill_title}</p>
+            <p className="mb-2">Ранг: {currentTask.rank}</p>
             <p className="mb-2">
               Место: {currentTask.online ? "Онлайн" : "Оффлайн"}
             </p>

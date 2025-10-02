@@ -47,11 +47,15 @@ const RootLayout = () => {
     data: currentUser,
     error: currentUserError,
     isLoading: currentUserIsLoading,
-  } = useSWR("currentUser", () => userFetcher(cookies["auth-token"]), {
-    // revalidateOnMount: false,
-    revalidateOnFocus: false,
-    // revalidateOnReconnect: false,
-  });
+  } = useSWR(
+    cookies["auth-token"] ? ["currentUser", cookies["auth-token"]] : null,
+    () => userFetcher(cookies["auth-token"]),
+    {
+      // revalidateOnMount: false,
+      revalidateOnFocus: false,
+      // revalidateOnReconnect: false,
+    },
+  );
 
   useEffect(() => {
     if (currentUserIsLoading) {

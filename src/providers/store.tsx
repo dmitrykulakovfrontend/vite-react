@@ -26,6 +26,7 @@ interface State {
   setTrees: (nextTrees: Tree[]) => void;
   setUser: (nextUser: User | "loading" | null) => void;
   buyProduct: (productId: number, amount: number, jwt: string) => void;
+  reset: () => void;
 }
 
 const productsData: Product[] = [
@@ -137,6 +138,8 @@ export const useMainStore = create<State>()(
           });
         }
       },
+      reset: () =>
+        set({ products: productsData, inventory: [], totalSpentApples: 0 }),
     }),
     {
       name: "main-store",

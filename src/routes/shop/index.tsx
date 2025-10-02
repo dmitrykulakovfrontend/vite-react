@@ -81,7 +81,8 @@ function RouteComponent() {
                 </p>
               ) : (
                 <p className="flex items-center gap-1">
-                  У вас: {user.apples - totalSpentApples}
+                  У вас: {}
+                  {user.apples - totalSpentApples}
                   <img
                     src="/apple.png"
                     className="drop-shadow-md"

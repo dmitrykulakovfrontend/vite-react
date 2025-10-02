@@ -124,6 +124,7 @@ const Header = ({
   const logout = () => {
     setCookies("auth-token", "", { path: "/" });
     setUser(null);
+    useMainStore.getState().reset();
     navigate({ to: "/" });
   };
 

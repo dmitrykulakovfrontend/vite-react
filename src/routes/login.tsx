@@ -1,6 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
-import { useMainStore } from "@/providers/store";
 import { mutate } from "swr";
 import { useCookies } from "react-cookie";
 
@@ -10,7 +9,6 @@ export const Route = createFileRoute("/login")({
 
 function RouteComponent() {
   const navigate = useNavigate({ from: "/login" });
-  const { setUser } = useMainStore();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -56,7 +54,6 @@ function RouteComponent() {
       );
 
       if (userData) {
-        setUser(userData.user);
         setCookie("auth-token", userData.token);
         navigate({ to: "/" });
       }

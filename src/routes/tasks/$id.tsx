@@ -239,11 +239,9 @@ function RouteComponent() {
         <div className=" text-black flex items-start gap-4 max-md:flex-col">
           <div>
             <h1 className="text-2xl font-bold   font-futura-heavy ">
-              <Link
-                to={"/mission/" + currentTask.mission_id}
-                className="underline"
-              >
-                Миссия: {currentTask.mission_title}
+              <Link to={"/mission/" + currentTask.mission_id}>
+                Миссия:{" "}
+                <span className="underline">{currentTask.mission_title}</span>
               </Link>
             </h1>
             <h2 className="text-xl font-bold ">
@@ -251,7 +249,8 @@ function RouteComponent() {
                 to={"/campaign/" + currentTask.goal_id}
                 className="underline"
               >
-                Кампания: {currentTask.goal_title}
+                Кампания:{" "}
+                <span className="underline">{currentTask.goal_title}</span>
               </Link>
             </h2>
             <h3 className="text-lg font-bold ">
